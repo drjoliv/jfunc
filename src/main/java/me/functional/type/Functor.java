@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import me.functional.hkt.Hkt;
 
+
 import static me.functional.Util.*;
 
 /**
