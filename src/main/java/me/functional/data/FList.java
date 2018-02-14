@@ -2,11 +2,14 @@ package me.functional.data;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.Predicate;
 
+import me.functional.QuadFunction;
+import me.functional.TriFunction;
 import me.functional.hkt.Hkt;
 
 public abstract class FList<A> implements Hkt<FList.μ,A> {
@@ -229,6 +232,42 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     } else {
       throw new RuntimeException();
     }
+  }
+
+  public static <A,B> FList<B> For(FList<A> list, Function<A, FList<B>> fn) {
+    return list.bind(fn);
+  } 
+
+  public static <A,B,C> FList<C> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2) {
+    return list.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b); 
+      });
+    });
+  } 
+
+  public static <A,B,C,D> FList<D> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2,
+      TriFunction<A,B,C,FList<D>> fn3) {
+    return list.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b).bind( c -> {
+         return fn3.apply(a,b,c); 
+        }); 
+      });
+    });
+  }
+
+  public static <A,B,C,D,E> FList<E> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2,
+      TriFunction<A,B,C,FList<D>> fn3, QuadFunction<A,B,C,D,FList<E>> fn4) {
+    return list.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b).bind( c -> {
+         return fn3.apply(a,b,c).bind( d -> {
+          return fn4.apply(a,b,c,d); 
+         }); 
+        }); 
+      });
+    });
   }
 
   private static class Nil<A> extends FList<A> {
