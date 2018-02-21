@@ -4,9 +4,6 @@ import java.util.function.Function;
 
 import me.functional.hkt.Hkt;
 
-
-import static me.functional.Util.*;
-
 /**
  * A Functor is a container of some sort whose value can be mapped over.
  *
@@ -30,8 +27,8 @@ public interface Functor<F> {
    * @param functor the Functor whose value will be replaced
    * @return A Functor where a has been inserted
    */
-  public default <A,B> Hkt<F,A> replace(A a, Hkt<F,B> functor) {
-    return fmap(constant(a), functor);
+  public default <A,B> Hkt<F,B> replace(B b, Hkt<F,A> functor) {
+    return fmap(a -> b, functor);
   }
 
 }
