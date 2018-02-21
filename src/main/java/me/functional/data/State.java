@@ -81,6 +81,76 @@ public class State<S,A> {
   /**
    *
    *
+   * @param state
+   * @param fn
+   * @return
+   */
+  public static <A,B,S> State<S,B> For(State<S,A> state, Function<A, State<S,B>> fn) {
+    return state.bind(fn);
+  } 
+
+    /**
+     *
+     *
+     * @param state
+     * @param fn
+     * @param fn2
+     * @return
+     */
+    public static <A,B,C,S> State<S,C> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2) {
+    return state.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b); 
+      });
+    });
+  } 
+
+    /**
+     *
+     *
+     * @param state
+     * @param fn
+     * @param fn2
+     * @param fn3
+     * @return
+     */
+    public static <A,B,C,D,S> State<S,D> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
+      TriFunction<A,B,C,State<S,D>> fn3) {
+    return state.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b).bind( c -> {
+         return fn3.apply(a,b,c); 
+        }); 
+      });
+    });
+  }
+
+    /**
+     *
+     *
+     * @param state
+     * @param fn
+     * @param fn2
+     * @param fn3
+     * @param fn4
+     * @return
+     */
+    public static <A,B,C,D,E,S> State<S,E> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
+      TriFunction<A,B,C,State<S,D>> fn3, QuadFunction<A,B,C,D,State<S,E>> fn4) {
+    return state.bind(a -> {
+      return fn.apply(a).bind(b -> {
+        return fn2.apply(a,b).bind( c -> {
+         return fn3.apply(a,b,c).bind( d -> {
+          return fn4.apply(a,b,c,d); 
+         }); 
+        }); 
+      });
+    });
+  }
+
+  /**
+   *
+   *
    * @param fn
    * @return
    */
