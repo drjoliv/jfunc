@@ -88,7 +88,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
       return this;
     else {
       FList<A> list = this;
-      for(int j = index; j > 0; j--)
+      for(int j = i; j > 0; j--)
         list = list.tail(); 
       return list;
     }
