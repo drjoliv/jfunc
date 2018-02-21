@@ -1,46 +1,41 @@
 package me.functional.data;
 
-import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.pholser.junit.quickcheck.From;
+import com.pholser.junit.quickcheck.Property;
+import com.pholser.junit.quickcheck.generator.InRange;
+import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
+
+import me.functional.Numbers;
+import me.functional.Trampoline;
+import me.functional.data.generators.FListGenerator;
+
 import static org.junit.Assert.*;
 
+import org.junit.Test;
+
+@RunWith(JUnitQuickcheck.class)
 public class FListTest {
 
-  @Test
-  public void append() {
-    FList<Integer> ints = FList.<Integer>empty()
-      .prepend(3);
+  @Property
+  public void add(@From(FListGenerator.class)FList<Integer> flist, Integer i) {
+    assertEquals(flist.add(i).unsafeHead(), i);
+  }
 
-    assertEquals(new Integer(3),ints.head());
-
-    assertEquals(FList.<Integer>empty(), ints.tail());
-
-    System.out.println(FList.toString(ints));
-
-    System.out.println(FList.toString(FList.of(1,2,3,4,5,6,7,8).map(i -> i * 2)));
-
-    System.out.println(FList.toString(FList.of(1,2,3,4,5,6,7,8).bind(i -> FList.of( i + "" + i))));
-
-    System.out.println(FList.toString(FList.of(1,2,3,4,5,6,7,8).filter(i -> i % 2 == 0)));
-
-    FList<Integer> nums = FList.range(0,999);
-
-    //System.out.println(FList.toString(nums));
-
-    System.out.println(FList.toString(nums.filter(i -> i % 5 == 0 || i % 3 == 0)));
-
-    int sum = 0;
-    for(Integer i : FList.iterable(nums.filter(i -> i % 5 == 0 || i % 3 == 0)))
-      sum += i;
-
-    System.out.println(sum);
+  @Property
+  public void concat(@From(FListGenerator.class)FList<Integer> flist,
+     @From(FListGenerator.class)FList<Integer> flistSnd, Integer i) {
 
 
+    assertEquals(flist.size() + flistSnd.size()
+        ,flist.concat(flistSnd).size());
 
+    assertEquals(flist.size() + flistSnd.size()
+        ,flist.concat(flistSnd).size());
+ }
 
-    FList<Integer> testSeq = FList.sequence(1, i -> i * 2 - 3);
-    FList<Integer> testSeqPlusOne = testSeq.map(i -> i + 1);
-    System.out.println(FList.toString(testSeq.take(10)));
-    System.out.println(FList.toString(testSeqPlusOne.take(10)));
-
+  @Property
+  public void unsafeGet(@From(FListGenerator.class)FList<Integer> flist, Integer i) {
   }
 }
