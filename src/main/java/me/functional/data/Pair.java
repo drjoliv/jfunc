@@ -1,12 +1,12 @@
 package me.functional.data;
 
 public class Pair<A,B> {
-  public final A a;
-  public final B b;
+  public final A fst;
+  public final B snd;
 
   private Pair(A a, B b) {
-    this.a = a;
-    this.b = b;
+    this.fst = a;
+    this.snd = b;
   }
 
   public static <A,B> Pair<A,B> of(A a, B b) {
@@ -14,6 +14,6 @@ public class Pair<A,B> {
   }
 
   public String toString() {
-    return "<" + a.toString() + "," + b.toString() + ">";
+    return "<" + fst.toString() + "," + snd.toString() + ">";
   }
 }
