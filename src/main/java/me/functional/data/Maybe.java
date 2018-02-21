@@ -162,4 +162,11 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A> {
     return pure(fn)
       .bind(f -> ma.map(f));
   }
+
+  public static <A> Maybe<A> of(A a) {
+       if(a == null)
+        return nothing();
+      else
+        return new Just<A>(a);
+  }
 }
