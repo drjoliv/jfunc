@@ -9,7 +9,7 @@ import me.functional.hkt.Hkt;
  *
  * @author drjoliv@gmail.com
  */
-public interface Functor<F> {
+public interface Functor<F,A> {
 
   /**
    * fmap maps over the contents of the given functor with the given function.
@@ -18,7 +18,7 @@ public interface Functor<F> {
    * @param functor the functor whose value will be mapped over.
    * @return a functor containing the result of fn, after it has mapped over the contents of the given functor.
    */
-  public <A,B> Hkt<F,B> fmap(Function<A,B> fn, Hkt<F,A> functor);
+  public <B> Hkt<F,B> fmap(Function<A,B> fn);
 
   /**
    * Replaces the contents of functor with the given value a.
@@ -27,8 +27,8 @@ public interface Functor<F> {
    * @param functor the Functor whose value will be replaced
    * @return A Functor where a has been inserted
    */
-  public default <A,B> Hkt<F,B> replace(B b, Hkt<F,A> functor) {
-    return fmap(a -> b, functor);
+  public default <B> Hkt<F,B> replace(B b) {
+    return fmap(a -> b);
   }
 
 }
