@@ -2,14 +2,14 @@ package me.functional.type;
 
 import java.util.function.Function;
 
-import me.functional.hkt.Hkt;
+import me.functional.hkt.Witness;
 
 /**
  * A Functor is a container of some sort whose value can be mapped over.
  *
  * @author drjoliv@gmail.com
  */
-public interface Functor<F,A> {
+public interface Functor<F extends Witness,A> {
 
   /**
    * fmap maps over the contents of the given functor with the given function.
@@ -18,7 +18,7 @@ public interface Functor<F,A> {
    * @param functor the functor whose value will be mapped over.
    * @return a functor containing the result of fn, after it has mapped over the contents of the given functor.
    */
-  public <B> Hkt<F,B> fmap(Function<A,B> fn);
+  public <B> Functor<F,B> fmap(Function<F,B> fn);
 
   /**
    * Replaces the contents of functor with the given value a.
@@ -27,7 +27,7 @@ public interface Functor<F,A> {
    * @param functor the Functor whose value will be replaced
    * @return A Functor where a has been inserted
    */
-  public default <B> Hkt<F,B> replace(B b) {
+  public default <B> Functor<F,B> replace(B b) {
     return fmap(a -> b);
   }
 
