@@ -1,27 +1,64 @@
 package me.functional.data;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import me.functional.QuadFunction;
 import me.functional.TriFunction;
 import me.functional.hkt.Hkt;
+import me.functional.hkt.Witness;
 
 /**
  * 
  *
  * @author drjoliv@gmail.com
  */
-public abstract class FList<A> implements Hkt<FList.μ,A> {
+public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
 
-  public static class μ{}
+  /**
+  * The witness type of FList.
+  */
+  public static class μ implements Witness{}
 
   private FList(){}
+
+  @Override
+  public <B> FList<B> fmap(Function<A, B> fn) {
+      if(isEmpty()) {
+      return Nil.instance();
+    } else {
+      return of(fn.apply(unsafeHead()), () -> tail().map(fn));
+    }
+  }
+
+  @Override
+  public <B> FList<B> mBind(Function<A, ? extends Monad<FList.μ, B>> fn) {
+     if(isEmpty()) {
+      return Nil.instance();
+    } else {
+      return FList.functions.flatten((FList<FList<B>>)map(fn));
+    }
+  }
+
+  @Override
+  public <B> FList<B> mBind(Monad<μ, B> mb) {
+    return null;
+  }
+
+  @Override
+  public <B> FList<B> unit(B b) {
+    return null;
+  }
+
+  public FList<A> takeWhile(Predicate<A> predicate) {
+    return FList.functions.takeWhile(this,predicate);
+  }
 
   /**
    * Appends a value to this FList.
@@ -62,9 +99,37 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
+   * Return a new FList with the given FList appended to it.
+    * <pre>
+   * {@code
+   * FList<Integer> list = of(2,3);
+   * FList<Integer> list2 = of(-1,0);
+   * print(list.addd(list2));
+   * //prints
+   * // [-1, 0, 2, 3]
+   * }
+   * </pre>
+  *
+   * @param a The FList that will be appended the end of this FList.
+   * @return A new FList with the given FList appended to it.
+   */
+  public final FList<A> add(FList<A> a) {
+    return FList.functions.concat(a, () -> this);  
+  }
+
+
+  /**
    * Returns the element at the given index. This method is unsafe and will return null if
    * the given index is not within this FList.
-   *
+   * <pre>
+   * {@code
+   * FList<String> list = of("apple","banna");
+   * String a = list.unsafeGet(0);
+   * System.out.println(a);
+   * // prints
+   * // "apple"
+   * }
+  *
    * @param index The index of the element to retrieve.
    * @return The element at the given index.
    */
@@ -81,6 +146,32 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     }
   }
 
+  /**
+   * Obtains the element of this FList at the given index.
+   *
+   * @param index The index of this FList to return.
+   * @return The element
+   */
+  public final Maybe<A> get(int index) {
+    if(index == 0)
+      return head();
+    else if(isEmpty())
+      return Maybe.of(null);
+    else {
+      FList<A> list = this;
+      for(int j = index; j > 0; j--)
+        list = list.tail(); 
+      return list.head();
+    }
+  }
+
+  /**
+   * Removes <code> i </code> elements from this, returning an FList with those
+   * elements droped.
+   *
+   * @param i The number of elements to drop from this FList.
+   * @return an FList where <code> i </code> elements have been droped.
+   */
   public FList<A> drop(int i) {
     if(i == 0)
       return this;
@@ -127,36 +218,41 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
-   * Obtains the element of this FList at the given index.
+   * Returns the last value within this FList, the value returned
+   * is wrapped within a maybe and if this FList is empty the maybe will be 
+   * emtpy.
+   * <pre>
+   * {@code
+   * Maybe<Integer> a = of(2,3).last();
+   * system.out.println(a);
+   * //Maybe<3>
    *
-   * @param index The index of this FList to return.
-   * @return The element
+   * Maybe<Integer> b = Flist.empty().last();
+   * System.out.println(b);
+   * //prints
+   * // Nothing
+   * }
+   * </pre>
+   * @return The last value within this FList. 
    */
-  public final Maybe<A> get(int index) {
-    if(index == 0)
-      return head();
-    else if(isEmpty())
-      return Maybe.of(null);
+
+  public Maybe<A> last() {
+    if(isEmpty())
+      return Maybe.nothing();
     else {
       FList<A> list = this;
-      for(int j = index; j > 0; j--)
-        list = list.tail(); 
+      FList<A> tail = list.tail();
+      while(!tail.isEmpty()) {
+        list = list.tail();
+        tail = list.tail();
+      }
       return list.head();
     }
   }
 
-  /**
-   * Return a new FList with the given FList appended to it.
-   *
-   * @param a The FList that will be appended the end of this FList.
-   * @return A new FList with the given FList appended to it.
-   */
-  public final FList<A> add(FList<A> a) {
-    return FList.functions.concat(a, () -> this);  
-  }
 
   /**
-   * Returns a new FList containing the elements obtained by mapping the given function over this FList.
+   * Returns a new FList containing the elements obtained by mapping <code> fn </code> over this FList.
    *
    * @param fn The function that will be applied to every element within this FList.
    * @return A new FList containing the elements obtained by mapping the given function over this FList.
@@ -184,7 +280,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
    * @param fn
    * @return
    */
-  public final <B> FList<B> bind(Function<A,FList<B>> fn) {
+  public final <B> FList<B> bind(Function<A, FList<B>> fn) {
     if(isEmpty()) {
       return Nil.instance();
     } else {
@@ -193,8 +289,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
-   *
-   *
+   * Maps the <code> consumer </code> over this FList.
    * @param consumer
    */
   public final void forEach(Consumer<A> consumer) {
@@ -202,12 +297,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
       consumer.accept(a); 
   }
 
-  /**
-   * Returns true if this FList has zero elements, or false otherwise.
-   *
-   * @return True if this FList has zero elements, or false otherwise.
-   */
-  public abstract boolean isEmpty();
 
   @Override
   public final String toString() {
@@ -229,9 +318,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
    *  FList<Integer> list = range(1,999)
    *    .filter(i -> i % 3 == 0 || i % 5 == 0);
    *
-   *  BiFunction<Integer,Integer,Integer> sum = (i, i2) -> i + i2;
-   *
-   *  System.out.println(list.reduce(0,sum)); //
+   *  System.out.println(list.reduce(0,(i, i2) -> i + i2)); //
    * }
    * </pre>
    * @param predicate
@@ -247,7 +334,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
-   * Returns a new FList containing the elements of this FList up to element at the ith index.
+   * Returns a new FList containing the elements of this FList up to element at the <code>i</code> index.
    *
    * @param i The index up to where the elements will be taken.
    * @return A new FList containing the elements of this FList up to element at the ith index.
@@ -261,10 +348,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
+   * Returns a value represented the combined values of this list.
    *
-   *
-   * @param a
-   * @param reducer
+   * @param a The initial vaule used when reducing this list, if this list is emtry <code> a </code> is returned.
+   * @param reducer a combining function that combines all the elements within this FList in a single value.
    * @return A value 
    */
   public final A reduce(final A a, final BiFunction<A,A,A> reducer) {
@@ -306,6 +393,13 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
    * @return The element at the head of this FList.
    */
   public abstract A unsafeHead();
+
+  /**
+   * Returns true if this FList has zero elements, or false otherwise.
+   *
+   * @return True if this FList has zero elements, or false otherwise.
+   */
+  public abstract boolean isEmpty();
 
   private static class Cons<A> extends FList<A> {
 
@@ -364,6 +458,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     public A unsafeHead() {
       return datum;
     }
+
   }
 
   private static class Nil<A> extends FList<A> {
@@ -439,6 +534,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     return list;
   }
 
+  @SuppressWarnings("unchecked")
+  public static <B> FList<B> of(Collection<B> collection) {
+    return of((B[]) collection.toArray());
+  }
+
   /**
    * Creates a new FList.
    *
@@ -455,7 +555,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
    *
    * @param b The element placed at the head of the created FList.
    * @param b1 The second element placed within the created FList.
-   * @param supplier A supplier that is used to generate the tail of this FList.
+   * @param supplier A supplier that is used to generate the tail of the created FList.
    * @return A new FList.
    */
   public static <B> FList<B> of(B b, B b1, Supplier<FList<B>> supplier) {
@@ -463,27 +563,27 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
   /**
+   * Creates a new FList.
    *
-   *
-   * @param b
-   * @param b1
-   * @param b2
-   * @param supplier
-   * @return
+   * @param b The element placed at the head of this created FList.
+   * @param b1 The second element placed within the created FList.
+   * @param b2 The third element placed within the created FList.
+   * @param supplier A supplier that is used to generate the tail of the created FList.
+   * @return a new FList.
    */
   public static <B> FList<B> of(B b, B b1, B b2, Supplier<FList<B>> supplier) {
     return of(b, () -> of(b1, b2, supplier));
   }
 
   /**
+   * Creates a new FList.
    *
-   *
-   * @param b
-   * @param b1
-   * @param b2
-   * @param b3
-   * @param supplier
-   * @return
+   * @param b The element placed at the head of this created FList.
+   * @param b1 The second element placed within the created FList.
+   * @param b2 The third element placed within the created FList.
+   * @param b3 The fourth element placed within the crated FList.
+   * @param supplier A supplier that is used to generate the tail of the created FList.
+   * @return a new FList.
    */
   public static <B> FList<B> of(B b, B b1, B b2, B b3, Supplier<FList<B>> supplier) {
     return of(b, () -> of(b1, b2, b3, supplier));
@@ -495,19 +595,16 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   */
   public static class functions {
 
-    /**
-     *
-     *
-     * @param flist
-     * @return
-     */
+  /**
+   * Converts a FList to a String.
+   *
+   * @param flist An FList that will be converted to an String.
+   * @return The string representaion of <code> flist </code>.
+   */
   public static <A> String toString(FList<A> flist) {
-    System.err.println("creating string");
     StringBuilder builder = new StringBuilder(); 
     builder.append("[ ");
-    Consumer<A> stringfy = a -> {
-      builder.append(a.toString()).append(" ");
-    };
+    Consumer<A> stringfy = a -> builder.append(a.toString()).append(" ");
     Iterator<A> it = FList.functions.iterable(flist).iterator();
     while(it.hasNext())
       stringfy.accept(it.next());
@@ -516,10 +613,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
   }
 
     /**
+     * Converts a FList into an Iterable.
      *
-     *
-     * @param flist
-     * @return
+     * @param flist the FList that will be converted into an Iterable.
+     * @return a new Iterable.
      */
       public static final <A> Iterable<A> iterable(final FList<A> flist){
 
@@ -548,10 +645,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     }
 
   /**
+   * Flattens an FList.
    *
-   *
-   * @param listOfList
-   * @return
+   * @param listOfList a FList containing an FList.
+   * @return a flattened FList.
    */
   public static final <A> FList<A> flatten(FList<FList<A>> listOfList) {
     if(listOfList.isEmpty())
@@ -575,82 +672,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     }
   }
 
-  /**
-   *
-   *
-   * @param list
-   * @param fn
-   * @return
-   */
-  public static <A,B> FList<B> For(FList<A> list, Function<A, FList<B>> fn) {
-    return list.bind(fn);
-  } 
-
     /**
+     * Takes elements from <code> list </code> while the predicate <code> p </code> is true.
      *
-     *
-     * @param list
-     * @param fn
-     * @param fn2
-     * @return
-     */
-    public static <A,B,C> FList<C> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2) {
-    return list.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b); 
-      });
-    });
-  } 
-
-    /**
-     *
-     *
-     * @param list
-     * @param fn
-     * @param fn2
-     * @param fn3
-     * @return
-     */
-    public static <A,B,C,D> FList<D> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2,
-      TriFunction<A,B,C,FList<D>> fn3) {
-    return list.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c); 
-        }); 
-      });
-    });
-  }
-
-    /**
-     *
-     *
-     * @param list
-     * @param fn
-     * @param fn2
-     * @param fn3
-     * @param fn4
-     * @return
-     */
-    public static <A,B,C,D,E> FList<E> For(FList<A> list, Function<A, FList<B>> fn, BiFunction<A, B,FList<C>> fn2,
-      TriFunction<A,B,C,FList<D>> fn3, QuadFunction<A,B,C,D,FList<E>> fn4) {
-    return list.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c).bind( d -> {
-          return fn4.apply(a,b,c,d); 
-         }); 
-        }); 
-      });
-    });
-  }
-
-    /**
-     *
-     *
-     * @param list
-     * @param p
-     * @return
+     * @param list the FList elements will be taken from.
+     * @param p A predcate that maps over elements of <code> list </code>.
+     * @return an FList.
      */
       public static <A> FList<A> takeWhile(FList<A> list, Predicate<A> p) {
       if(list.isEmpty())
@@ -662,11 +689,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
     }
 
     /**
+     * Returns true if <code> p </code> is true for all elements within <code> list </code>.
      *
-     *
-     * @param list
-     * @param p
-     * @return
+     * @param list an FList whose elements will be tested with predicate <code> p </code>.
+     * @param p a predicate that will test the elements of <code> list </code>.
+     * @return True if <code> p </code> is true for all elements within <code> list </code> and falst otherwise.
      */
       public static <A> boolean allTrue(FList<A> list, Predicate<A> p) {
       if(list.isEmpty())
@@ -704,7 +731,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
       return of(fn.apply(l1.unsafeHead(), l2.unsafeHead()), () -> zipWith(fn, l1.tail(), l2.tail()));
     }
 
-    public static <A> boolean equals(FList<A> l1, FList<A> l2) {
+    /**
+     *
+     *
+     * @param l1
+     * @param l2
+     * @return
+     */
+      public static <A> boolean equals(FList<A> l1, FList<A> l2) {
       if(l1.isEmpty() != l2.isEmpty()) {
         return false;
       } else if(l1.isEmpty()) {
@@ -723,11 +757,56 @@ public abstract class FList<A> implements Hkt<FList.μ,A> {
      * @param generator A function that use the previous value within the FList to create the next value.
      * @return A infinite FList.
      */
-      public static <A> FList<A> sequence(A seed, Function<A,A> generator) {
+    public static <A> FList<A> sequence(A seed, Function<A,A> generator) {
       return of(seed , () -> sequence(generator.apply(seed), generator));
     }
 
-    public static <A> void print(FList<A> list) {
+    /**
+     *
+     *
+     * @param seed
+     * @param seed1
+     * @param generator
+     * @return
+     */
+      public static <A> FList<A> sequence(A seed, A seed1, BiFunction<A,A,A> generator) {
+      A seed2 = generator.apply(seed,seed1);
+      A seed3 = generator.apply(seed1,seed2);
+      return of(seed , seed1, () -> sequence(seed2, seed3, generator));
+    }
+
+    /**
+     *
+     *
+     * @param seed
+     * @param seed1
+     * @param seed2
+     * @param generator
+     * @return
+     */
+      public static <A> FList<A> sequence(A seed, A seed1, A seed2, TriFunction<A,A,A,A> generator) {
+      A seed3 = generator.apply(seed,seed1,seed2);
+      A seed4 = generator.apply(seed1,seed2,seed3);
+      A seed5 = generator.apply(seed2,seed3,seed4);
+      return of(seed, seed1, seed2, () -> sequence(seed3, seed4, seed5, generator));
+    }
+
+    /**
+     *
+     *
+     * @param wider
+     * @return
+     */
+      public static <B> FList<B> narrow(Monad<FList.μ,B> wider) {
+      return (FList<B>) wider;
+    }
+
+    /**
+     *
+     *
+     * @param list
+     */
+      public static <A> void print(FList<A> list) {
       System.out.println(list.toString());
     }
   }
