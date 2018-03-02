@@ -48,13 +48,13 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
   }
 
   @Override
-  public <B> FList<B> mBind(Monad<μ, B> mb) {
+  public <B> FList<B> semi(Monad<μ, B> mb) {
     Objects.requireNonNull(mb);
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <B> FList<B> unit(B b) {
+  public <B> FList<B> mUnit(B b) {
     Objects.requireNonNull(b);
     throw new UnsupportedOperationException();
   }
