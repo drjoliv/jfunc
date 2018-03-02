@@ -29,7 +29,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
   }
 
   @Override
-  public <B> Maybe<B> mBind(Monad<μ, B> mb) {
+  public <B> Maybe<B> semi(Monad<μ, B> mb) {
     return mBind(a -> mb);
   }
 
@@ -61,7 +61,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
   public abstract <B> Maybe<B> bind(final Function<A,Maybe<B>> fn);
 
   @Override
-  public <B> Maybe<B> unit(B b) {
+  public <B> Maybe<B> mUnit(B b) {
     if(b == null)
       return nothing();
     else
