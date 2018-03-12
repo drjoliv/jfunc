@@ -15,6 +15,7 @@ import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
 import me.functional.Numbers;
+import static me.functional.data.FList.functions.*;
 import static me.functional.Numbers.*;
 import me.functional.data.generators.FListGenerator;
 
@@ -145,29 +146,40 @@ public class FListTest {
     assertEquals(m.mBind(f).mBind(g),m.mBind(x -> f.apply(x).mBind(g)));
   }
 
-  @Test
-  public void sequence() {
-    //TODO
-  }
-
   @Property
-  public void tail() {
-    //TODO
-  }
-
-  @Property
-  public void takeWhile() {
-    //TODO
+  public void tail(@From(FListGenerator.class)FList<Integer> m) {
+    assertEquals(m.tail(), m.drop(1));
   }
 
   @Property
   public void reduce() {
-    //TODO
+    Integer expected = 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10;
+     assertEquals(expected,range(0,10)
+      .reduce(0, Numbers::add));
   }
 
   @Property
   public void filter(@From(FListGenerator.class)FList<Integer> m) {
     assertTrue(isEven(sum(m.filter(Numbers::isEven))));
+  }
+
+  @Test
+  public void mulitiple_of_three_and_five() {
+    //euler problem 1
+    Integer expected = 233168;
+    assertEquals(expected,range(0,999)
+      .filter(i -> i % 3 == 0 || i % 5 == 0)
+      .reduce(0, Numbers::add));
+  }
+
+  @Test
+  public void even_fib_numbers() {
+    //euler problem 2
+    Long expected = 4613732L ;
+    assertEquals(expected,fibonacci
+      .takeWhile(i -> i < 4000000L)
+      .filter(Numbers::isEven)
+      .reduce(0L, Numbers::add));
   }
 
 }
