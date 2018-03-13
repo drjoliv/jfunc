@@ -1,4 +1,4 @@
-package me.functional.data;
+package me.functional.type;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -6,7 +6,6 @@ import java.util.function.Function;
 import me.functional.QuadFunction;
 import me.functional.TriFunction;
 import me.functional.hkt.Witness;
-import me.functional.type.Functor;
 
 public interface Monad<M extends Witness,A> extends Functor<M,A> {
 

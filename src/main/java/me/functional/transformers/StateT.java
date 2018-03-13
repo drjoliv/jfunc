@@ -1,11 +1,15 @@
-package me.functional.data;
+package me.functional.transformers;
 
 import static me.functional.data.Pair.pair;
 
 import java.util.function.Function;
 
+import me.functional.data.Identity;
+import me.functional.data.Pair;
+import me.functional.data.Identity.μ;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Witness;
+import me.functional.type.Monad;
 
 /**
  *

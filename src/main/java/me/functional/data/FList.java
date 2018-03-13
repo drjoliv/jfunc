@@ -14,6 +14,8 @@ import java.util.function.Supplier;
 import me.functional.TriFunction;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
+import me.functional.type.Monad;
+import me.functional.type.Monoid;
 
 /**
  * 

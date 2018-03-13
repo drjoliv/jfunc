@@ -1,12 +1,16 @@
-package me.functional.data;
+package me.functional.transformers;
 
 import java.util.function.Function;
 
-import me.functional.data.WriterT.μ;
+import me.functional.data.Identity;
+import me.functional.data.Pair;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Hkt3;
 import me.functional.hkt.Witness;
+import me.functional.transformers.WriterT.μ;
+import me.functional.type.Monad;
+import me.functional.type.Monoid;
 
 public class WriterT <M extends Witness,W,A> implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A>{
 
