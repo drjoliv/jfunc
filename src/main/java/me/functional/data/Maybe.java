@@ -14,7 +14,7 @@ import me.functional.hkt.Witness;
 public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
 
   @Override
-  public <B> Maybe<B> fmap(Function<A, B> fn) {
+  public <B> Maybe<B> fmap(Function<? super A, B> fn) {
      if(isSome())
       return new Just<B>(fn.apply(value()));
     else
@@ -22,7 +22,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
   }
 
   @Override
-  public <B> Maybe<B> mBind(Function<A, ? extends Monad<μ, B>> fn) {
+  public <B> Maybe<B> mBind(Function<? super A, ? extends Monad<μ, B>> fn) {
     if(isSome())
       return (Maybe<B>)fn.apply(value());
     else return nothing();
@@ -50,7 +50,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
    * @param fn a function that will be applyed to the contents of this Myabe.
    * @return a Maybe.
    */
-  public abstract <B> Maybe<B> map(final Function<A,B> fn);
+  public abstract <B> Maybe<B> map(final Function<? super A,B> fn);
 
   /**
    * Applys the given function to the contents of this Maybe, the given function must return a Maybe.
@@ -106,7 +106,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
     private Nothing(){}
 
     @Override
-    public <B> Maybe<B> map(final Function<A, B> fn) {
+    public <B> Maybe<B> map(final Function<? super A, B> fn) {
       return nothing();
     }
 
@@ -139,7 +139,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ,A> {
       }
 
       @Override
-      public <B> Maybe<B> map(final Function<A, B> fn) {
+      public <B> Maybe<B> map(final Function<? super A, B> fn) {
         return new Just<B>(fn.apply(this.value));
       }
 

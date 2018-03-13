@@ -22,7 +22,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   }
 
   @Override
-  public <B> ReaderT<M,R,B> mBind(Function<A, ? extends Monad<Hkt2<ReaderT.μ, M, R>, B>> fn) {
+  public <B> ReaderT<M,R,B> mBind(Function<? super A, ? extends Monad<Hkt2<ReaderT.μ, M, R>, B>> fn) {
     return of(r -> {
       Monad<M,A> inner = runReaderT.apply(r);
       Monad<M,B> next  = inner.mBind(a ->  asReaderT(fn.apply(a)).runReaderT.apply(r));
@@ -37,11 +37,11 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
 
   @Override
   public <B> ReaderT<M,R,B> mUnit(B b) {
-    return new ReaderT<M,R,B>(runReaderT.andThen(ma -> ma.fmap(a -> b)));
+    return new ReaderT<M,R,B>(runReaderT.andThen(ma -> ma.mUnit(b)));
   }
 
   @Override
-  public <B> ReaderT<M,R,B> fmap(Function<A, B> fn) {
+  public <B> ReaderT<M,R,B> fmap(Function<? super A, B> fn) {
       return of((R r) -> {
         Monad<M,A> ma = runReaderT.apply(r);
         Monad<M,B> mb = ma.fmap(fn);
@@ -87,12 +87,12 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
 
     @Override
     public <B> Reader<R,B> mBind(
-        Function<A, ? extends Monad<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
+        Function<? super A, ? extends Monad<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
       return new Reader<R,B>(super.mBind(fn).runReaderT);
     }
 
     @Override
-    public <B> Reader<R,B> fmap(Function<A, B> fn) {
+    public <B> Reader<R,B> fmap(Function<? super A, B> fn) {
       return new Reader<R,B>(super.fmap(fn).runReaderT);
     }
 
