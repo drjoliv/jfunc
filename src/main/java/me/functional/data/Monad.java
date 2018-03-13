@@ -13,79 +13,70 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
   //m >>= return == m
   //(return x) >>= f == f x
   //(m >>= f) >>= g == m >>= (\x -> f x >>= g)
-  public <B> Monad<M,B> mBind(final Function<A,? extends Monad<M,B>> fn);
+  public <B> Monad<M,B> mBind(final Function<? super A,? extends Monad<M,B>> fn);
 
   public <B> Monad<M,B> semi(Monad<M,B> mb);
 
   public <B> Monad<M,B> mUnit(B b);
 
   @Override
-  public <B> Monad<M,B> fmap(Function<A,B> fn);
+  public <B> Monad<M,B> fmap(Function<? super A,B> fn);
 
-  public default <B> Monad<M,B> For(final Function<A,? extends Monad<M,B>> fn) {
-    return Monad.For(this,fn);
-  }
-
-  public default <B,C> Monad<M,C> For(Function<A, Monad<M,B>> fn, BiFunction<A, B,? extends Monad<M,C>> fn2) {
-    return Monad.For(this,fn,fn2);
-  } 
-
-  public default <B,C,D> Monad<M,D> For(Function<A, ? extends Monad<M,B>> fn, BiFunction<A, B, ? extends Monad<M,C>> fn2,
-      TriFunction<A,B,C, ? extends Monad<M,D>> fn3) {
-    return Monad.For(this,fn,fn2,fn3);
-  }
-
-    public default <B,C,D,E> Monad<M,E> For(Function<A,  ? extends Monad<M,B>> fn, BiFunction<A, B, ? extends Monad<M,C>> fn2,
-      TriFunction<A,B,C, ? extends Monad<M,D>> fn3, QuadFunction<A,B,C,D, ? extends Monad<M,E>> fn4) {
-      return Monad.For(this,fn, fn2, fn3, fn4);
-  }
-
-  public static <M extends Witness,A,B> Monad<M,B> For(Monad<M,A> monad, Function<A,  ? extends Monad<M,B>> fn) {
+  public static <M extends Witness,A,B> Monad<M,B> For(Monad<M,A> monad, Function<? super A,  ? extends Monad<M,B>> fn) {
     return monad.mBind(fn);
   } 
 
-    public static <M extends Witness,A,B,C> Monad<M,C> For(Monad<M,A> monad, Function<A,  ? extends Monad<M,B>> fn,
-        BiFunction<A, B, ? extends Monad<M,C>> fn2) {
+    public static <M extends Witness,A,B,C> Monad<M,C> For(Monad<M,A> monad, Function<? super A,  ? extends Monad<M,B>> fn,
+        BiFunction<? super A, ? super B, ? extends Monad<M,C>> fn2) {
     return monad.mBind(a -> {
-      return fn.apply(a).mBind(b -> {
-        return fn2.apply(a,b); 
+      Monad<M,B> mb = fn.apply(a);
+      return mb.mBind(b -> {
+        Monad<M,C> mc = fn2.apply(a,b);
+        return mc; 
       });
     });
   } 
 
-    public static <M extends Witness,A,B,C,D> Monad<M,D> For(Monad<M,A> monad, Function<A,  ? extends Monad<M,B>> fn,
-        BiFunction<A, B, ? extends Monad<M,C>> fn2, TriFunction<A,B,C, ? extends Monad<M,D>> fn3) {
+    public static <M extends Witness,A,B,C,D> Monad<M,D> For(Monad<M,A> monad, Function<? super A,  ? extends Monad<M,B>> fn,
+        BiFunction<? super A,? super  B, ? extends Monad<M,C>> fn2, TriFunction<? super A,? super B,? super C, ? extends Monad<M,D>> fn3) {
     return monad.mBind(a -> {
-      return fn.apply(a).mBind(b -> {
-        return fn2.apply(a,b).mBind( c -> {
-         return fn3.apply(a,b,c); 
+      Monad<M,B> mb = fn.apply(a);
+      return mb.mBind(b -> {
+        Monad<M,C> mc = fn2.apply(a,b);
+        return mc.mBind( c -> {
+          Monad<M,D> md = fn3.apply(a,b,c);
+         return md;
         }); 
       });
     });
   }
 
-    public static <M extends Witness,A,B,C,D,E> Monad<M,E> For(Monad<M,A> monad, Function<A,  ? extends Monad<M,B>> fn,
-        BiFunction<A, B, ? extends Monad<M,C>> fn2, TriFunction<A,B,C, ? extends Monad<M,D>> fn3,
-        QuadFunction<A,B,C,D, ? extends Monad<M,E>> fn4) {
+    public static <M extends Witness,A,B,C,D,E> Monad<M,E> For(Monad<M,A> monad, Function<? super A,  ? extends Monad<M,B>> fn,
+        BiFunction<? super A,? super  B, ? extends Monad<M,C>> fn2, TriFunction<? super A,? super B,? super C, ? extends Monad<M,D>> fn3,
+        QuadFunction<? super A,? super B,? super C,? super D, ? extends Monad<M,E>> fn4) {
     return monad.mBind(a -> {
-      return fn.apply(a).mBind(b -> {
-        return fn2.apply(a,b).mBind( c -> {
-         return fn3.apply(a,b,c).mBind( d -> {
-          return fn4.apply(a,b,c,d); 
+      Monad<M,B> mb = fn.apply(a);
+      return mb.mBind(b -> {
+        Monad<M,C> mc = fn2.apply(a,b);
+        return mc.mBind( c -> {
+          Monad<M,D> md = fn3.apply(a,b,c);
+         return md.mBind( d -> {
+          Monad<M,E> me = fn4.apply(a,b,c,d);
+          return me; 
          }); 
         }); 
       });
     });
   }
 
-  public static <M extends Witness,A,B,C> Monad<M,C> liftM2(Monad<M,A> m, Monad<M,B> m1, BiFunction<A,B,C> fn) {
+  public static <M extends Witness,A,B,C> Monad<M,C> liftM2(Monad<M,A> m, Monad<M,B> m1, BiFunction<? super A,? super B,C> fn) {
     return Monad.For( m
                     , a    -> m1
                     ,(a,b) -> m.mUnit(fn.apply(a,b)));
   }
 
   public static <M extends Witness,A,B,C,D> Monad<M,D> liftM3(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2,
-      TriFunction<A,B,C,D> fn) {
+      TriFunction<? super A,? super B, ? super C, D> fn) {
     return Monad.For( m
                     , a      -> m1
                     ,(a,b)   -> m2
@@ -93,7 +84,7 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
   }
 
   public static <M extends Witness,A,B,C,D,E> Monad<M,E> liftM4(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2, Monad<M,D> m3,
-      QuadFunction<A,B,C,D,E> fn) {
+      QuadFunction<? super A,? super B, ? super C, ? super D,E> fn) {
     return Monad.For( m
                     , a        -> m1
                     ,(a,b)     -> m2
