@@ -1,5 +1,7 @@
 package me.functional.data;
 
+import static me.functional.data.Pair.pair;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -28,7 +30,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
   private FList(){}
 
   @Override
-  public <B> FList<B> fmap(Function<A, B> fn) {
+  public <B> FList<B> fmap(Function<? super A, B> fn) {
     Objects.requireNonNull(fn);
       if(isEmpty()) {
       return Nil.instance();
@@ -38,7 +40,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
   }
 
   @Override
-  public <B> FList<B> mBind(Function<A, ? extends Monad<FList.μ, B>> fn) {
+  public <B> FList<B> mBind(Function<? super A, ? extends Monad<FList.μ, B>> fn) {
     Objects.requireNonNull(fn);
      if(isEmpty()) {
       return Nil.instance();
@@ -275,7 +277,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
    * @param fn The function that will be applied to every element within this FList.
    * @return A new FList containing the elements obtained by mapping the given function over this FList.
    */
-  public final <B> FList<B> map(Function<A,B> fn) {
+  public final <B> FList<B> map(Function<? super A,B> fn) {
     Objects.requireNonNull(fn);
      if(isEmpty()) {
       return Nil.instance();
@@ -384,9 +386,27 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
     A reducedValue = a;
     Iterator<A> it = FList.functions.iterable(this).iterator();
     while(it.hasNext()) {
-      reducedValue = reducer.apply(a,it.next());
+      reducedValue = reducer.apply(reducedValue,it.next());
     }
     return reducedValue;
+  }
+
+  public final A reduce(Monoid<A> monoid) {
+    return reduce(monoid.mempty(), monoid::mappend);
+  }
+
+  public final Maybe<A> reduce(final BiFunction<A,A,A> reducer) {
+    if(size() < 2) {
+      return Maybe.nothing();
+    }
+    else {
+      Iterator<A> it = FList.functions.iterable(this).iterator();
+      A reducedValue = reducer.apply(it.next(),it.next());
+      while(it.hasNext()) {
+        reducedValue = reducer.apply(reducedValue,it.next());
+      }
+      return Maybe.of(reducedValue);
+    }
   }
 
   /**
@@ -711,6 +731,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
       return concat(listOfList.unsafeHead(), () -> flatten(listOfList.tail()));
   }
 
+    @SafeVarargs
+    public static final <A> FList<A> flatten(FList<A> ... listOfList) {
+    FList<FList<A>> listOfListPrime = of(listOfList);
+    return flatten(listOfListPrime);
+  }
+
     /**
      * Concats two of the given FLists together.
      *
@@ -734,7 +760,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
      * @return an FList.
      */
       public static <A> FList<A> takeWhile(FList<A> list, Predicate<A> p) {
-             Objects.requireNonNull(list);
+        Objects.requireNonNull(list);
         Objects.requireNonNull(p);
      if(list.isEmpty())
         return Nil.instance(); 
@@ -801,6 +827,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
      if(l1.isEmpty() ||  l2.isEmpty())
         return Nil.instance();
       return of(fn.apply(l1.unsafeHead(), l2.unsafeHead()), () -> zipWith(fn, l1.tail(), l2.tail()));
+    }
+
+    public static <A,B,C> FList<Pair<A,B>> zip(FList<A> l1, FList<B> l2) {
+        Objects.requireNonNull(l1);
+        Objects.requireNonNull(l2);
+     if(l1.isEmpty() ||  l2.isEmpty())
+        return Nil.instance();
+      return of(pair(l1.unsafeHead(), l2.unsafeHead()), () -> zip(l1.tail(), l2.tail()));
     }
 
     /**
@@ -876,6 +910,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Monad<FList.μ,A> {
       A seed4 = generator.apply(seed1,seed2,seed3);
       A seed5 = generator.apply(seed2,seed3,seed4);
       return of(seed, seed1, seed2, () -> sequence(seed3, seed4, seed5, generator));
+    }
+
+    public static <M extends Witness,A> Maybe<Monad<M,FList<A>>> merge(FList<Monad<M,FList<A>>> listOfMonadsOfFList) {
+      return listOfMonadsOfFList.reduce((m1,m2) -> Monad.liftM2(m1,m2, (l1,l2) -> l1.concat(l2)));
     }
 
     public static <A> FList<A> reverse(FList<A> list) {
