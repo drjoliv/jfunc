@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
+import me.functional.type.Monad;
 
 /**
  * Represents a value of something(Just) or a value of Nothing.

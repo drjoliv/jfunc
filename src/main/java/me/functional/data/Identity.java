@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
+import me.functional.type.Monad;
 
 public final class Identity<E> implements Monad<Identity.μ,E>, Hkt<Identity.μ,E> {
 

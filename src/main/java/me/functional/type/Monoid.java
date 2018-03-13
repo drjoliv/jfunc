@@ -1,4 +1,4 @@
-package me.functional.data;
+package me.functional.type;
 
 public interface Monoid<W> {
   W mempty();

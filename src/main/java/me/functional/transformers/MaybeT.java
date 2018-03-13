@@ -1,11 +1,13 @@
-package me.functional.data;
+package me.functional.transformers;
 
 import java.util.function.Function;
 
-import me.functional.data.MaybeT.μ;
+import me.functional.data.Maybe;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Witness;
+import me.functional.transformers.MaybeT.μ;
+import me.functional.type.Monad;
 
 public class MaybeT<M extends Witness,A> implements Monad<Hkt<MaybeT.μ,M>,A>, Hkt2<MaybeT.μ,M,A> {
 
