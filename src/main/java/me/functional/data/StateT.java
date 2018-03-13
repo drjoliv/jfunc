@@ -1,22 +1,112 @@
 package me.functional.data;
 
-import java.util.function.BiFunction;
+import static me.functional.data.Pair.pair;
+
 import java.util.function.Function;
 
-import me.functional.QuadFunction;
-import me.functional.TriFunction;
+import me.functional.hkt.Hkt2;
+import me.functional.hkt.Witness;
 
 /**
  *
  *
  * @author drjoliv@gmail.com
  */
-public class State<S,A> {
+public class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT.μ,M,S>,A> {
 
-  private Function<S,Pair<S,A>> runState;
+  @Override
+  public <B> StateT<M,S,B> mBind(final Function<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn) {
+    return new StateT<M,S,B>(s -> {
+      Monad<M,Pair<S,A>> m = runState.apply(s);
+      return m.mBind(p -> { 
+        StateT<M,S,B> state = asStateT(fn.apply(p.snd));
+        return state.runState.apply(p.fst);
+      });
+    });
+  }
 
-  private State(final Function<S,Pair<S,A>> runState) {
+  @Override
+  public <B> StateT<M,S,B> mUnit(final B b) {
+    return new StateT<M,S,B>(s -> {
+      return runState.apply(s).mUnit(pair(s,b));
+    });
+  }
+
+  @Override
+  public <B> StateT<M,S,B> semi(final Monad<Hkt2<μ, M, S>, B> mb) {
+    return mBind(a -> mb);
+  }
+
+  @Override
+  public <B> Monad<Hkt2<μ, M, S>, B> fmap(final Function<? super A, B> fn) {
+     return new StateT<M,S,B>(s -> {
+      return runState.apply(s).fmap(p -> pair(p.fst,fn.apply(p.snd)));
+    });
+  }
+
+  public static class μ implements Witness{}
+
+  private Function<S,Monad<M,Pair<S,A>>> runState;
+
+  private StateT(final Function<S,Monad<M,Pair<S,A>>> runState) {
     this.runState = runState;
+  }
+
+
+
+  public StateT<M,S,S> getState() {
+    return new StateT<M,S,S>(s -> runState.apply(s).mUnit(pair(s,s)));
+  }
+
+  public Monad<M,Pair<S,A>> evalState(S s) {
+    return runState.apply(s);
+  }
+
+  public static final class State<S,A> extends StateT<Identity.μ,S,A> {
+    private State(final Function<S,Monad<Identity.μ,Pair<S,A>>> runState) {
+      super(runState);
+    }
+
+    public A execute(final S s) {
+      return evalState(s).value().snd;
+    }
+
+    public S executeState(final S s) {
+      return evalState(s).value().fst;
+    }
+
+    public Identity<Pair<S,A>> evalState(final S s) {
+      return (Identity<Pair<S,A>>)super.evalState(s);
+    }
+
+    @Override
+    public <B> State<S,B> mBind(
+        Function<? super A, ? extends Monad<Hkt2<μ, me.functional.data.Identity.μ, S>, B>> fn) {
+      return new State<S,B>(asStateT(super.mBind(fn)).runState);
+    }
+
+    @Override
+    public <B> State<S,B> mUnit(B b) {
+      return new State<S,B>(asStateT(super.mUnit(b)).runState);
+    }
+    
+    @Override
+    public <B> State<S,B> semi(Monad<Hkt2<μ, me.functional.data.Identity.μ, S>, B> mb) {
+      return mBind(s -> mb);
+    }
+    
+    @Override
+    public <B> State<S,B> fmap(Function<? super A, B> fn) {
+      return new State<S,B>(asStateT(super.fmap(fn)).runState);
+    }
+  }
+
+  public static <S> State<S,S> get() {
+    return new State<S, S>(s -> Identity.of(pair(s, s)));
+  }
+
+  public static <S> State<S, S> put(S s) {
+    return new State<S, S>(state -> Identity.of(pair(s, s)));
   }
 
   /**
@@ -25,169 +115,26 @@ public class State<S,A> {
    * @param runState
    * @return
    */
-  public static <S,A> State<S,A> of(final Function<S,Pair<S,A>> runState) {
-    return new State<S,A>(runState);
+  public static <M extends Witness,S,A> StateT<M,S,A> stateT(final Function<S,Monad<M,Pair<S,A>>> runState) {
+    return new StateT<M,S,A>(runState);
   }
 
-  /**
-   *
-   *
-   * @param fn
-   * @return
-   */
-  public <B> State<S,B> map(final Function<A,B> fn) {
-    return of( s -> {
-      final Pair<S,A> p = runState.apply(s);
-      return Pair.of(s,fn.apply(p.snd));
-    });
+  public static <S,A> State<S,A> state(final Function<S,Pair<S,A>> runState) {
+    return new State<S,A>(runState.andThen(p -> Identity.of(p)));
   }
 
-  public <B> State<S,B> For(Function<A, State<S,B>> fn) {
-    return bind(fn);
-  } 
-
-    public <B,C> State<S,C> For(Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2) {
-    return bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b); 
-      });
-    });
-  } 
-
-    public <B,C,D> State<S,D> For(Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
-      TriFunction<A,B,C,State<S,D>> fn3) {
-    return bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c); 
-        }); 
-      });
-    });
+  public static <M extends Witness,S,A> StateT<M,S,A> asStateT(final Monad<Hkt2<μ, M, S>, A> monad) {
+    return (StateT<M,S,A>) monad;
   }
 
-    public <B,C,D,E> State<S,E> For(Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
-      TriFunction<A,B,C,State<S,D>> fn3, QuadFunction<A,B,C,D,State<S,E>> fn4) {
-    return bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c).bind( d -> {
-          return fn4.apply(a,b,c,d); 
-         }); 
-        }); 
-      });
-    });
+  public static <S,A> State<S,A> asState(final Monad<Hkt2<μ, Identity.μ, S>, A> monad) {
+    if(monad instanceof StateT)
+      return new State<S,A>(asStateT(monad).runState);
+    else
+      return (State<S,A>) monad;
   }
 
-  /**
-   *
-   *
-   * @param state
-   * @param fn
-   * @return
-   */
-  public static <A,B,S> State<S,B> For(State<S,A> state, Function<A, State<S,B>> fn) {
-    return state.bind(fn);
-  } 
-
-    /**
-     *
-     *
-     * @param state
-     * @param fn
-     * @param fn2
-     * @return
-     */
-    public static <A,B,C,S> State<S,C> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2) {
-    return state.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b); 
-      });
-    });
-  } 
-
-    /**
-     *
-     *
-     * @param state
-     * @param fn
-     * @param fn2
-     * @param fn3
-     * @return
-     */
-    public static <A,B,C,D,S> State<S,D> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
-      TriFunction<A,B,C,State<S,D>> fn3) {
-    return state.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c); 
-        }); 
-      });
-    });
+  public static <S, A> State<S, A> unit(A a) {
+    return new State<S, A>(s -> Identity.of(pair(s, a)));
   }
-
-    /**
-     *
-     *
-     * @param state
-     * @param fn
-     * @param fn2
-     * @param fn3
-     * @param fn4
-     * @return
-     */
-    public static <A,B,C,D,E,S> State<S,E> For(State<S,A> state, Function<A, State<S,B>> fn, BiFunction<A, B,State<S,C>> fn2,
-      TriFunction<A,B,C,State<S,D>> fn3, QuadFunction<A,B,C,D,State<S,E>> fn4) {
-    return state.bind(a -> {
-      return fn.apply(a).bind(b -> {
-        return fn2.apply(a,b).bind( c -> {
-         return fn3.apply(a,b,c).bind( d -> {
-          return fn4.apply(a,b,c,d); 
-         }); 
-        }); 
-      });
-    });
-  }
-
-  /**
-   *
-   *
-   * @param fn
-   * @return
-   */
-  public <B> State<S,B> bind(final Function<A,State<S,B>> fn) {
-    return of(s -> {
-      final Pair<S,A> p = runState.apply(s);
-      return fn.apply(p.snd)
-        .runState.apply(p.fst);
-    });
-  }
-
-  /**
-   *
-   *
-   * @param fn
-   * @return
-   */
-  public <B> State<S,B> bind(final State<S,B> state) {
-    return bind(s -> state);
-  }
-
-
-  public static <S> State<S,S> get() {
-    return of(s -> Pair.of(s,s));
-  }
-
-  public Pair<S,A> evalState(S s) {
-    return runState.apply(s);
-  }
-
-  public A execute(S s) {
-    return runState.apply(s).snd;
-  }
-
-  public S executeState(S s) {
-    return runState.apply(s).fst;
-  }
-
-
 }
