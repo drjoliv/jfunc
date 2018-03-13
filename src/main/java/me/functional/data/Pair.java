@@ -13,6 +13,10 @@ public class Pair<A,B> {
     return new Pair<A,B>(a,b);
   }
 
+  public static <A,B> Pair<A,B> pair(A a, B b) {
+    return new Pair<A,B>(a,b);
+  }
+
   public String toString() {
     return "<" + fst.toString() + "," + snd.toString() + ">";
   }
