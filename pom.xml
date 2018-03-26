@@ -40,6 +40,7 @@
       <version>0.8-alpha-7</version>
     </dependency>
 
+
     <dependency>
       <groupId>com.pholser</groupId>
       <artifactId>junit-quickcheck-generators</artifactId>

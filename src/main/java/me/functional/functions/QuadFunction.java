@@ -1,4 +1,4 @@
-package me.functional;
+package me.functional.functions;
 
 /**
  * A function that takes four arugments.
