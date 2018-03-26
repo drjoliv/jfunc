@@ -3,8 +3,8 @@ package me.functional.type;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import me.functional.QuadFunction;
-import me.functional.TriFunction;
+import me.functional.functions.QuadFunction;
+import me.functional.functions.TriFunction;
 import me.functional.hkt.Witness;
 
 public interface Monad<M extends Witness,A> extends Functor<M,A> {
@@ -16,7 +16,7 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
 
   public <B> Monad<M,B> semi(Monad<M,B> mb);
 
-  public <B> Monad<M,B> mUnit(B b);
+  public MonadUnit<M> yield();
 
   @Override
   public <B> Monad<M,B> fmap(Function<? super A,B> fn);
@@ -71,7 +71,7 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
   public static <M extends Witness,A,B,C> Monad<M,C> liftM2(Monad<M,A> m, Monad<M,B> m1, BiFunction<? super A,? super B,C> fn) {
     return Monad.For( m
                     , a    -> m1
-                    ,(a,b) -> m.mUnit(fn.apply(a,b)));
+                    ,(a,b) -> m.yield().unit((fn.apply(a,b))));
   }
 
   public static <M extends Witness,A,B,C,D> Monad<M,D> liftM3(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2,
@@ -79,7 +79,7 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
     return Monad.For( m
                     , a      -> m1
                     ,(a,b)   -> m2
-                    ,(a,b,c) -> m.mUnit(fn.apply(a,b,c)));
+                    ,(a,b,c) -> m.yield().unit((fn.apply(a,b,c))));
   }
 
   public static <M extends Witness,A,B,C,D,E> Monad<M,E> liftM4(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2, Monad<M,D> m3,
@@ -88,6 +88,6 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
                     , a        -> m1
                     ,(a,b)     -> m2
                     ,(a,b,c)   -> m3
-                    ,(a,b,c,d) -> m.mUnit(fn.apply(a,b,c,d)));
+                    ,(a,b,c,d) -> m.yield().unit((fn.apply(a,b,c,d))));
   }
 }

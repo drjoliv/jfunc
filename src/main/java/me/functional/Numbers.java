@@ -1,7 +1,6 @@
 package me.functional;
 
-import static me.functional.data.FList.empty;
-import static me.functional.data.FList.of;
+import static me.functional.data.FList.*;
 import static me.functional.data.FList.functions.allTrueWhile;
 import static me.functional.data.FList.functions.sequence;
 
@@ -15,18 +14,18 @@ public class Numbers {
        , p -> i % p != 0);
   }
 
-  public static FList<Integer> primes = of(2, 3, () -> start(4).filter(Numbers::isPrime));
+  public static FList<Integer> primes = flist(2, 3, () -> start(4).filter(Numbers::isPrime));
 
   public static FList<Long> fibonacci = sequence(1L, 1L, (l1, l2) -> l1 + l2);
 
   public static FList<Integer> range(int from, int to) {
     if(from > to)
       return empty();
-    return of(from, () -> range(from + 1, to));
+    return flist(from, () -> range(from + 1, to));
   }
 
   public static FList<Integer> start(Integer i) {
-    return of(i, () -> start(i + 1));
+    return flist(i, () -> start(i + 1));
   }
 
   public static boolean isEven(int i) {

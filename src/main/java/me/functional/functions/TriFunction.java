@@ -1,4 +1,4 @@
-package me.functional;
+package me.functional.functions;
 
 /**
  * A Function that takes three arguments
