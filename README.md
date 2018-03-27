@@ -1,6 +1,8 @@
 # fjava
 Attempt and working functional java library
 
+## FList
+
 ```java
 
   public static boolean isPrime(Integer i) {
@@ -19,3 +21,15 @@ Attempt and working functional java library
 
   //[4, 5, 7, 9, 13, 14, 19, 21, 25, 27, 39, 39]
 ```
+
+### Monads
+
+#### MaybeT
+
+#### ReaderT
+
+#### WriterT
+
+#### StateT
+
+#### ParserT
