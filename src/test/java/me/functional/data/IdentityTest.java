@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
-import me.functional.type.Monad;
+import me.functional.type.Bind;
 
 @RunWith(JUnitQuickcheck.class)
 public class IdentityTest {
@@ -17,7 +17,7 @@ public class IdentityTest {
   @Test
   public void For() {
    Identity<Integer> m = Identity.id(1); 
-   Monad.For(m
+   Bind.For(m
        , i -> {
          assertEquals(new Integer(1),i);
          return Identity.id(2);
@@ -27,7 +27,7 @@ public class IdentityTest {
   @Test
   public void For2() {
      Identity<Integer> m = Identity.id(1); 
-   Monad.For(m
+   Bind.For(m
        , i -> {
          assertEquals(new Integer(1),i);
          return Identity.id(i + 1);
@@ -42,7 +42,7 @@ public class IdentityTest {
   @Test
   public void For3() {
        Identity<Integer> m = Identity.id(1); 
-   Monad.For(m
+   Bind.For(m
        , i -> {
          return Identity.id(i + 1);
       }, (i,i2) -> {
@@ -61,7 +61,7 @@ public class IdentityTest {
   @Test
   public void For4(){
         Identity<Integer> m = Identity.id(1); 
-   Monad<Identity.μ,Integer> monad = Monad.For(m
+   Bind<Identity.μ,Integer> monad = Bind.For(m
        , (i) -> {
          assertEquals(new Integer(1),i);
          return Identity.id(i + 1);

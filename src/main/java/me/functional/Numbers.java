@@ -28,34 +28,85 @@ public class Numbers {
     return flist(i, () -> start(i + 1));
   }
 
+  /**
+   *
+   *
+   * @param i
+   * @return
+   */
   public static boolean isEven(int i) {
     return i % 2 == 0;
   }
 
+  /**
+   *
+   *
+   * @param i
+   * @return
+   */
   public static boolean isOdd(int i) {
     return !isEven(i);
   }
 
+  /**
+   *
+   *
+   * @param i
+   * @return
+   */
   public static boolean isEven(long i) {
     return i % 2 == 0;
   }
 
+  /**
+   *
+   *
+   * @param i
+   * @return
+   */
   public static boolean isOdd(long i) {
     return !isEven(i);
   }
 
+  /**
+   *
+   *
+   * @param flist
+   * @return
+   */
   public static int sum(FList<Integer> flist) {
     return flist.reduce(0, (i1,i2) -> i1 + i2);
   }
 
+  /**
+   *
+   *
+   * @param i1
+   * @param i2
+   * @return
+   */
   public static Integer add(Integer i1, Integer i2) {
     return i1 + i2;
   }
 
+  /**
+   *
+   *
+   * @param l1
+   * @param l2
+   * @return
+   */
   public static Long add(Long l1, Long l2) {
     return l1 + l2;
   }
 
+  /**
+   *
+   *
+   * @param d1
+   * @param d2
+   * @return
+   */
   public static Double add(Double d1, Double d2) {
     return d1 + d2;
   }
