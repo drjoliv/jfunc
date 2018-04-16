@@ -3,6 +3,12 @@ Attempt and working functional java library
 
 ## FList
 
+## Either
+
+## Maybe
+
+## Try
+
 ```java
 
   public static boolean isPrime(Integer i) {
@@ -23,6 +29,8 @@ Attempt and working functional java library
 ```
 
 ### Monads
+
+### Transformers
 
 #### MaybeT
 
