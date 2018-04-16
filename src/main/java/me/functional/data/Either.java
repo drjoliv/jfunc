@@ -1,12 +1,14 @@
 package me.functional.data;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+import me.functional.functions.F1;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Witness;
-import me.functional.type.Monad;
-import me.functional.type.MonadUnit;
+import me.functional.type.Bind;
+import me.functional.type.BindUnit;
 
 /**
  *
@@ -144,7 +146,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   /**
   *
   */
-  public static class RightProjection<L, R> implements Monad<Hkt<RightProjection.μ,L>,R>, Hkt2<RightProjection.μ,L,R>{
+  public static class RightProjection<L, R> implements Bind<Hkt<RightProjection.μ,L>,R>, Hkt2<RightProjection.μ,L,R>{
 
     public static class μ implements Witness {}
 
@@ -158,10 +160,10 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       this(right(r));
     }
 
-    public static <L> MonadUnit<Hkt<RightProjection.μ,L>> monadUnit() {
-      return new MonadUnit<Hkt<RightProjection.μ,L>>() {
+    public static <L> BindUnit<Hkt<RightProjection.μ,L>> monadUnit() {
+      return new BindUnit<Hkt<RightProjection.μ,L>>() {
         @Override
-        public <A> Monad<Hkt<me.functional.data.Either.RightProjection.μ, L>, A> unit(A a) {
+        public <A> Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, A> unit(A a) {
           return rProjection(a);
         }
       };
@@ -182,32 +184,39 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public <B> RightProjection<L, B> fmap(Function<? super R, B> fn) {
+    public <B> RightProjection<L, B> fmap(F1<? super R, B> fn) {
       return e.isRight()
-        ? rProjection(fn.apply(e.valueR()))
+        ? rProjection(fn.call(e.valueR()))
         : new RightProjection<>(left(e.valueL()));
+    }
+
+    public RightProjection<L, R> consume(Consumer<R> consumer) {
+      if(e.isRight()) {
+        consumer.accept(e.valueR());
+      }
+      return this;
     }
 
     @Override
     public <B> RightProjection<L, B> mBind(
-        Function<? super R, ? extends Monad<Hkt<me.functional.data.Either.RightProjection.μ, L>, B>> fn) {
+        F1<? super R, ? extends Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B>> fn) {
       return e.isRight()
-        ? asRightProjection(fn.apply(e.valueR()))
+        ? asRightProjection(fn.call(e.valueR()))
         : new RightProjection<>(left(e.valueL()));
     }
 
     @Override
     public <B> RightProjection<L, B> semi(
-        Monad<Hkt<me.functional.data.Either.RightProjection.μ, L>, B> mb) {
+        Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B> mb) {
       return mBind(a -> mb);
     }
 
     @Override
-    public MonadUnit<Hkt<me.functional.data.Either.RightProjection.μ, L>> yield() {
+    public BindUnit<Hkt<me.functional.data.Either.RightProjection.μ, L>> yield() {
       return monadUnit();
     }
 
-    public static <L,R> RightProjection<L,R> asRightProjection(Monad<Hkt<RightProjection.μ,L>,R> monad) {
+    public static <L,R> RightProjection<L,R> asRightProjection(Bind<Hkt<RightProjection.μ,L>,R> monad) {
       return (RightProjection<L,R>) monad;
     }
   }
@@ -215,7 +224,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   /**
   *
   */
-  public static class LeftProjection<L, R> implements Monad<Hkt<LeftProjection.μ,R>,L>, Hkt2<RightProjection.μ,L,R> {
+  public static class LeftProjection<L, R> implements Bind<Hkt<LeftProjection.μ,R>,L>, Hkt2<RightProjection.μ,L,R> {
 
     public static class μ implements Witness {}
 
@@ -233,6 +242,13 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       return e;
     }
 
+    public LeftProjection<L, R> consume(Consumer<L> consumer) {
+      if(e.isLeft()) {
+        consumer.accept(e.valueL());
+      }
+      return this;
+    }
+
     /**
      *
      *
@@ -248,38 +264,38 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
      *
      * @return
      */
-      public static <R> MonadUnit<Hkt<LeftProjection.μ,R>> monadUnit() {
-      return new MonadUnit<Hkt<LeftProjection.μ,R>>() {
+      public static <R> BindUnit<Hkt<LeftProjection.μ,R>> monadUnit() {
+      return new BindUnit<Hkt<LeftProjection.μ,R>>() {
         @Override
-        public <A> Monad<Hkt<me.functional.data.Either.LeftProjection.μ, R>, A> unit(A a) {
+        public <A> Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, A> unit(A a) {
           return lProjection(a);
         }
       };
     }
 
     @Override
-    public <B> LeftProjection<B, R> fmap(Function<? super L, B> fn) {
+    public <B> LeftProjection<B, R> fmap(F1<? super L, B> fn) {
       return e.isLeft()
-        ? lProjection(fn.apply(e.valueL()))
+        ? lProjection(fn.call(e.valueL()))
         : new LeftProjection<>(right(e.valueR()));
     }
 
     @Override
     public <B> LeftProjection<B, R> mBind(
-        Function<? super L, ? extends Monad<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B>> fn) {
+        F1<? super L, ? extends Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B>> fn) {
       return e.isLeft()
-        ? asLeftProjection(fn.apply(e.valueL()))
+        ? asLeftProjection(fn.call(e.valueL()))
         : new LeftProjection<>(right(e.valueR()));
     }
 
     @Override
     public <B> LeftProjection<B, R> semi(
-        Monad<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B> mb) {
+        Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B> mb) {
       return mBind(a -> mb);
     }
 
     @Override
-    public MonadUnit<Hkt<me.functional.data.Either.LeftProjection.μ, R>> yield() {
+    public BindUnit<Hkt<me.functional.data.Either.LeftProjection.μ, R>> yield() {
       return monadUnit();
     }
 
@@ -289,7 +305,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
      * @param monad
      * @return
      */
-      public static <L,R> LeftProjection<L,R> asLeftProjection(Monad<Hkt<LeftProjection.μ,R>,L> monad) {
+      public static <L,R> LeftProjection<L,R> asLeftProjection(Bind<Hkt<LeftProjection.μ,R>,L> monad) {
       return (LeftProjection<L, R>) monad;
     }
   }
@@ -300,7 +316,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
    * @param monad
    * @return
    */
-  public static <L, R> Either<L, R> asEither(Monad<Hkt<Either.μ, L>, R> monad) {
+  public static <L, R> Either<L, R> asEither(Bind<Hkt<Either.μ, L>, R> monad) {
     return (Either<L, R>) monad;
   }
 }
