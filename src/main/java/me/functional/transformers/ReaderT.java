@@ -13,54 +13,54 @@ import me.functional.functions.F2;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Hkt3;
 import me.functional.hkt.Witness;
-import me.functional.type.Monad;
-import me.functional.type.MonadUnit;
+import me.functional.type.Bind;
+import me.functional.type.BindUnit;
 
 /**
  *
  * @author Desonte 'drjoliv' Jolivet
  */
-public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
+public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
 
   public static class μ implements Witness {}
 
-  private final Function<R,Monad<M,A>> runReaderT;
-  private final MonadUnit<M> mUnit;
+  private final F1<R,Bind<M,A>> runReaderT;
+  private final BindUnit<M> mUnit;
 
-  private ReaderT(Function<R,Monad<M,A>> runReaderT, MonadUnit<M> mUnit) {
+  private ReaderT(F1<R,Bind<M,A>> runReaderT, BindUnit<M> mUnit) {
     this.runReaderT = runReaderT;
     this.mUnit = mUnit;
   }
 
   @Override
-  public MonadUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>> yield() {
-    return new MonadUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>>() {
+  public BindUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>> yield() {
+    return new BindUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>>() {
       @Override
-      public <B> Monad<Hkt2<μ, M, R>, B> unit(B b) {
+      public <B> Bind<Hkt2<μ, M, R>, B> unit(B b) {
         return ReaderT.<M,R,B>unit().call(mUnit,b);
       }
     };
   }
 
   @Override
-  public <B> ReaderT<M,R,B> mBind(Function<? super A, ? extends Monad<Hkt2<ReaderT.μ, M, R>, B>> fn) {
+  public <B> ReaderT<M,R,B> mBind(F1<? super A, ? extends Bind<Hkt2<ReaderT.μ, M, R>, B>> fn) {
     return readerT(r -> {
-      Monad<M,A> inner = runReaderT.apply(r);
-      Monad<M,B> next  = inner.mBind(a ->  asReaderT(fn.apply(a)).runReaderT.apply(r));
+      Bind<M,A> inner = runReaderT.call(r);
+      Bind<M,B> next  = inner.mBind(a ->  asReaderT(fn.call(a)).runReaderT.call(r));
       return next; 
     }, mUnit);
   }
 
   @Override
-  public <B> ReaderT<M,R,B> semi(Monad<Hkt2<μ, M, R>, B> mb) {
+  public <B> ReaderT<M,R,B> semi(Bind<Hkt2<μ, M, R>, B> mb) {
     return mBind(a -> mb);
   }
 
   @Override
-  public <B> ReaderT<M,R,B> fmap(Function<? super A, B> fn) {
+  public <B> ReaderT<M,R,B> fmap(F1<? super A, B> fn) {
       return readerT((R r) -> {
-        Monad<M,A> ma = runReaderT.apply(r);
-        Monad<M,B> mb = ma.fmap(fn);
+        Bind<M,A> ma = runReaderT.call(r);
+        Bind<M,B> mb = ma.fmap(fn);
        return mb;
     }, mUnit);
   }
@@ -71,7 +71,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   * @return a ReaderT
   * 
   */
-  public static <M extends Witness,R,A> ReaderT<M,R,A> lift(Monad<M,A> ma) {
+  public static <M extends Witness,R,A> ReaderT<M,R,A> lift(Bind<M,A> ma) {
     return ReaderT.readerT(r -> ma, ma.yield());
   }
 
@@ -80,7 +80,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   * @param readers
   * @return
   */
-  public static <M extends Witness,R,A> ReaderT<FList.μ,R,Monad<M,A>> compose(FList<ReaderT<M,R,A>> readers) {
+  public static <M extends Witness,R,A> ReaderT<FList.μ,R,Bind<M,A>> compose(FList<ReaderT<M,R,A>> readers) {
     return ReaderT.readerT((R r) -> {
       return readers.fmap(reader -> reader.runReader(r));
     }, FList.monadUnit);
@@ -91,15 +91,15 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    * @param r
    * @return
    */
-  public Monad<M,A> runReader(R r) {
-   return runReaderT.apply(r); 
+  public Bind<M,A> runReader(R r) {
+   return runReaderT.call(r); 
   }
 
   /**
    *
    * @return
    */
-  public static <M extends Witness, R> ReaderT<M,R,R> ask(MonadUnit<M> mUnit) {
+  public static <M extends Witness, R> ReaderT<M,R,R> ask(BindUnit<M> mUnit) {
     return ReaderT.readerT(r -> mUnit.unit(r), mUnit);
   }
 
@@ -107,7 +107,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    *
    * @return
    */
-  public static <M extends Witness, R> F1<MonadUnit<M>, ReaderT<M,R,R>> ask() {
+  public static <M extends Witness, R> F1<BindUnit<M>, ReaderT<M,R,R>> ask() {
     return (mUnit) -> ReaderT.readerT(r -> mUnit.unit(r), mUnit);
   }
 
@@ -117,7 +117,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    */
   public static <M extends Witness, R, A> F2<F1<R,R>, ReaderT<M,R,A>, ReaderT<M,R,A>> local() {
     return (fn, m) -> {
-      return ReaderT.readerT(fn.andThen(m.runReaderT), m.mUnit);
+      return ReaderT.readerT(fn.then(m.runReaderT), m.mUnit);
     };
   }
 
@@ -126,7 +126,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    * @return
    */
   public static <M extends Witness, R, A> ReaderT<M,R,A> local(F1<R,R> fn, ReaderT<M,R,A> m) {
-      return ReaderT.readerT(fn.andThen(m.runReaderT), m.mUnit);
+      return ReaderT.readerT(fn.then(m.runReaderT), m.mUnit);
   }
 
   /**
@@ -136,12 +136,12 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    * @param mUnit
    * @return
    */
-  public static <M extends Witness, R, A> ReaderT<M, R, A> readerT(Function<R, Monad<M, A>> runReaderT, MonadUnit<M> mUnit) {
+  public static <M extends Witness, R, A> ReaderT<M, R, A> readerT(F1<R, Bind<M, A>> runReaderT, BindUnit<M> mUnit) {
     return new ReaderT<M, R, A>(runReaderT, mUnit);
   }
 
   @SuppressWarnings("unchecked")
-  public static <M extends Witness, R, A> ReaderT<M, R, A> asReaderT(Monad<Hkt2<ReaderT.μ, M, R>, A> wider) {
+  public static <M extends Witness, R, A> ReaderT<M, R, A> asReaderT(Bind<Hkt2<ReaderT.μ, M, R>, A> wider) {
     return (ReaderT<M, R, A>) wider;
   }
 
@@ -149,7 +149,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
    *
    * @return
    */
-  public static <M extends Witness, R, A> F2<MonadUnit<M>, A, ReaderT<M, R, A>> unit() {
+  public static <M extends Witness, R, A> F2<BindUnit<M>, A, ReaderT<M, R, A>> unit() {
     return (mUnit, a) -> new ReaderT<M, R, A>(r -> mUnit.unit(a), mUnit);
   }
 
@@ -162,7 +162,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   public static <M extends Witness, R, A> Maybe<ReaderT<M,R,FList<A>>> sequence(FList<ReaderT<M,R,A>> flist) {
     return flist
       .fmap(ma -> ma.fmap(a -> flist(a)))
-      .reduce((m1, m2) -> asReaderT(Monad.liftM2(m1, m2, (a1, a2) -> a1.concat(a2))));
+      .reduce((m1, m2) -> asReaderT(Bind.liftM2(m1, m2, (a1, a2) -> a1.concat(a2))));
   }
 
   /**
@@ -182,24 +182,24 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   */
   public final static class Reader<R,A> extends ReaderT<Identity.μ,R,A>{
 
-    private Reader(Function<R,Monad<Identity.μ,A>> runReaderT) {
-      super(runReaderT, Identity.monadUnit);
+    private Reader(F1<R,Bind<Identity.μ,A>> runReaderT) {
+      super(runReaderT, Identity::id);
     }
 
     @Override
     public <B> Reader<R,B> semi(
-        Monad<Hkt2<μ, me.functional.data.Identity.μ, R>, B> mb) {
+        Bind<Hkt2<μ, me.functional.data.Identity.μ, R>, B> mb) {
       return new Reader<R,B>(super.semi(mb).runReaderT);
     }
 
     @Override
     public <B> Reader<R,B> mBind(
-        Function<? super A, ? extends Monad<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
+        F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
       return new Reader<R,B>(super.mBind(fn).runReaderT);
     }
 
     @Override
-    public <B> Reader<R,B> fmap(Function<? super A, B> fn) {
+    public <B> Reader<R,B> fmap(F1<? super A, B> fn) {
       return new Reader<R,B>(super.fmap(fn).runReaderT);
     }
 
@@ -222,7 +222,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
      * @param wider
      * @return
      */
-    public static <R, A> Reader<R, A> asReader(Monad<Hkt2<ReaderT.μ, Identity.μ, R>, A> wider) {
+    public static <R, A> Reader<R, A> asReader(Bind<Hkt2<ReaderT.μ, Identity.μ, R>, A> wider) {
       if(wider instanceof ReaderT)
         return new Reader<R,A>(asReaderT(wider).runReaderT);
       else
@@ -253,7 +253,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
      * @return
      */
     public static <R> Reader<R, R> readerAsk() {
-      return asReader(ask(Identity.monadUnit));
+      return asReader(ask(Identity::id));
     }
 
     /**
