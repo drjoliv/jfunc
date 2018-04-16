@@ -1,7 +1,6 @@
 package me.functional.type;
 
-import java.util.function.Function;
-
+import me.functional.functions.F1;
 import me.functional.hkt.Witness;
 
 /**
@@ -18,7 +17,7 @@ public interface Functor<F extends Witness,A> {
    * @param functor the functor whose value will be mapped over.
    * @return a functor containing the result of fn, after it has mapped over the contents of the given functor.
    */
-  public <B> Functor<F,B>  fmap(Function<? super A,B> fn);
+  public <B> Functor<F,B>  fmap(F1<? super A, B> fn);
 
   /**
    * Replaces the contents of functor with the given value a.

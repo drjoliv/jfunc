@@ -2,47 +2,54 @@ package me.functional.data;
 
 import java.util.function.Function;
 
+import me.functional.data.Maybe.μ;
+import me.functional.functions.Eval;
+import me.functional.functions.F0;
+import me.functional.functions.F1;
+
+import static me.functional.functions.Eval.*;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
-import me.functional.type.Monad;
-import me.functional.type.MonadUnit;
+import me.functional.type.Alternative;
+import me.functional.type.Bind;
+import me.functional.type.BindUnit;
 
 /**
  * Represents a value of something(Just) or a value of Nothing.
  *
  * @author drjoliv@gmail.com
  */
-public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
+public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>, 
+       Alternative<Hkt<Maybe.μ, A>> {
+
+  @Override
+  public Maybe<A> alt(Hkt<μ, A> m) {
+    return isSome() ? this : asMaybe(m);
+  }
+
+  @Override
+  public abstract <B> Maybe<B> fmap(F1<? super A, B> fn);
 
   public static class μ implements Witness {}
 
   private Maybe() {}
 
   @Override
-  public <B> Maybe<B> fmap(Function<? super A, B> fn) {
+  public <B> Maybe<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
     if (isSome())
-      return new Just<B>(fn.apply(value()));
-    else
-      return Maybe.nothing();
-  }
-
-
-  @Override
-  public <B> Maybe<B> mBind(Function<? super A, ? extends Monad<μ, B>> fn) {
-    if (isSome())
-      return (Maybe<B>) fn.apply(value());
+      return (Maybe<B>) fn.call(value());
     else
       return nothing();
   }
 
   @Override
-  public <B> Maybe<B> semi(Monad<μ, B> mb) {
+  public <B> Maybe<B> semi(Bind<μ, B> mb) {
     return mBind(a -> mb);
   }
 
   @Override
-  public MonadUnit<μ> yield() {
-    return monadUnit;
+  public BindUnit<μ> yield() {
+    return Maybe::maybe;
   }
 
   /**
@@ -76,13 +83,6 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
    */
   public abstract A value();
 
-  public static MonadUnit<Maybe.μ> monadUnit = new MonadUnit<Maybe.μ>() {
-    @Override
-    public <A> Monad<μ, A> unit(A a) {
-      return Maybe.maybe(a);
-    }
-  };
-
  /**
   * Returns an instance of Maybe that contains nothing.
   *
@@ -98,8 +98,17 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
    * @param monad 
    * @return
    */
-  public static <B> Maybe<B> asMaybe(Monad<Maybe.μ, B> monad) {
+  public static <B> Maybe<B> asMaybe(Bind<Maybe.μ, B> monad) {
     return (Maybe<B>) monad;
+  }
+
+  /**
+   *
+   * @param monad 
+   * @return
+   */
+  public static <B> Maybe<B> asMaybe(Hkt<Maybe.μ, B> hkt) {
+    return (Maybe<B>) hkt;
   }
 
  /**
@@ -112,7 +121,17 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
     if (a == null)
       return nothing();
     else
-      return new Just<A>(a);
+      return new Just<A>(now(a));
+  }
+
+ /**
+  *
+  *
+  * @param a
+  * @return
+  */
+  public static <A> Maybe<A> maybe$(F0<A> fn) {
+      return new Just<A>(later(fn));
   }
 
   /**
@@ -132,6 +151,11 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
     public A value() {
       throw new UnsupportedOperationException("There is no value in this Maybe");
     }
+
+    @Override
+    public <B> Maybe<B> fmap(F1<? super A, B> fn) {
+      return nothing();
+    }
   }
 
   /**
@@ -139,20 +163,25 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A> {
    */
   private static class Just<A> extends Maybe<A> {
 
-    private A value;
+    private Eval<A> value;
 
-    private Just(A value) {
+    private Just(Eval<A> value) {
       this.value = value;
     }
 
     @Override
     public boolean isSome() {
-      return true;
+      return (value.value() != null) ? true : false;
     }
 
     @Override
     public A value() {
-      return value;
+        return value.value();
+    }
+
+    @Override
+    public <B> Maybe<B> fmap(F1<? super A, B> fn) {
+      return new Just<B>(value.fmap(fn));
     }
   }
 }
