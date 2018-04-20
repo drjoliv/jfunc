@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 import me.functional.functions.F1;
 import me.functional.functions.F2;
-import me.functional.functions.TriFunction;
+import me.functional.functions.F3;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
 import me.functional.type.Bind;
@@ -21,23 +21,14 @@ import me.functional.type.Monoid;
 /**
  * 
  *
- * @author drjoliv@gmail.com
+ * @author Desonte 'drjoliv' Jolivet eamil:drjoliv@gmail.com
  */
 public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
-
-  @Override
-  public BindUnit<μ> yield() {
-    return monadUnit;
-  }
 
   /**
   * The witness type of FList.
   */
   public static class μ implements Witness{}
-
-  public static BindUnit<FList.μ> monadUnit = FList::flist;
-
-  private FList(){}
 
   @Override
   public <B> FList<B> fmap(F1<? super A, B> fn) {
@@ -49,13 +40,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     }
   }
 
-  public final FList<FList<A>> window(int i) {
-    return isEmpty()
-      ? FList.empty()
-      : flist(take(i), () -> take(i).window(i));
-  }
-
-  @SuppressWarnings("unchecked")
   @Override
   public <B> FList<B> mBind(F1<? super A, ? extends Bind<FList.μ, B>> fn) {
     Objects.requireNonNull(fn);
@@ -70,6 +54,26 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
   public <B> FList<B> semi(Bind<μ, B> mb) {
     return mBind(a -> mb);
   }
+
+  @Override
+  public BindUnit<μ> yield() {
+    return monadUnit;
+  }
+
+
+  public static BindUnit<FList.μ> monadUnit = FList::flist;
+
+  private FList(){}
+
+
+  public final FList<FList<A>> window(int i) {
+    return isEmpty()
+      ? FList.empty()
+      : flist(take(i), () -> take(i).window(i));
+  }
+
+
+
 
   /**
    *
@@ -878,11 +882,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     * @param generator A TriFunction that generates the next element within the sequnce using the previous three elements within the sequence.
     * @return an infinte FList.
     */
-    public static <A> FList<A> sequence(A seed, A seed1, A seed2, TriFunction<A,A,A,A> generator) {
-      Objects.requireNonNull(seed);
-      Objects.requireNonNull(seed1);
-      Objects.requireNonNull(seed2);
-      Objects.requireNonNull(generator);
+    public static <A> FList<A> sequence(A seed, A seed1, A seed2, F3<A,A,A,A> generator) {
       A seed3 = generator.apply(seed,seed1,seed2);
       A seed4 = generator.apply(seed1,seed2,seed3);
       A seed5 = generator.apply(seed2,seed3,seed4);
