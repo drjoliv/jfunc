@@ -43,24 +43,24 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   @Override
-  public <B> ReaderT<M,R,B> mBind(F1<? super A, ? extends Bind<Hkt2<ReaderT.μ, M, R>, B>> fn) {
+  public <B> ReaderT<M,R,B> bind(F1<? super A, ? extends Bind<Hkt2<ReaderT.μ, M, R>, B>> fn) {
     return readerT(r -> {
       Bind<M,A> inner = runReaderT.call(r);
-      Bind<M,B> next  = inner.mBind(a ->  asReaderT(fn.call(a)).runReaderT.call(r));
+      Bind<M,B> next  = inner.bind(a ->  asReaderT(fn.call(a)).runReaderT.call(r));
       return next; 
     }, mUnit);
   }
 
   @Override
   public <B> ReaderT<M,R,B> semi(Bind<Hkt2<μ, M, R>, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
-  public <B> ReaderT<M,R,B> fmap(F1<? super A, B> fn) {
+  public <B> ReaderT<M,R,B> map(F1<? super A, B> fn) {
       return readerT((R r) -> {
         Bind<M,A> ma = runReaderT.call(r);
-        Bind<M,B> mb = ma.fmap(fn);
+        Bind<M,B> mb = ma.map(fn);
        return mb;
     }, mUnit);
   }
@@ -82,7 +82,7 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   */
   public static <M extends Witness,R,A> ReaderT<FList.μ,R,Bind<M,A>> compose(FList<ReaderT<M,R,A>> readers) {
     return ReaderT.readerT((R r) -> {
-      return readers.fmap(reader -> reader.runReader(r));
+      return readers.map(reader -> reader.runReader(r));
     }, FList.monadUnit);
   }
 
@@ -161,7 +161,7 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
    */
   public static <M extends Witness, R, A> Maybe<ReaderT<M,R,FList<A>>> sequence(FList<ReaderT<M,R,A>> flist) {
     return flist
-      .fmap(ma -> ma.fmap(a -> flist(a)))
+      .map(ma -> ma.map(a -> flist(a)))
       .reduce((m1, m2) -> asReaderT(Bind.liftM2(m1, m2, (a1, a2) -> a1.concat(a2))));
   }
 
@@ -174,7 +174,7 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   public static <M extends Witness, R, A> Maybe<ReaderT<M,R,Unit>> sequence_(FList<ReaderT<M,R,A>> flist) {
     return flist
       .reduce((m1, m2) -> m1.semi(m2))
-      .fmap(r -> r.fmap(a -> Unit.unit));
+      .map(r -> r.map(a -> Unit.unit));
   }
 
   /**
@@ -193,14 +193,14 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
     }
 
     @Override
-    public <B> Reader<R,B> mBind(
+    public <B> Reader<R,B> bind(
         F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
-      return new Reader<R,B>(super.mBind(fn).runReaderT);
+      return new Reader<R,B>(super.bind(fn).runReaderT);
     }
 
     @Override
-    public <B> Reader<R,B> fmap(F1<? super A, B> fn) {
-      return new Reader<R,B>(super.fmap(fn).runReaderT);
+    public <B> Reader<R,B> map(F1<? super A, B> fn) {
+      return new Reader<R,B>(super.map(fn).runReaderT);
     }
 
     @Override

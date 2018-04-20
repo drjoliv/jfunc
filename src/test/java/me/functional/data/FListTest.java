@@ -12,7 +12,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
-import java.util.function.Function;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,19 +138,19 @@ public class FListTest {
   }
 
   @Property
-  public void fmap(@From(FListGenerator.class)FList<Integer> flist, Integer multipler, Integer added) {
+  public void map(@From(FListGenerator.class)FList<Integer> flist, Integer multipler, Integer added) {
     F1<Integer,Integer> mul = i -> i * multipler; 
     F1<Integer,Integer> adder = i -> i + added;
     F1<Integer,Integer> mul_adder = mul.then(adder);
 
-    assertEquals(flist.fmap(mul_adder), flist.fmap(mul).fmap(adder));
+    assertEquals(flist.map(mul_adder), flist.map(mul).map(adder));
   }
 
   @Property
   public void mBind(@From(FListGenerator.class)FList<Integer> m) {
     F1<Integer,FList<Integer>> f = i -> FList.flist(i * 2);
     F1<Integer,FList<Integer>> g = i -> FList.flist(i + 2);
-    assertEquals(m.mBind(f).mBind(g),m.mBind(x -> f.call(x).mBind(g)));
+    assertEquals(m.bind(f).bind(g),m.bind(x -> f.call(x).bind(g)));
   }
 
   @Property

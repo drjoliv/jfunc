@@ -2,8 +2,6 @@ package me.functional.transformers;
 
 import static me.functional.data.T2.t2;
 
-import java.util.function.Function;
-
 import me.functional.data.Identity;
 import me.functional.data.T2;
 import me.functional.functions.F1;
@@ -31,10 +29,10 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
   }
 
   @Override
-  public <B> StateT<M,S,B> mBind(final F1<? super A, ? extends Bind<Hkt2<μ, M, S>, B>> fn) {
+  public <B> StateT<M,S,B> bind(final F1<? super A, ? extends Bind<Hkt2<μ, M, S>, B>> fn) {
     return new StateT<M,S,B>(s -> {
       return runState.call(s)
-        .mBind(p -> {
+        .bind(p -> {
         return asStateT(fn.call(p.snd)).runState.call(p.fst);
       });
     }, mUnit);
@@ -42,13 +40,13 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
 
   @Override
   public <B> StateT<M,S,B> semi(final Bind<Hkt2<μ, M, S>, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
-  public <B> Bind<Hkt2<μ, M, S>, B> fmap(final F1<? super A, B> fn) {
+  public <B> Bind<Hkt2<μ, M, S>, B> map(final F1<? super A, B> fn) {
      return new StateT<M,S,B>(s -> {
-      return runState.call(s).fmap(p -> t2(p.fst,fn.call(p.snd)));
+      return runState.call(s).map(p -> t2(p.fst,fn.call(p.snd)));
     },mUnit);
   }
 
@@ -84,19 +82,19 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
     }
 
     @Override
-    public <B> State<S,B> mBind(
+    public <B> State<S,B> bind(
         F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, S>, B>> fn) {
-      return new State<S,B>(asStateT(super.mBind(fn)).runState);
+      return new State<S,B>(asStateT(super.bind(fn)).runState);
     }
 
     @Override
     public <B> State<S,B> semi(Bind<Hkt2<μ, me.functional.data.Identity.μ, S>, B> mb) {
-      return mBind(s -> mb);
+      return bind(s -> mb);
     }
     
     @Override
-    public <B> State<S,B> fmap(F1<? super A, B> fn) {
-      return new State<S,B>(asStateT(super.fmap(fn)).runState);
+    public <B> State<S,B> map(F1<? super A, B> fn) {
+      return new State<S,B>(asStateT(super.map(fn)).runState);
     }
   }
 

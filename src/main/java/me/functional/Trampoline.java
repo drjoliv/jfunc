@@ -1,8 +1,5 @@
 package me.functional;
 
-import java.util.function.BiFunction;
-
-import me.functional.Trampoline.μ;
 import me.functional.functions.F0;
 import me.functional.functions.F1;
 import me.functional.hkt.Witness;
@@ -17,10 +14,10 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
   }
 
   @Override
-  public abstract <B> Trampoline<B> fmap(F1<? super A, B> fn);
+  public abstract <B> Trampoline<B> map(F1<? super A, B> fn);
 
   @Override
-  public abstract <B> Trampoline<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn);
+  public abstract <B> Trampoline<B> bind(F1<? super A, ? extends Bind<μ, B>> fn);
 
   @Override
   public abstract <B> Trampoline<B> semi(Bind<μ, B> mb);
@@ -75,18 +72,18 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
     }
 
     @Override
-    public <B> Trampoline<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return more(() -> asTrampoline(next.call().mBind(fn)));
+    public <B> Trampoline<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+      return more(() -> asTrampoline(next.call().bind(fn)));
     }
 
     @Override
     public <B> Trampoline<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
-    public <B> Trampoline<B> fmap(F1<? super A, B> fn) {
-      return more(() -> next.call().fmap(fn));
+    public <B> Trampoline<B> map(F1<? super A, B> fn) {
+      return more(() -> next.call().map(fn));
     }
 
   }
@@ -119,17 +116,17 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
     }
 
     @Override
-    public <B> Trampoline<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Trampoline<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
       return more(() -> asTrampoline(fn.call(result.get())));
     }
 
     @Override
     public <B> Trampoline<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
-    public <B> Trampoline<B> fmap(F1<? super A, B> fn) {
+    public <B> Trampoline<B> map(F1<? super A, B> fn) {
       return more(() -> done(() -> fn.call(result.call())));
     }
 

@@ -28,14 +28,14 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   }
 
   @Override
-  public abstract <B> Maybe<B> fmap(F1<? super A, B> fn);
+  public abstract <B> Maybe<B> map(F1<? super A, B> fn);
 
   public static class μ implements Witness {}
 
   private Maybe() {}
 
   @Override
-  public <B> Maybe<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
+  public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
     if (isSome())
       return (Maybe<B>) fn.call(value());
     else
@@ -44,7 +44,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
 
   @Override
   public <B> Maybe<B> semi(Bind<μ, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
@@ -153,7 +153,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public <B> Maybe<B> fmap(F1<? super A, B> fn) {
+    public <B> Maybe<B> map(F1<? super A, B> fn) {
       return nothing();
     }
   }
@@ -180,8 +180,8 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public <B> Maybe<B> fmap(F1<? super A, B> fn) {
-      return new Just<B>(value.fmap(fn));
+    public <B> Maybe<B> map(F1<? super A, B> fn) {
+      return new Just<B>(value.map(fn));
     }
   }
 }
