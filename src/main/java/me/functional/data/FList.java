@@ -31,28 +31,28 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
   public static class μ implements Witness{}
 
   @Override
-  public <B> FList<B> fmap(F1<? super A, B> fn) {
+  public <B> FList<B> map(F1<? super A, B> fn) {
     Objects.requireNonNull(fn);
       if(isEmpty()) {
       return Nil.instance();
     } else {
-      return flist(fn.call(unsafeHead()), () -> tail().fmap(fn));
+      return flist(fn.call(unsafeHead()), () -> tail().map(fn));
     }
   }
 
   @Override
-  public <B> FList<B> mBind(F1<? super A, ? extends Bind<FList.μ, B>> fn) {
+  public <B> FList<B> bind(F1<? super A, ? extends Bind<FList.μ, B>> fn) {
     Objects.requireNonNull(fn);
      if(isEmpty()) {
       return Nil.instance();
     } else {
-      return FList.functions.flatten((FList<FList<B>>)fmap(fn));
+      return FList.functions.flatten((FList<FList<B>>)map(fn));
     }
   }
 
   @Override
   public <B> FList<B> semi(Bind<μ, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
@@ -377,7 +377,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     A reducedValue = a;
     Iterator<A> it = FList.functions.iterable(this).iterator();
     while(it.hasNext()) {
-      reducedValue = reducer.apply(reducedValue,it.next());
+      reducedValue = reducer.call(reducedValue,it.next());
     }
     return reducedValue;
   }
@@ -394,7 +394,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
       Iterator<A> it = FList.functions.iterable(this).iterator();
       A reducedValue = it.next();
       while(it.hasNext()) {
-        reducedValue = reducer.apply(reducedValue,it.next());
+        reducedValue = reducer.call(reducedValue,it.next());
       }
       return Maybe.maybe(reducedValue);
     }
@@ -807,7 +807,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(l2);
      if(l1.isEmpty() ||  l2.isEmpty())
         return Nil.instance();
-      return flist(fn.apply(l1.unsafeHead(), l2.unsafeHead()), () -> zipWith(fn, l1.tail(), l2.tail()));
+      return flist(fn.call(l1.unsafeHead(), l2.unsafeHead()), () -> zipWith(fn, l1.tail(), l2.tail()));
     }
 
     public static <A,B,C> FList<T2<A,B>> zip(FList<A> l1, FList<B> l2) {
@@ -866,8 +866,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
       Objects.requireNonNull(seed);
         Objects.requireNonNull(seed1);
         Objects.requireNonNull(generator);
-        A seed2 = generator.apply(seed,seed1);
-        A seed3 = generator.apply(seed1,seed2);
+        A seed2 = generator.call(seed,seed1);
+        A seed3 = generator.call(seed1,seed2);
         return flist(seed , seed1, () -> sequence(seed2, seed3, generator));
     }
 
@@ -883,9 +883,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     * @return an infinte FList.
     */
     public static <A> FList<A> sequence(A seed, A seed1, A seed2, F3<A,A,A,A> generator) {
-      A seed3 = generator.apply(seed,seed1,seed2);
-      A seed4 = generator.apply(seed1,seed2,seed3);
-      A seed5 = generator.apply(seed2,seed3,seed4);
+      A seed3 = generator.call(seed,seed1,seed2);
+      A seed4 = generator.call(seed1,seed2,seed3);
+      A seed5 = generator.call(seed2,seed3,seed4);
       return flist(seed, seed1, seed2, () -> sequence(seed3, seed4, seed5, generator));
     }
 

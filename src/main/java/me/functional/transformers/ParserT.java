@@ -1,16 +1,12 @@
 package me.functional.transformers;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import static me.functional.data.T2.*;
+import static me.functional.data.T2.t2;
 
 import me.functional.data.T2;
 import me.functional.functions.F1;
 import me.functional.hkt.Hkt2;
 import me.functional.hkt.Hkt3;
 import me.functional.hkt.Witness;
-import me.functional.transformers.ParserT.μ;
 import me.functional.type.Bind;
 import me.functional.type.BindUnit;
 import me.functional.type.Stream;
@@ -26,7 +22,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
   public static class μ implements Witness{}
 
   @Override
-  public <B> ParserT<S,T,B> fmap(F1<? super A, B> fn) {
+  public <B> ParserT<S,T,B> map(F1<? super A, B> fn) {
     return new ParserT<S,T,B>(runParser.then(pResult -> {
       if(pResult.isReuslt()) {
         T2<A,Stream<S,T>> p = pResult.result();
@@ -38,7 +34,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
   }
 
   @Override
-  public <B> ParserT<S,T,B> mBind(F1<? super A, ? extends Bind<Hkt2<μ, S, T>, B>> fn) {
+  public <B> ParserT<S,T,B> bind(F1<? super A, ? extends Bind<Hkt2<μ, S, T>, B>> fn) {
      return new ParserT<S,T,B>(stream -> {
        ParserResult<A,S,T> result = runParser.call(stream);
        if(result.isReuslt()) {
@@ -52,7 +48,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
 
   @Override
   public <B> ParserT<S,T,B> semi(Bind<Hkt2<μ, S, T>, B> mb) {
-    return mBind(s -> mb);
+    return bind(s -> mb);
   }
 
 

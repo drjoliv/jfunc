@@ -1,9 +1,7 @@
 package me.functional.transformers;
 
-import static me.functional.data.Try.*;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
+import static me.functional.data.Try.failure;
+import static me.functional.data.Try.success;
 
 import me.functional.data.Either;
 import me.functional.data.Try;
@@ -44,19 +42,19 @@ public class TryT<M extends Witness,A> implements Bind<Hkt<TryT.μ,M>, A>, Hkt2<
   }
 
   @Override
-  public <B> TryT<M,B> fmap(F1<? super A, B> fn) {
-    return new TryT<>(() -> runTryT.call().fmap(t -> t.fmap(fn)), mUnit); 
+  public <B> TryT<M,B> map(F1<? super A, B> fn) {
+    return new TryT<>(() -> runTryT.call().map(t -> t.map(fn)), mUnit); 
   }
 
   @Override
-  public <B> TryT<M,B> mBind(F1<? super A, ? extends Bind<Hkt<μ, M>, B>> fn) {
+  public <B> TryT<M,B> bind(F1<? super A, ? extends Bind<Hkt<μ, M>, B>> fn) {
     return new TryT<M,B>(() -> {
-     Bind<M,Try<B>> m = runTryT.call().mBind(t -> {
+     Bind<M,Try<B>> m = runTryT.call().bind(t -> {
        Either<Exception, F0<Bind<M,Try<B>>>> e =
-         t.fmap(fn.then(TryT::asTryT))
+         t.map(fn.then(TryT::asTryT))
          .run()
          .right()
-         .fmap(tryT -> tryT.runTryT)
+         .map(tryT -> tryT.runTryT)
          .either();
        if(e.isRight())
          return e.valueR().call();
@@ -69,7 +67,7 @@ public class TryT<M extends Witness,A> implements Bind<Hkt<TryT.μ,M>, A>, Hkt2<
 
   @Override
   public <B> TryT<M,B> semi(Bind<Hkt<μ, M>, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
@@ -119,7 +117,7 @@ public class TryT<M extends Witness,A> implements Bind<Hkt<TryT.μ,M>, A>, Hkt2<
    * @return
    */
   public static <M extends Witness, B> TryT<M,B> lift(Bind<M,B> t) {
-    return new TryT<M,B>(t.fmap(b -> success(b)));
+    return new TryT<M,B>(t.map(b -> success(b)));
   }
 
   /**

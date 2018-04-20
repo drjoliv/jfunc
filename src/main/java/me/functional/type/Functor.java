@@ -17,7 +17,7 @@ public interface Functor<F extends Witness,A> {
    * @param functor the functor whose value will be mapped over.
    * @return a functor containing the result of fn, after it has mapped over the contents of the given functor.
    */
-  public <B> Functor<F,B>  fmap(F1<? super A, B> fn);
+  public <B> Functor<F,B>  map(F1<? super A, B> fn);
 
   /**
    * Replaces the contents of functor with the given value a.
@@ -27,7 +27,7 @@ public interface Functor<F extends Witness,A> {
    * @return A Functor where a has been inserted
    */
   public default <B> Functor<F,B> replace(B b) {
-    return fmap(a -> b);
+    return map(a -> b);
   }
 
 }

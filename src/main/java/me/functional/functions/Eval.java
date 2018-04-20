@@ -1,10 +1,8 @@
 package me.functional.functions;
 
-import java.util.function.Function;
+import static me.functional.Trampoline.done;
 
 import me.functional.Trampoline;
-import static me.functional.Trampoline.*;
-import me.functional.functions.Eval.μ;
 import me.functional.hkt.Witness;
 import me.functional.type.Bind;
 import me.functional.type.BindUnit;
@@ -19,10 +17,10 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
   }
 
   @Override
-  public abstract <B> Eval<B> fmap(F1<? super A, B> fn);
+  public abstract <B> Eval<B> map(F1<? super A, B> fn);
 
   @Override
-  public abstract <B> Eval<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn);
+  public abstract <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn);
 
   @Override
   public abstract <B> Eval<B> semi(Bind<μ, B> mb);
@@ -63,18 +61,18 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> fmap(F1<? super A, B> fn) {
+    public <B> Eval<B> map(F1<? super A, B> fn) {
       return now(fn.call(value));
     }
 
     @Override
-    public <B> Eval<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
       return asEval(fn.call(value));
     }
 
     @Override
     public <B> Eval<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
   }
@@ -108,22 +106,22 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> fmap(F1<? super A, B> fn) {
+    public <B> Eval<B> map(F1<? super A, B> fn) {
       if(tramp != null) {
-        return new Later<B>(tramp.fmap(fn));
+        return new Later<B>(tramp.map(fn));
       } else {
         return new Later<B>(done(fn.curry().call(value)));
       }
     }
 
     @Override
-    public <B> Eval<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return asEval(Bind.join(fmap(fn.then(asEval()))));
+    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+      return asEval(Bind.join(map(fn.then(asEval()))));
     }
     
     @Override
     public <B> Eval<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
   }
 
@@ -144,18 +142,18 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> fmap(F1<? super A, B> fn) {
-      return new Always<>(tramp.fmap(fn));
+    public <B> Eval<B> map(F1<? super A, B> fn) {
+      return new Always<>(tramp.map(fn));
     }
 
     @Override
-    public <B> Eval<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return asEval(Bind.join(fmap(fn.then(asEval()))));
+    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+      return asEval(Bind.join(map(fn.then(asEval()))));
     }
 
     @Override
     public <B> Eval<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
   }

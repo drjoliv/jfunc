@@ -1,17 +1,13 @@
 package me.functional.transformers;
 
 import static me.functional.data.FList.flist;
+import static me.functional.data.Identity.id;
 import static me.functional.data.T2.t2;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import me.functional.data.FList;
 import me.functional.data.Identity;
-import static me.functional.data.Identity.*;
 import me.functional.data.Maybe;
 import me.functional.data.T2;
-import static me.functional.data.T2.*;
 import me.functional.data.Unit;
 import me.functional.functions.F0;
 import me.functional.functions.F1;
@@ -43,12 +39,12 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
   }
 
   @Override
-  public <B> WriterT<M,W,B> fmap(F1<? super A, B> fn) {
-    return new WriterT<M,W,B>(() -> runWriterT.call().fmap(p -> t2(fn.call(p.fst),p.snd)), monoid, mUnit);
+  public <B> WriterT<M,W,B> map(F1<? super A, B> fn) {
+    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> t2(fn.call(p.fst),p.snd)), monoid, mUnit);
   }
 
   @Override
-  public <B> WriterT<M,W,B> mBind(F1<? super A, ? extends Bind<Hkt2<μ, M, W>, B>> fn) {
+  public <B> WriterT<M,W,B> bind(F1<? super A, ? extends Bind<Hkt2<μ, M, W>, B>> fn) {
     return new WriterT<M,W,B>(() -> {
       return Bind.For(runWriterT.call()
           , p     -> asWriterT(fn.call(p.fst)).runWriterT.call()
@@ -59,7 +55,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
 
   @Override
   public <B> WriterT<M,W,B> semi(Bind<Hkt2<μ, M, W>, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
@@ -96,7 +92,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
    * @return
    */
   public Bind<M,W> execWriterT(){
-    return runWriterT.call().fmap(p -> p.snd);
+    return runWriterT.call().map(p -> p.snd);
   }
 
   /**
@@ -150,15 +146,15 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
     }
 
     @Override
-    public <B> Writer<W,B> fmap(F1<? super A, B> fn) {
-      final WriterT<Identity.μ,W,B> w = super.fmap(fn);
+    public <B> Writer<W,B> map(F1<? super A, B> fn) {
+      final WriterT<Identity.μ,W,B> w = super.map(fn);
       return new Writer<W,B>(w.runWriterT,w.monoid);
     }
 
     @Override
-    public <B> Writer<W,B> mBind(
+    public <B> Writer<W,B> bind(
         F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, W>, B>> fn) {
-      final WriterT<Identity.μ,W,B> w = super.mBind(fn);
+      final WriterT<Identity.μ,W,B> w = super.bind(fn);
       return new Writer<W,B>(w.runWriterT,w.monoid);
     }
 
@@ -182,7 +178,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      */
     public static <M extends Witness, W, A> Maybe<WriterT<M,W,FList<A>>> sequence(FList<WriterT<M,W,A>> flist) {
         return flist
-          .fmap(ma -> ma.fmap(a -> flist(a)))
+          .map(ma -> ma.map(a -> flist(a)))
           .reduce((m1, m2) -> asWriterT(Bind.liftM2(m1, m2, (a1, a2) -> a1.concat(a2))));
     }
 
@@ -195,7 +191,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
     public static <M extends Witness, W, A> Maybe<WriterT<M,W,Unit>> sequence_(FList<WriterT<M,W,A>> flist) {
       return flist
         .reduce((m1,m2) -> m1.semi(m2))
-        .fmap(w -> w.fmap(a -> Unit.unit));
+        .map(w -> w.map(a -> Unit.unit));
     }
 
     /**

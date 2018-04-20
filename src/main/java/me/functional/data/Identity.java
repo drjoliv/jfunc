@@ -1,7 +1,5 @@
 package me.functional.data;
 
-import java.util.function.Function;
-
 import me.functional.functions.F1;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
@@ -34,13 +32,13 @@ public final class Identity<E> implements Bind<Identity.μ,E>, Hkt<Identity.μ,E
   }
 
   @Override
-  public <B> Identity<B> mBind(F1<? super E, ? extends Bind<Identity.μ, B>> fn) {
+  public <B> Identity<B> bind(F1<? super E, ? extends Bind<Identity.μ, B>> fn) {
     return asIdentity(fn.call(e));
   }
 
   @Override
   public <B> Identity<B> semi(Bind<Identity.μ, B> mIdentity) {
-    return mBind(e -> mIdentity);
+    return bind(e -> mIdentity);
   }
 
 
@@ -50,7 +48,7 @@ public final class Identity<E> implements Bind<Identity.μ,E>, Hkt<Identity.μ,E
   }
 
   @Override
-  public <A> Identity<A> fmap(F1<? super E, A> fn) {
+  public <A> Identity<A> map(F1<? super E, A> fn) {
     return new Identity<A>(fn.call(e));
   }
 

@@ -1,7 +1,6 @@
 package me.functional.data;
 
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import me.functional.functions.F1;
 import me.functional.hkt.Hkt;
@@ -184,7 +183,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public <B> RightProjection<L, B> fmap(F1<? super R, B> fn) {
+    public <B> RightProjection<L, B> map(F1<? super R, B> fn) {
       return e.isRight()
         ? rProjection(fn.call(e.valueR()))
         : new RightProjection<>(left(e.valueL()));
@@ -198,7 +197,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public <B> RightProjection<L, B> mBind(
+    public <B> RightProjection<L, B> bind(
         F1<? super R, ? extends Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B>> fn) {
       return e.isRight()
         ? asRightProjection(fn.call(e.valueR()))
@@ -208,7 +207,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     @Override
     public <B> RightProjection<L, B> semi(
         Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
@@ -274,14 +273,14 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public <B> LeftProjection<B, R> fmap(F1<? super L, B> fn) {
+    public <B> LeftProjection<B, R> map(F1<? super L, B> fn) {
       return e.isLeft()
         ? lProjection(fn.call(e.valueL()))
         : new LeftProjection<>(right(e.valueR()));
     }
 
     @Override
-    public <B> LeftProjection<B, R> mBind(
+    public <B> LeftProjection<B, R> bind(
         F1<? super L, ? extends Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B>> fn) {
       return e.isLeft()
         ? asLeftProjection(fn.call(e.valueL()))
@@ -291,7 +290,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     @Override
     public <B> LeftProjection<B, R> semi(
         Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
@@ -316,6 +315,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
    * @param monad
    * @return
    */
+  @SuppressWarnings("unchecked")
   public static <L, R> Either<L, R> asEither(Bind<Hkt<Either.μ, L>, R> monad) {
     return (Either<L, R>) monad;
   }

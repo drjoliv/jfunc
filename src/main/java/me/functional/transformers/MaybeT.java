@@ -1,7 +1,5 @@
 package me.functional.transformers;
 
-import java.util.function.Function;
-
 import me.functional.data.Maybe;
 import me.functional.functions.F1;
 import me.functional.functions.F2;
@@ -19,18 +17,18 @@ public class MaybeT<M extends Witness,A> implements Bind<Hkt<MaybeT.μ,M>,A>, Hk
   private final BindUnit<M> mUnit;
 
   @Override
-  public <B> MaybeT<M,B> fmap(F1<? super A, B> fn){
-    return maybeT(runMaybeT.fmap(maybe_value -> maybe_value.fmap(fn)));
+  public <B> MaybeT<M,B> map(F1<? super A, B> fn){
+    return maybeT(runMaybeT.map(maybe_value -> maybe_value.map(fn)));
   }
 
   @Override
   public <B> MaybeT<M,B> semi(Bind<Hkt<μ, M>, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   @Override
-  public <B> MaybeT<M,B> mBind(F1<? super A, ? extends Bind<Hkt<μ, M>, B>> fn) {
-    return maybeT(runMaybeT.mBind(maybe_value -> {
+  public <B> MaybeT<M,B> bind(F1<? super A, ? extends Bind<Hkt<μ, M>, B>> fn) {
+    return maybeT(runMaybeT.bind(maybe_value -> {
      if(maybe_value.isSome()) {
        return asMaybeT(fn.call(maybe_value.value())).runMaybeT;
      }
@@ -56,7 +54,7 @@ public class MaybeT<M extends Witness,A> implements Bind<Hkt<MaybeT.μ,M>,A>, Hk
   }
 
   public static <M extends Witness,A> MaybeT<M,A> liftMaybeT(Bind<M,A> m) {
-    return new MaybeT<M,A>(m.fmap(a -> Maybe.maybe(a)));
+    return new MaybeT<M,A>(m.map(a -> Maybe.maybe(a)));
   }
 
   public static <M extends Witness, A> F2<BindUnit<M>,A,MaybeT<M,A>> maybeT() {

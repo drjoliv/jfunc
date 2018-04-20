@@ -1,21 +1,14 @@
 package me.functional.data;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import static me.functional.data.Either.left;
+import static me.functional.data.Either.right;
+import static me.functional.functions.Eval.later;
 
-import static me.functional.data.Either.*;
-
-import me.functional.data.Try.μ;
 import me.functional.functions.Eval;
-import static me.functional.functions.Eval.*;
 import me.functional.functions.F1;
 import me.functional.functions.Try0;
 import me.functional.hkt.Hkt;
 import me.functional.hkt.Witness;
-import me.functional.type.Alternative;
-import me.functional.type.Lazy;
 import me.functional.type.Bind;
 import me.functional.type.BindUnit;
 
@@ -40,18 +33,18 @@ public class Try<A> implements Bind<Try.μ,A>, Hkt<Try.μ,A> {
   public static class μ implements Witness{}
 
   @Override
-  public <B> Try<B> fmap(F1<? super A, B> fn) {
-    return new Try<>(eval.fmap(t -> t.fmap(fn)));
+  public <B> Try<B> map(F1<? super A, B> fn) {
+    return new Try<>(eval.map(t -> t.map(fn)));
   }
 
   @Override
-  public <B> Try<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
-    return new Try<>(eval.fmap(t -> t.mBind(fn)));
+  public <B> Try<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    return new Try<>(eval.map(t -> t.bind(fn)));
   }
 
   @Override
   public <B> Try<B> semi(Bind<μ, B> mb) {
-    return mBind(a -> mb);
+    return bind(a -> mb);
   }
 
   public boolean isSuccess() {
@@ -78,11 +71,11 @@ public class Try<A> implements Bind<Try.μ,A>, Hkt<Try.μ,A> {
 
   public <E extends Exception> Try<A> recoverWith(Class<E> cls, 
       F1<E, Try<A>> fn) {
-    return new Try<>(eval.fmap(t -> t.recoverWith(cls,fn)));
+    return new Try<>(eval.map(t -> t.recoverWith(cls,fn)));
   }
 
   public Try<A> recover(Class<? extends Exception> cls, A a) {
-   return new Try<>(eval.fmap(t -> t.recover(cls,a)));
+   return new Try<>(eval.map(t -> t.recover(cls,a)));
   }
 
   private Try() {}
@@ -96,18 +89,18 @@ public class Try<A> implements Bind<Try.μ,A>, Hkt<Try.μ,A> {
     }
 
     @Override
-    public <B> Try<B> fmap(F1<? super A, B> fn) {
+    public <B> Try<B> map(F1<? super A, B> fn) {
       return new Success<>(fn.call(value));
     }
 
     @Override
-    public <B> Try<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Try<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
       return asTry(fn.call(value));
     }
 
     @Override
     public <B> Try<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
@@ -145,18 +138,18 @@ public class Try<A> implements Bind<Try.μ,A>, Hkt<Try.μ,A> {
     }
 
     @Override
-    public <B> Try<B> fmap(F1<? super A, B> fn) {
+    public <B> Try<B> map(F1<? super A, B> fn) {
       return new Failure<B>(exception);
     }
 
     @Override
-    public <B> Try<B> mBind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Try<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
       return new Failure<B>(exception);
     }
 
     @Override
     public <B> Try<B> semi(Bind<μ, B> mb) {
-      return mBind(a -> mb);
+      return bind(a -> mb);
     }
 
     @Override
