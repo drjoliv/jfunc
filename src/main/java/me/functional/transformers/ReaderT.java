@@ -253,7 +253,7 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
      * @return
      */
     public static <R> Reader<R, R> readerAsk() {
-      return asReader(ask(Identity::id));
+      return reader(r -> r);
     }
 
     /**
