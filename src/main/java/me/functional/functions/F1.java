@@ -22,5 +22,9 @@ public interface F1<A,B>{
     return c -> call(fn.call(c));
   }
 
+  public static <A> F1<A,A> identity() {
+    return a -> a;
+  }
+
 
 }
