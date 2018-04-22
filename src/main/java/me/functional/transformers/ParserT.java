@@ -95,7 +95,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
 
   @Override
   public String errorMessage() {
-          throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -103,10 +103,10 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
     return true;
   }
 
-  @Override
-  public T2<A, Stream<S, T>> result() {
-    return result;
-  }
+    @Override
+    public T2<A, Stream<S, T>> result() {
+      return result;
+    }
   }
 
    public static <A,S,T> ParserResult<A,S,T> error(String error) {
