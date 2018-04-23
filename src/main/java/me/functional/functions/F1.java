@@ -26,5 +26,9 @@ public interface F1<A,B>{
     return a -> a;
   }
 
+  public static <A,B> F1<A,B> fromJFunction(Function<A,B> fn) {
+    return a -> fn.apply(a);
+  }
+
 
 }
