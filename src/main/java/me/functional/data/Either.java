@@ -44,14 +44,14 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
    *
    * @return
    */
-  public abstract L valueL();
+  public abstract L valueL() throws RightException;
 
   /**
    *
    *
    * @return
    */
-  public abstract R valueR();
+  public abstract R valueR() throws LeftException;
 
   /**
    *
@@ -165,13 +165,13 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public L valueL() {
+    public L valueL() throws RightException {
       return l.value();
     }
 
     @Override
-    public R valueR() {
-      throw new UnsupportedOperationException("This is not right value.");
+    public R valueR() throws LeftException{
+      throw new LeftException();
     }
 
 
@@ -204,12 +204,12 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     }
 
     @Override
-    public L valueL() {
-      throw new UnsupportedOperationException("This is not a left vlaue.");
+    public L valueL() throws RightException {
+      throw new RightException();
     }
 
     @Override
-    public R valueR() {
+    public R valueR() throws LeftException {
       return r.value();
     }
 
@@ -338,4 +338,27 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       return (LeftProjection<L, R>) monad;
     }
   }
+
+  public static class LeftException extends RuntimeException {
+    /**
+     *
+     */
+    private static final long serialVersionUID = -690190470847815799L;
+
+    public LeftException(){
+      super("This Either contains a Left value, but valueR was called.");
+    }
+  }
+
+  public static class RightException extends RuntimeException {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 6550427707346121413L;
+
+    public RightException(){
+      super("This Either contains a Right value, but valueL was called.");
+    }
+  }
+
 }
