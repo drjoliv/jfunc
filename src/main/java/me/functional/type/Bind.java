@@ -25,6 +25,10 @@ public interface Bind<M extends Witness,A> extends Functor<M,A> {
     return monad.bind(m -> m);
   }
 
+  public static <M extends Witness, A> F1<Bind<M,? extends Bind<M,A>>, Bind<M,A>> join() {
+    return Bind::join;
+  }
+
   public static <M extends Witness,A,B> Bind<M,B> For(Bind<M,A> monad, F1<? super A,  ? extends Bind<M,B>> fn) {
     return monad.bind(fn);
   } 
