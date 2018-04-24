@@ -16,6 +16,10 @@ public interface Bind<M extends Witness,A> extends Functor<M,A> {
 
   public <B> Bind<M,B> semi(Bind<M,B> mb);
 
+  public static <M extends Witness, A, B> F2<Bind<M,A>, Bind<M,B>, Bind<M,B>> semi() {
+    return (m1, m2) -> m1.semi(m2);
+  }
+
   public BindUnit<M> yield();
 
   @Override
@@ -23,6 +27,10 @@ public interface Bind<M extends Witness,A> extends Functor<M,A> {
 
   public static <M extends Witness, A> Bind<M,A> join(Bind<M,? extends Bind<M,A>> monad) {
     return monad.bind(m -> m);
+  }
+
+  public static <M extends Witness, A, B> F2<Bind<M,A>, F1<? super A,? extends Bind<M,B>>, Bind<M,B>> bind() {
+    return (m,f) -> m.bind(f);
   }
 
   public static <M extends Witness, A> F1<Bind<M,? extends Bind<M,A>>, Bind<M,A>> join() {
