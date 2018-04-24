@@ -30,17 +30,16 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   @Override
   public abstract <B> Maybe<B> map(F1<? super A, B> fn);
 
+  public <B> F1<F1<? super A, B>, Maybe<B>> map() {
+    return f -> map(f);
+  }
+
   public static class μ implements Witness {}
 
   private Maybe() {}
 
   @Override
-  public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
-    if (isSome())
-      return (Maybe<B>) fn.call(value());
-    else
-      return nothing();
-  }
+  public abstract <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn);
 
   @Override
   public <B> Maybe<B> semi(Bind<μ, B> mb) {
@@ -81,7 +80,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
    * Returns the value of this Maybe if there is one and a RuntimeException otherwise.
    * @return Returns the value of this Maybe if there is one and a RuntimeException otherwise.
    */
-  public abstract A value();
+  public abstract A value() throws MaybeException;
 
  /**
   * Returns an instance of Maybe that contains nothing.
@@ -118,10 +117,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   * @return
   */
   public static <A> Maybe<A> maybe(A a) {
-    if (a == null)
-      return nothing();
-    else
-      return new Just<A>(now(a));
+      return maybe$(() -> a);
   }
 
  /**
@@ -132,6 +128,16 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   */
   public static <A> Maybe<A> maybe$(F0<A> fn) {
       return new Just<A>(later(fn));
+  }
+
+ /**
+  *
+  *
+  * @param a
+  * @return
+  */
+  public static <A> Maybe<A> maybe$(Eval<A> eval) {
+      return new Just<A>(eval);
   }
 
   /**
@@ -156,6 +162,11 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     public <B> Maybe<B> map(F1<? super A, B> fn) {
       return nothing();
     }
+
+    @Override
+    public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+      return nothing();
+    }
   }
 
   /**
@@ -171,7 +182,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
 
     @Override
     public boolean isSome() {
-      return (value.value() != null) ? true : false;
+      return true;
     }
 
     @Override
@@ -183,5 +194,19 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     public <B> Maybe<B> map(F1<? super A, B> fn) {
       return new Just<B>(value.map(fn));
     }
+
+    @Override
+    public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+      return asMaybe(Bind.join(map(fn.then(Maybe::asMaybe))));
+    }
   }
+
+  public static class MaybeException extends RuntimeException {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = -4466160116501567830L;
+
+    }
 }
