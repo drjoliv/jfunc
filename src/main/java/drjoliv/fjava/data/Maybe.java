@@ -111,7 +111,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   /**
    * 
    * Narrows thw argument into a maybe.
-   * @param alt 
+   * @param alt the alternaive that will be casted into a maybe.
    * @param <B> the type of the contents of the narrowed alternative.
    * @return a maybe.
    */
@@ -121,7 +121,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
 
   /**
    * Narrows thw argument into a maybe.
-   * @param monad 
+   * @param hkt the higher kinded type that will be casted to a maybe. 
    * @param <B> the type of the contents of the narrowed hkt.
    * @return a myabe.
    */
