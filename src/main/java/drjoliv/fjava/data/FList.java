@@ -1,6 +1,6 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.data.T2.t2;
+import static drjoliv.fjava.data.T2.t2;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -9,14 +9,13 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import me.functional.functions.F1;
-import me.functional.functions.F2;
-import me.functional.functions.F3;
-import me.functional.hkt.Hkt;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
-import me.functional.type.Monoid;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.functions.F3;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  * 
@@ -338,11 +337,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param predicate
    * @return a new FList in which elements have been filtered out.
    */
-  public final FList<A> filter(Predicate<A> p) {
-    Objects.requireNonNull(p);
+  public final FList<A> filter(F1<A,Boolean> p) {
      if(isEmpty())
       return Nil.instance();
-    else if(p.test(unsafeHead()))
+    else if(p.call(unsafeHead()))
       return flist(unsafeHead(), () -> tail().filter(p));
     else
       return FList.functions.concat(Nil.instance(), () -> tail().filter(p));
