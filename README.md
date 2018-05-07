@@ -17,11 +17,8 @@ FList a = Cons a (FList a) | Nil
 Becuase FList is lazy we can create infinite list of elements. The below example is an infinite lists of even numbers.
 
 ```java
-  public static boolean Presdicate<Integer> =  i % 2 == 0;
-
-  FList<Integer> evenNumber = start(2).filter(isEven);
+  FList<Integer> evenNumber = start(2).filter(i % 2 == 0);
 ```
-
 Below is an example of creating an infite list of prime numbers.
 
 ```java
@@ -45,20 +42,56 @@ Below is an example of creating an infite list of prime numbers.
 
 ## Either
 
+The Either type is paramatized by two type parameters. Each parameter represents a possible value that the either can hold, so a Either<L,R> can contain avalue of type L or a value of type R.
+
+The Either type is vary useful for describing computation that can return one of two possible values that hava differnt types, makeing it very useful for error handling.
+
+```java
+  @POST
+  @Path("/login")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getToken(Login login) {
+
+    EntityManger em = getEntityManager();
+
+    Either<Exception, User> userRead =
+      read(User.class, login.username)
+        .runAndClose(em);
+
+    Either<Response, Response> response =
+      userRead.bimap(forbidden,validate.call(login))
+
+    return either(response);
+  }
+
+  public static F1<Excpetion,Response> forbidden = 
+    e -> Response.status(Response.Status.FORBIDDEN).entity(new ErrorResponse(e.getMessage())).build()
+
+  public static F2<Login,User,Response> validate =
+    (l,u) -> {
+      String ps = u.getPassword();
+      if (ps.equals(l.password)) {
+        return Response.ok().entity(tokenGen(u)).build();
+      } else {
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      }
+    };
+```
+
+Their are no else/if statements in the above code, we abstract them away with bimap. If the either is a left containing an Excpetion the function forbidden is used to transform the the excpetion to a Response, if the value within the either is a right containing a user the partialy applied function validate is called. validate.call(login) == F1<User,Reponse>
+
+The function either takes and Either whose left and right value are of the same type, and returns the value within the Either.
+
 ## Maybe
 
+#### MaybeT
+
 ## Try
-
-
-
-
-
 
 ### Monads
 
 ### Transformers
 
-#### MaybeT
 
 #### ReaderT
 
@@ -67,3 +100,14 @@ Below is an example of creating an infite list of prime numbers.
 #### StateT
 
 #### ParserT
+
+Examples
+
+
+```java
+
+```
+
+## References
+
+Purely Functional Data Structures -Chris Okasaki
