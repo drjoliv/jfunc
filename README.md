@@ -1,6 +1,12 @@
-# fjava
+# Function Java Tools
 
-Table of Content
+This library is an attempt at create a working functional java library. By functional I mean the libray containes data types that are immutable and lazy. Along with lots of tools to create composble operations and functions.
+
+What does Lazy mean in a programming language like Java. Java is normally a strict programming language, that is values within Java are evaluted before they are used, opposed to a language like Haskell where values are not evaluted until they are used. 
+
+In Haskell all values exist in a lazy context, and nothing is evaluted before it is used, becuase in Java everyting exists within a strict context we must create a context in which the values of things are not evalueted until they are needed. Every construction within this code base computes the values within them in a lazy context.
+
+
 ===============
 
 * Persistent Data Structures
@@ -10,10 +16,12 @@ Table of Content
   * Maybe
   * Tuples
   * Map
-* Fucntions
+* Functions
   * F0-F8
   * P1-P8
   * Try0-Try8
+* Trampoline
+* Eval
 * Excpetion Handling
   * Try
 * Parsing
@@ -27,15 +35,9 @@ Table of Content
 
 
 
-This library is an attempt at create a working functional java library. By functional I mean the libray containes data types that are immutable and lazy. Along with lots of tools to create composble operations and functions.
+## Persistent Data Structures
 
-What does Lazy mean in a programming language like Java. Java is normally a strict programming language, that is values within Java are evaluted before they are used, opposed to a language like Haskell where values are not evaluted until they are used. 
-
-In Haskell all values exist in a lazy context, and nothing is evaluted before it is used, becuase in Java everyting exists within a strict context we must create a context in which the values of things are not evalueted until they are needed. Every construction within this code base computes the values within them in a lazy context.
-
-## Useful Data Structures
-
-## FList
+### FList
 
 FList is immutable and Lazy, FList is analogous to a stream of values.
 
@@ -67,11 +69,26 @@ Below is an example of creating an infite list of prime numbers.
   //[4, 5, 7, 9, 13, 14, 19, 21, 25, 27, 39, 39]
 ```
 
-## Either
+### DList
+
+### Either
 
 The Either type is paramatized by two type parameters. Each parameter represents a possible value that the either can hold, so a Either<L,R> can contain avalue of type L or a value of type R.
 
 The Either type is vary useful for describing computation that can return one of two possible values that hava differnt types, makeing it very useful for error handling.
+
+```java
+  public static Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return right(empty());
+    else if(xi.head() == 0)
+      return left("div by zero error");
+    else
+      return divBy(i, xi.tail())
+        .match(l -> l
+              ,r -> right(flist(i / xi.head(), () -> r.value())));
+  }
+```
 
 ```java
   @POST
@@ -111,6 +128,17 @@ The function either takes and Either whose left and right value are of the same 
 
 ## Maybe
 
+```java
+  public static FList<Maybe<Integer>>> divBy(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return empty();
+    else if(xi.head() == 0)
+      return flist(nothing(), () -> divBy(i, xi.tail()));
+    else
+      return flist(maybe(i / xi.head()) () -> divBy(i, xi.tail());
+  }
+```
+
 #### MaybeT
 
 ## Try
@@ -120,6 +148,8 @@ The function either takes and Either whose left and right value are of the same 
 ### Transformers
 
 ## Trampoline
+
+```java
   public static Trampoline<BigInteger> fib(Integer i) {
     return fib_prime(BigInteger.ZERO, BigInteger.ONE, i);
   }
@@ -129,48 +159,24 @@ The function either takes and Either whose left and right value are of the same 
     if(i == 1) return done(b);
     return fib_prime(b, a.add(b), i - 1);
   }
+```
 
-  public static Trampoline<FList<Maybe<Integer>>> flistTest(Integer i, FList<Integer> xi) {
-    if(xi.isEmpty())
-      return done(empty());
-    else if(xi.head() == 0) {
-      return more(() -> {
-        Trampoline<FList<Maybe<Integer>>> n = done(flist(Maybe.nothing()));
-        return asTrampoline(Bind.liftM2(n, flistTest(i,xi.tail())
-            ,(a,b) -> a.concat(b)));
-      });
-    }
-    else{
-         return more(() -> {
-        Trampoline<FList<Maybe<Integer>>> n = done(flist(Maybe.maybe(i / xi.head())));
-        return asTrampoline(Bind.liftM2(n, flistTest(i,xi.tail())
-            ,(a,b) -> a.concat(b)));
-      });
-    }
-  }
-
-  public static Trampoline<BigInteger> trampFact(BigInteger n) {
+```java
+  public static Trampoline<BigInteger> fact(BigInteger n) {
     if(n.equals(BigInteger.ZERO))
       return done(BigInteger.ONE);
     else if(n.equals(BigInteger.ONE))
       return done(BigInteger.ONE);
     else{
       return more(() -> {
-        return trampFact(n.add(BigInteger.ONE.negate())).map(i -> n.multiply(i));
+        return fact(n.add(BigInteger.ONE.negate())).map(i -> n.multiply(i));
       });
     }
   }
+```
 
-  public static Trampoline<Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
-    if(xi.isEmpty())
-      return done(right(empty()));
-    else if(xi.head() == 0)
-      return done(left("div by zero error"));
-    else
-      return more(() -> {
-        return divBy(i, xi.tail()).map(e -> e.match(l -> l, r -> right(flist(i / xi.head(), () -> r.value()))));
-      });
-  }
+
+
 
 
 
