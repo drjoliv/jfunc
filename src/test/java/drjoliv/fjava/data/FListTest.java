@@ -1,10 +1,9 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.Numbers.fibonacci;
-import static me.functional.Numbers.isEven;
-import static me.functional.Numbers.range;
-import static me.functional.Numbers.sum;
-
+import static drjoliv.fjava.Numbers.fibonacci;
+import static drjoliv.fjava.Numbers.isEven;
+import static drjoliv.fjava.Numbers.range;
+import static drjoliv.fjava.Numbers.sum;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,9 +21,9 @@ import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
-import me.functional.Numbers;
-import me.functional.data.generators.FListGenerator;
-import me.functional.functions.F1;
+import drjoliv.fjava.Numbers;
+import drjoliv.fjava.data.generators.FListGenerator;
+import drjoliv.fjava.functions.F1;
 
 @RunWith(JUnitQuickcheck.class)
 public class FListTest {
@@ -96,7 +95,7 @@ public class FListTest {
   @Property
   public void last(@From(FListGenerator.class)FList<Integer> flist, Integer i) {
     assertTrue(flist.concat(i).last().isSome());
-    assertEquals(flist.concat(i).last().value(),i);
+    assertEquals(flist.concat(i).last().toNull(),i);
   }
 
   @Property
