@@ -4,6 +4,27 @@ Table of Content
 ===============
 
 * Persistent Data Structures
+  * FList
+  * DList
+  * Either
+  * Maybe
+  * Tuples
+  * Map
+* Fucntions
+  * F0-F8
+  * P1-P8
+  * Try0-Try8
+* Excpetion Handling
+  * Try
+* Parsing
+* Monads
+  * Transformers
+    * MaybeT
+    * ReaderT
+    * WriterT
+    * StateT
+    * TryT
+
 
 
 This library is an attempt at create a working functional java library. By functional I mean the libray containes data types that are immutable and lazy. Along with lots of tools to create composble operations and functions.
