@@ -1,5 +1,11 @@
 # fjava
 
+Table of Content
+===============
+
+* Persistent Data Structures
+
+
 This library is an attempt at create a working functional java library. By functional I mean the libray containes data types that are immutable and lazy. Along with lots of tools to create composble operations and functions.
 
 What does Lazy mean in a programming language like Java. Java is normally a strict programming language, that is values within Java are evaluted before they are used, opposed to a language like Haskell where values are not evaluted until they are used. 
@@ -65,7 +71,7 @@ The Either type is vary useful for describing computation that can return one of
   }
 
   public static F1<Excpetion,Response> forbidden = 
-    e -> Response.status(Response.Status.FORBIDDEN).entity(new ErrorResponse(e.getMessage())).build()
+    e -> Response.status(Response.Status.FORBIDDEN).entity(new ErrorResponse(e.getMessage())).build();
 
   public static F2<Login,User,Response> validate =
     (l,u) -> {
@@ -91,6 +97,60 @@ The function either takes and Either whose left and right value are of the same 
 ### Monads
 
 ### Transformers
+
+## Trampoline
+  public static Trampoline<BigInteger> fib(Integer i) {
+    return fib_prime(BigInteger.ZERO, BigInteger.ONE, i);
+  }
+
+  public static Trampoline<BigInteger> fib_prime(BigInteger a, BigInteger b, Integer i) {
+    if(i == 0) return done(a);
+    if(i == 1) return done(b);
+    return fib_prime(b, a.add(b), i - 1);
+  }
+
+  public static Trampoline<FList<Maybe<Integer>>> flistTest(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return done(empty());
+    else if(xi.head() == 0) {
+      return more(() -> {
+        Trampoline<FList<Maybe<Integer>>> n = done(flist(Maybe.nothing()));
+        return asTrampoline(Bind.liftM2(n, flistTest(i,xi.tail())
+            ,(a,b) -> a.concat(b)));
+      });
+    }
+    else{
+         return more(() -> {
+        Trampoline<FList<Maybe<Integer>>> n = done(flist(Maybe.maybe(i / xi.head())));
+        return asTrampoline(Bind.liftM2(n, flistTest(i,xi.tail())
+            ,(a,b) -> a.concat(b)));
+      });
+    }
+  }
+
+  public static Trampoline<BigInteger> trampFact(BigInteger n) {
+    if(n.equals(BigInteger.ZERO))
+      return done(BigInteger.ONE);
+    else if(n.equals(BigInteger.ONE))
+      return done(BigInteger.ONE);
+    else{
+      return more(() -> {
+        return trampFact(n.add(BigInteger.ONE.negate())).map(i -> n.multiply(i));
+      });
+    }
+  }
+
+  public static Trampoline<Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return done(right(empty()));
+    else if(xi.head() == 0)
+      return done(left("div by zero error"));
+    else
+      return more(() -> {
+        return divBy(i, xi.tail()).map(e -> e.match(l -> l, r -> right(flist(i / xi.head(), () -> r.value()))));
+      });
+  }
+
 
 
 #### ReaderT
