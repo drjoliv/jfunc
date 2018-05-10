@@ -4,13 +4,15 @@ This library is an attempt at create a working functional java library. By funct
 
 What does Lazy mean in a programming language like Java. Java is normally a strict programming language, that is values within Java are evaluted before they are used, opposed to a language like Haskell where values are not evaluted until they are used. 
 
-In Haskell all values exist in a lazy context, and nothing is evaluted before it is used, becuase in Java everyting exists within a strict context we must create a context in which the values of things are not evalueted until they are needed. Every construction within this code base computes the values within them in a lazy context.
+Every construction within this code base computes the values within them in a lazy context.
 
 * [Persistent Data Structures](#persistent-data-structures)
   * [FList](#flist)
   * [DList](#dlist)
   * [Either](#either)
   * [Maybe](#maybe)
+  * [Dequeue](#dequeue)
+  * [Stack](#stack)
   * [Tuples](#tuples)
   * [Map](#map)
 * [Functions](#functions)
@@ -102,10 +104,14 @@ The Either type is vary useful for describing computation that can return one of
 
     return either(response);
   }
+```
 
+```java
   public static F1<Excpetion,Response> forbidden = 
     e -> Response.status(Response.Status.FORBIDDEN).entity(new ErrorResponse(e.getMessage())).build();
+```
 
+```java
   public static F2<Login,User,Response> validate =
     (l,u) -> {
       String ps = u.getPassword();
@@ -142,18 +148,7 @@ The function either takes and Either whose left and right value are of the same 
 
 ### F0-F8
 
-
 ### P1-P8
-
-#### MaybeT
-
-## Exception Handling
-
-### Try
-
-### Try0-Try8
-
-## Monads
 
 ## Trampoline
 
@@ -185,6 +180,16 @@ The function either takes and Either whose left and right value are of the same 
 
 ## Eval
 
+## Exception Handling
+
+### Try
+
+### Try0-Try8
+
+## Monads
+
+#### MaybeT
+
 #### ReaderT
 
 #### WriterT
@@ -192,13 +197,6 @@ The function either takes and Either whose left and right value are of the same 
 #### StateT
 
 #### ParserT
-
-Examples
-
-
-```java
-
-```
 
 ## References
 
