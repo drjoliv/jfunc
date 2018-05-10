@@ -6,9 +6,6 @@ What does Lazy mean in a programming language like Java. Java is normally a stri
 
 In Haskell all values exist in a lazy context, and nothing is evaluted before it is used, becuase in Java everyting exists within a strict context we must create a context in which the values of things are not evalueted until they are needed. Every construction within this code base computes the values within them in a lazy context.
 
-
-===============
-
 * [Persistent Data Structures](#persistent-data-structures)
   * [FList](#flist)
   * [DList](#dlist)
@@ -17,21 +14,20 @@ In Haskell all values exist in a lazy context, and nothing is evaluted before it
   * [Tuples](#tuples)
   * [Map](#map)
 * [Functions](#functions)
-  * [F0-F8](#f1-f8)
+  * [F0-F8](#f0-f8)
   * [P1-P8](#p1-p8)
-  * [Try0-Try8](#try0-try8#)
 * [Trampoline](#trampoline)
 * [Eval](#eval)
-* [Excpetion Handling](#exception-handling)
+* [Exception Handling](#exception-handling)
+  * [Try0-Try8](#try0-try8)
   * [Try](#try)
 * [Parsing](#parsing)
 * [Monads](#monads)
-  * [Transformers](#transformers)
-    * [MaybeT](#maybet)
-    * [ReaderT](#readert)
-    * [WriterT](#writert)
-    * [StateT](#statet)
-    * [TryT](#tryt)
+  * [MaybeT](#maybet)
+  * [ReaderT](#readert)
+  * [WriterT](#writert)
+  * [StateT](#statet)
+  * [TryT](#tryt)
 
 
 
@@ -51,7 +47,6 @@ Becuase FList is lazy we can create infinite list of elements. The below example
 Below is an example of creating an infite list of prime numbers.
 
 ```java
-
   public static boolean isPrime(Integer i) {
    final int sqrtOfi = (int)Math.sqrt(i);
    return allTrueWhile(primes, p -> p <= sqrtOfi
@@ -126,7 +121,7 @@ Their are no else/if statements in the above code, we abstract them away with bi
 
 The function either takes and Either whose left and right value are of the same type, and returns the value within the Either.
 
-## Maybe
+### Maybe
 
 ```java
   public static FList<Maybe<Integer>>> divBy(Integer i, FList<Integer> xi) {
@@ -147,17 +142,18 @@ The function either takes and Either whose left and right value are of the same 
 
 ### F0-F8
 
-### Try0-Try8
 
 ### P1-P8
 
 #### MaybeT
 
-## Try
+## Exception Handling
 
-### Monads
+### Try
 
-### Transformers
+### Try0-Try8
+
+## Monads
 
 ## Trampoline
 
@@ -186,6 +182,8 @@ The function either takes and Either whose left and right value are of the same 
     }
   }
 ```
+
+## Eval
 
 #### ReaderT
 
