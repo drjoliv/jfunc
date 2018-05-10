@@ -9,29 +9,29 @@ In Haskell all values exist in a lazy context, and nothing is evaluted before it
 
 ===============
 
-* [Persistent Data Structures](persistent-data-structures)
+* [Persistent Data Structures](#persistent-data-structures)
   * [FList](#flist)
   * [DList](#dlist)
   * [Either](#either)
   * [Maybe](#maybe)
   * [Tuples](#tuples)
   * [Map](#map)
-* Functions
-  * F0-F8
-  * P1-P8
-  * Try0-Try8
-* Trampoline
-* Eval
-* Excpetion Handling
-  * Try
-* Parsing
-* Monads
-  * Transformers
-    * MaybeT
-    * ReaderT
-    * WriterT
-    * StateT
-    * TryT
+* [Functions](#functions)
+  * [F0-F8](#f1-f8)
+  * [P1-P8](#p1-p8)
+  * [Try0-Try8](#try0-try8#)
+* [Trampoline](#trampoline)
+* [Eval](#eval)
+* [Excpetion Handling](#exception-handling)
+  * [Try](#try)
+* [Parsing](#parsing)
+* [Monads](#monads)
+  * [Transformers](#transformers)
+    * [MaybeT](#maybet)
+    * [ReaderT](#readert)
+    * [WriterT](#writert)
+    * [StateT](#statet)
+    * [TryT](#tryt)
 
 
 
@@ -139,6 +139,18 @@ The function either takes and Either whose left and right value are of the same 
   }
 ```
 
+## Tuples
+
+## Map
+
+## Functions
+
+### F0-F8
+
+### Try0-Try8
+
+### P1-P8
+
 #### MaybeT
 
 ## Try
@@ -174,11 +186,6 @@ The function either takes and Either whose left and right value are of the same 
     }
   }
 ```
-
-
-
-
-
 
 #### ReaderT
 
