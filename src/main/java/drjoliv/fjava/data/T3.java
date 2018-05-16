@@ -23,7 +23,6 @@ public class T3<A,B,C> {
    *
    * @param a the first element of the tuple.
    * @param b the second element of this product.
-   * @param b the second element of this product.
    * @param c the third element of this product.
    * @return the product of {@code a} x {@code b} x {@code c}.
    */
