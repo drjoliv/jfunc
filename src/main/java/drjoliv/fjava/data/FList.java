@@ -20,7 +20,6 @@ import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * 
@@ -32,7 +31,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
   /**
   * The witness type of FList.
   */
-  public static class μ implements Witness{}
+  public static class μ implements drjoliv.fjava.hkt.Witness{}
 
     public static BindUnit<FList.μ> unit = new BindUnit<FList.μ>() {
       @Override
@@ -764,6 +763,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
         return false;
     }
 
+    public static boolean trues(FList<Boolean> list) {
+      F2<Boolean, Boolean, Boolean> fn = Boolean::logicalAnd;
+      return list.foldr(fn,Boolean.TRUE).booleanValue();
+    }
+
     /**
      *
      *
@@ -885,7 +889,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     }
 
 
-    public static <M extends Witness,A> Maybe<Bind<M,FList<A>>> merge(FList<Bind<M,FList<A>>> listOfMonadsOfFList) {
+    public static <M extends drjoliv.fjava.hkt.Witness,A> Maybe<Bind<M,FList<A>>> merge(FList<Bind<M,FList<A>>> listOfMonadsOfFList) {
       return listOfMonadsOfFList.reduce((m1,m2) -> Bind.liftM2(m1,m2, (l1,l2) -> l1.concat(l2)));
     }
 
