@@ -1,20 +1,19 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.FList.flist;
+import static drjoliv.fjava.data.FList.flist;
 
 import java.util.function.Function;
 
-import me.functional.data.FList;
-import me.functional.data.Identity;
-import me.functional.data.Maybe;
-import me.functional.data.Unit;
-import me.functional.functions.F1;
-import me.functional.functions.F2;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Hkt3;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.FList;
+import drjoliv.fjava.data.Maybe;
+import drjoliv.fjava.data.Unit;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Hkt3;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  *
@@ -22,7 +21,7 @@ import me.functional.type.BindUnit;
  */
 public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
 
-  public static class μ implements Witness {}
+  public static interface μ extends Witness {}
 
   private final F1<R,Bind<M,A>> runReaderT;
   private final BindUnit<M> mUnit;
@@ -33,8 +32,8 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   @Override
-  public BindUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>> yield() {
-    return new BindUnit<Hkt2<me.functional.transformers.ReaderT.μ, M, R>>() {
+  public BindUnit<Hkt2<drjoliv.fjava.control.bind.ReaderT.μ, M, R>> yield() {
+    return new BindUnit<Hkt2<drjoliv.fjava.control.bind.ReaderT.μ, M, R>>() {
       @Override
       public <B> Bind<Hkt2<μ, M, R>, B> unit(B b) {
         return ReaderT.<M,R,B>unit().call(mUnit,b);
@@ -66,37 +65,46 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   /**
-  *
-  * @param ma A monad that will be lifted into the context of a ReaderT
-  * @return a ReaderT
-  * 
+  * Lifts the given computation into a readerT.
+  * @param ma A computation that will be lifted(wrapped) into the context of a readerT
+  * @param <M> the witness type of the contained compuation or context.
+  * @param <R> the type of the enviroment.
+  * @param <A> the type of the value obtained after running this readerT.
+  * @return a ReaderT whose emmbed with the given computation.
   */
   public static <M extends Witness,R,A> ReaderT<M,R,A> lift(Bind<M,A> ma) {
     return ReaderT.readerT(r -> ma, ma.yield());
   }
 
   /**
+  * Computes each readerT in a list, and returns a readerT containing the list of the results.
   *
-  * @param readers
-  * @return
+  * @param readers the list of readerTs, that will be transformed into a readerT of list.
+  * @param <M> the witness type of the contained compuation or context.
+  * @param <R> the type of the enviroment.
+  * @param <A> the type of the value obtained after running this readerT.
+  * @return a readerT that computes a list of values
   */
   public static <M extends Witness,R,A> ReaderT<FList.μ,R,Bind<M,A>> compose(FList<ReaderT<M,R,A>> readers) {
     return ReaderT.readerT((R r) -> {
       return readers.map(reader -> reader.runReader(r));
-    }, FList.monadUnit);
+    },FList.unit );
   }
 
   /**
-   *
-   * @param r
-   * @return
+   * Creates a monadic like context from the given enviroment.
+   * @param r the envirement needed to to compute a bind value.
+   * @return a bind value.
    */
   public Bind<M,A> runReader(R r) {
    return runReaderT.call(r); 
   }
 
   /**
-   *
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <M>
+   * @param <R>
    * @return
    */
   public static <M extends Witness, R> ReaderT<M,R,R> ask(BindUnit<M> mUnit) {
@@ -104,6 +112,8 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   /**
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
    *
    * @return
    */
@@ -112,6 +122,10 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   /**
+   *
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
    *
    * @return
    */
@@ -122,6 +136,9 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
   }
 
   /**
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
    *
    * @return
    */
@@ -134,19 +151,33 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
    *
    * @param runReaderT
    * @param mUnit
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
    * @return
    */
   public static <M extends Witness, R, A> ReaderT<M, R, A> readerT(F1<R, Bind<M, A>> runReaderT, BindUnit<M> mUnit) {
     return new ReaderT<M, R, A>(runReaderT, mUnit);
   }
 
+  /**
+   *
+   *
+   * @param wider
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public static <M extends Witness, R, A> ReaderT<M, R, A> asReaderT(Bind<Hkt2<ReaderT.μ, M, R>, A> wider) {
     return (ReaderT<M, R, A>) wider;
   }
 
   /**
-   *
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
    * @return
    */
   public static <M extends Witness, R, A> F2<BindUnit<M>, A, ReaderT<M, R, A>> unit() {
@@ -155,6 +186,9 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
 
   /**
    *
+   * @param <M> the witness type of the contained compuation or context.
+   * @param <R> the type of the enviroment.
+   * @param <A> the type of the value obtained after running this readerT.
    *
    * @param flist
    * @return
@@ -188,13 +222,13 @@ public class ReaderT <M extends Witness,R,A> implements Bind<Hkt2<ReaderT.μ,M,R
 
     @Override
     public <B> Reader<R,B> semi(
-        Bind<Hkt2<μ, me.functional.data.Identity.μ, R>, B> mb) {
+        Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, R>, B> mb) {
       return new Reader<R,B>(super.semi(mb).runReaderT);
     }
 
     @Override
     public <B> Reader<R,B> bind(
-        F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, R>, B>> fn) {
+        F1<? super A, ? extends Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, R>, B>> fn) {
       return new Reader<R,B>(super.bind(fn).runReaderT);
     }
 

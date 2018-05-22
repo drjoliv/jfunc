@@ -1,15 +1,15 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.T2.t2;
+import static drjoliv.fjava.data.T2.t2;
 
-import me.functional.data.T2;
-import me.functional.functions.F1;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Hkt3;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
-import me.functional.type.Stream;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.Stream;
+import drjoliv.fjava.data.T2;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Hkt3;
+import drjoliv.fjava.hkt.Witness;
 
 public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<ParserT.μ,A,S,T>  {
 
@@ -26,7 +26,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
     return new ParserT<S,T,B>(runParser.then(pResult -> {
       if(pResult.isReuslt()) {
         T2<A,Stream<S,T>> p = pResult.result();
-        return ParserResult.result(t2(fn.call(p.fst),p.snd));
+        return ParserResult.result(t2(fn.call(p._1),p._2));
       } else {
         return ParserResult.error(pResult.errorMessage());
       }
@@ -39,7 +39,7 @@ public class ParserT<S,T,A> implements Bind<Hkt2<ParserT.μ,S,T>,A>,  Hkt3<Parse
        ParserResult<A,S,T> result = runParser.call(stream);
        if(result.isReuslt()) {
          T2<A,Stream<S,T>> p = result.result();
-         return asParser(fn.call(p.fst)).runParser.call(p.snd);
+         return asParser(fn.call(p._1)).runParser.call(p._2);
        } else {
          return ParserResult.error(result.errorMessage());
        }

@@ -1,4 +1,4 @@
-package me.functional.data.generators;
+package drjoliv.fjava.data.generators;
 
 import com.pholser.junit.quickcheck.generator.ComponentizedGenerator;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
@@ -6,7 +6,7 @@ import static com.pholser.junit.quickcheck.generator.Lambdas.*;
 import com.pholser.junit.quickcheck.generator.java.util.function.FunctionGenerator;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 
-import me.functional.functions.F1;
+import drjoliv.fjava.functions.F1;
 
 public class F1Generator<A,B> extends ComponentizedGenerator<F1> {
 

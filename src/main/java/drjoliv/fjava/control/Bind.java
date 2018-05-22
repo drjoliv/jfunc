@@ -1,18 +1,20 @@
-package me.functional.type;
+package drjoliv.fjava.control;
 
 
-import me.functional.functions.F1;
-import me.functional.functions.F2;
-import me.functional.functions.F3;
-import me.functional.functions.F4;
-import me.functional.hkt.Witness;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.functions.F3;
+import drjoliv.fjava.functions.F4;
+import drjoliv.fjava.hkt.Witness;
 
 public interface Bind<M extends Witness,A> extends Functor<M,A> {
 
   //m >>= return == m
   //(return x) >>= f == f x
   //(m >>= f) >>= g == m >>= (\x -> f x >>= g)
-  public <B> Bind<M,B> bind(final F1<? super A,? extends Bind<M,B>> fn);
+  public default <B> Bind<M,B> bind(final F1<? super A,? extends Bind<M,B>> fn) {
+    return join(map(fn));
+  }
 
   public <B> Bind<M,B> semi(Bind<M,B> mb);
 

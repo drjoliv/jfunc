@@ -1,16 +1,16 @@
-package me.functional.data;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.Either.left;
-import static me.functional.data.Either.right;
-import static me.functional.functions.Eval.later;
+import static drjoliv.fjava.control.bind.Eval.later;
+import static drjoliv.fjava.data.Either.left;
+import static drjoliv.fjava.data.Either.right;
 
-import me.functional.functions.Eval;
-import me.functional.functions.F1;
-import me.functional.functions.Try0;
-import me.functional.hkt.Hkt;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.Either;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.Try0;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Witness;
 
 public class Try<A> implements Bind<Try.μ,A>, Hkt<Try.μ,A> {
 

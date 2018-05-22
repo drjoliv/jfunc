@@ -1,13 +1,14 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import me.functional.data.Maybe;
-import me.functional.functions.F1;
-import me.functional.functions.F2;
-import me.functional.hkt.Hkt;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.Maybe;
+import static drjoliv.fjava.data.Maybe.*;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Witness;
 
 public class MaybeT<M extends Witness,A> implements Bind<Hkt<MaybeT.μ,M>,A>, Hkt2<MaybeT.μ,M,A> {
 
@@ -29,11 +30,9 @@ public class MaybeT<M extends Witness,A> implements Bind<Hkt<MaybeT.μ,M>,A>, Hk
   @Override
   public <B> MaybeT<M,B> bind(F1<? super A, ? extends Bind<Hkt<μ, M>, B>> fn) {
     return maybeT(runMaybeT.bind(maybe_value -> {
-     if(maybe_value.isSome()) {
-       return asMaybeT(fn.call(maybe_value.value())).runMaybeT;
-     }
-     else
-       return mUnit.unit(Maybe.nothing());
+      return maybe_value.match(
+          n -> mUnit.unit(nothing())
+        , j -> asMaybeT(fn.call(j.value())).runMaybeT);
    }));
   }
 

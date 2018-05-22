@@ -1,17 +1,16 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.Try.failure;
-import static me.functional.data.Try.success;
+import static drjoliv.fjava.control.bind.Try.failure;
+import static drjoliv.fjava.control.bind.Try.success;
 
-import me.functional.data.Either;
-import me.functional.data.Try;
-import me.functional.functions.F0;
-import me.functional.functions.F1;
-import me.functional.hkt.Hkt;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.Either;
+import drjoliv.fjava.functions.F0;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  *

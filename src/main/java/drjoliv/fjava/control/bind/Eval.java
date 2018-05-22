@@ -1,11 +1,12 @@
-package me.functional.functions;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.Trampoline.done;
+import static drjoliv.fjava.control.bind.Trampoline.done$;
 
-import me.functional.Trampoline;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.functions.F0;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.hkt.Witness;
 
 public abstract class Eval<A> implements Bind<Eval.μ,A>{
 
@@ -62,7 +63,7 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
 
     @Override
     public <B> Eval<B> map(F1<? super A, B> fn) {
-      return now(fn.call(value));
+      return later(fn.curry().call(value));
     }
 
     @Override
@@ -83,7 +84,7 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     private A value;
 
     private Later(F0<A> fn) {
-      this.tramp = done(fn);
+      this.tramp = done$(fn);
     }
 
     private Later(Trampoline<A> fn) {
@@ -110,7 +111,7 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
       if(tramp != null) {
         return new Later<B>(tramp.map(fn));
       } else {
-        return new Later<B>(done(fn.curry().call(value)));
+        return new Later<B>(done$(fn.curry().call(value)));
       }
     }
 
@@ -129,7 +130,7 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     private final Trampoline<A> tramp;
 
     private Always(F0<A> fn) {
-      this.tramp = done(fn);
+      this.tramp = done$(fn);
     }
 
     private Always(Trampoline<A> tramp) {
@@ -155,6 +156,5 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     public <B> Eval<B> semi(Bind<μ, B> mb) {
       return bind(a -> mb);
     }
-
   }
 }

@@ -1,10 +1,10 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.Numbers.fibonacci;
-import static me.functional.Numbers.isEven;
-import static me.functional.Numbers.range;
-import static me.functional.Numbers.sum;
-
+import static drjoliv.fjava.Numbers.fibonacci;
+import static drjoliv.fjava.Numbers.isEven;
+import static drjoliv.fjava.Numbers.range;
+import static drjoliv.fjava.Numbers.sum;
+import static drjoliv.fjava.data.Either.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -25,14 +25,16 @@ import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
-import me.functional.Numbers;
-import me.functional.data.generators.F1Generator;
-import me.functional.data.generators.FListGenerator;
-import me.functional.data.Either;
-import me.functional.data.Either.RightException;
-
-import static me.functional.data.Either.*;
-import me.functional.functions.F1;
+import drjoliv.fjava.Numbers;
+import drjoliv.fjava.control.bind.Trampoline;
+import static drjoliv.fjava.control.bind.Trampoline.*;
+import drjoliv.fjava.data.FList;
+import static drjoliv.fjava.data.FList.*;
+import drjoliv.fjava.data.Either;
+import drjoliv.fjava.data.Either.RightException;
+import drjoliv.fjava.data.generators.F1Generator;
+import drjoliv.fjava.data.generators.FListGenerator;
+import drjoliv.fjava.functions.F1;
 
 @RunWith(JUnitQuickcheck.class)
 public class EitherTest {
@@ -45,6 +47,24 @@ public class EitherTest {
       fail(s);
       return a;
     };
+  }
+
+  public static Trampoline<Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return done(right(empty()));
+    else if(xi.head() == 0)
+      return done(left("div by zero error"));
+    else
+      return more(() -> {
+        return divBy(i,xi.tail()).map( e -> e.match(
+              l -> l
+            , r -> right(flist(i / xi.head(), () -> r.value()))));
+      });
+  }
+
+  @Test
+  public void readMeCode() {
+   System.out.println(divBy(1000, range(1,2000)).result());
   }
 
   @Test

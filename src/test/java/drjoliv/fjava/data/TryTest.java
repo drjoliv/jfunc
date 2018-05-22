@@ -1,13 +1,13 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.data.Try.*;
+import static drjoliv.fjava.control.bind.Try.*;
 import static org.junit.Assert.*;
 
 import java.util.IllegalFormatException;
 
 import org.junit.Test;
 
-import me.functional.data.Try.*;
+import drjoliv.fjava.control.bind.Try;
 
 public class TryTest {
 

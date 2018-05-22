@@ -29,6 +29,11 @@ import drjoliv.fjava.hkt.Witness;
  */
 public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Iterable<A> {
 
+  /**
+  * The witness type of FList.
+  */
+  public static class μ implements Witness{}
+
     public static BindUnit<FList.μ> unit = new BindUnit<FList.μ>() {
       @Override
       public <A> Bind<μ, A> unit(A a) {
@@ -63,10 +68,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     };
   }
 
-  /**
-  * The witness type of FList.
-  */
-  public static class μ implements Witness{}
 
 
   public abstract FList<A> update(int i, A a);

@@ -24,6 +24,15 @@ import static drjoliv.fjava.control.bind.Eval.*;
 public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>, 
        Alternative<Hkt<Maybe.μ, A>> {
 
+  public String toString() {
+    if(isSome()) {
+      return "Just : " + toNull();
+    }
+    else 
+      return "Nothing";
+  }
+  public abstract <B> B match(F1<Nothing<A>,B> left, F1<Just<A>,B> right);
+
   @Override
   public Maybe<A> alt(Alternative<Hkt<Maybe.μ, A>> alt) {
     return isSome() ? this : asMaybe(alt);
@@ -31,14 +40,6 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
 
   @Override
   public abstract <B> Maybe<B> map(F1<? super A, B> fn);
-
-  /**
-   *
-   * @param just
-   * @param nothing
-   * @return
-   */
-  public abstract A caseOf(F1<Just<A>,A> just, F1<Nothing<A>,A> nothing);
 
 
   public static interface μ extends Witness {}
@@ -186,13 +187,13 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public A caseOf(F1<Just<A>, A> just, F1<Nothing<A>, A> nothing) {
-      return nothing.call(this);
+    public A toNull() {
+      return null;
     }
 
     @Override
-    public A toNull() {
-      return null;
+    public <B> B match(F1<Nothing<A>, B> left, F1<Just<A>, B> right) {
+      return left.call(this);
     }
   }
 
@@ -236,8 +237,8 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public A caseOf(F1<Just<A>, A> just, F1<Nothing<A>, A> nothing) {
-      return just.call(this);
+    public <B> B match(F1<Nothing<A>, B> left, F1<Just<A>, B> right) {
+      return right.call(this);
     }
   }
 
@@ -246,8 +247,6 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   }
 
   public static <A> F1<Maybe<Maybe<A>>, Maybe<A>> join() {
-    return m -> Bind.<μ,A>join()
-      .then(Maybe::asMaybe)
-      .call(m);
+    return m -> Bind.<μ, A>join().then(Maybe::asMaybe).call(m);
   }
 }
