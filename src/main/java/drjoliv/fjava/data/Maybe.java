@@ -24,13 +24,6 @@ import static drjoliv.fjava.control.bind.Eval.*;
 public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>, 
        Alternative<Hkt<Maybe.μ, A>> {
 
-  public String toString() {
-    if(isSome()) {
-      return "Just : " + toNull();
-    }
-    else 
-      return "Nothing";
-  }
   public abstract <B> B match(F1<Nothing<A>,B> left, F1<Just<A>,B> right);
 
   @Override
