@@ -1,4 +1,4 @@
-package me.functional.hkt;
+package drjoliv.fjava.hkt;
 
 /**
  * A Higher Kinded Type with two type parameters.

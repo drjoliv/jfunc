@@ -1,21 +1,22 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.functions.Eval.later;
-import static me.functional.type.Bind.join;
+import static drjoliv.fjava.control.Bind.join;
+import static drjoliv.fjava.control.bind.Eval.later;
 
 import java.util.function.Consumer;
 
-import me.functional.functions.Eval;
-import me.functional.functions.F0;
-import me.functional.functions.F1;
-import me.functional.hkt.Hkt;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.control.bind.Eval;
+import drjoliv.fjava.functions.F0;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Witness;
 
 /**
- *
+ * {@code Either<L,R> } represents two posssible values; there are two instantiable subclasses of {@code Either<l,r>}, 
+ * {@code Left<L,R>} or {@code Right<L,R>}.
  *
  * @author Desonte 'drjoliv' Jolivet
  */
@@ -23,19 +24,33 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
 
   public static class μ implements Witness{}
 
+  /**
+   *
+   * @param fn1
+   * @param fn2
+   * @return the either whose contensts have been transformed by fn1, or fn2.
+   */
   public abstract <A,B> Either<A,B> bimap(F1<? super L,A> fn1, F1<? super R,B> fn2);
 
   /**
-   *
-   *
-   * @return
+   * Returns true if this either is right otherwise it returns false.
+   * @return true if this either is right otherwise it returns false.
    */
   public abstract boolean isRight();
 
   /**
    *
    *
-   * @return
+   * @param left a function applied to this instrance of either if it is a left.
+   * @param right a function applied to this instance of either if it is a right.
+   * @return the value reaturned by the left or right function.
+   */
+  public abstract <A> A match(F1<Left<L,R>,A> left, F1<Right<L,R>,A> right);
+
+  /**
+   *
+   *
+   * @return boolean
    */
   public abstract boolean isLeft();
 
@@ -75,17 +90,21 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   *
   *
   * @param l
+  * @param <L>
+  * @param <R>
   * @return
   */
   public static <L,R> Either<L,R> left(L l) {
-    return new Left<>(() -> l);
+    return left$(() -> l);
   }
 
   /**
   *
   *
   * @param l
-  * @return
+   * @param <L>
+  * @param <R>
+ * @return
   */
   public static <L,R> Either<L,R> left$(F0<L> l) {
     return new Left<>(l);
@@ -95,7 +114,9 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   *
   *
   * @param l
-  * @return
+    * @param <L>
+  * @param <R>
+* @return
   */
   public static <L,R> Either<L,R> left$(Eval<L> l) {
     return new Left<>(l);
@@ -104,18 +125,23 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   /**
   *
   *
-  * @param r
-  * @return
+  * @param r the value to 
+   * @param <L>
+  * @param <R>
+ * @return
   */
   public static <L,R> Either<L,R> right(R r) {
-    return new Right<>(() -> r);
+    return right$(() -> r);
   }
+
 
   /**
   *
   *
   * @param r
-  * @return
+   * @param <L>
+  * @param <R>
+ * @return
   */
   public static <L,R> Either<L,R> right$(F0<R> r) {
     return new Right<>(r);
@@ -125,7 +151,9 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
   *
   *
   * @param r
-  * @return
+   * @param <L>
+  * @param <R>
+ * @return
   */
   public static <L,R> Either<L,R> right$(Eval<R> r) {
     return new Right<>(r);
@@ -135,22 +163,32 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
    *
    *
    * @param monad
-   * @return
+   * @param <L>
+  * @param <R>
+  * @return
    */
   @SuppressWarnings("unchecked")
   public static <L, R> Either<L, R> asEither(Bind<Hkt<Either.μ, L>, R> monad) {
     return (Either<L, R>) monad;
   }
 
-  private static class Left<L,R> extends Either<L,R> {
+  /**
+  *
+  */
+  public static class Left<L,R> extends Either<L,R> {
+
+    @Override
+    public String toString() {
+      return "Left : "   + l.value();
+    }
 
     private final Eval<L> l;
 
-    public Left(F0<L> l) {
+    private Left(F0<L> l) {
       this.l = later(l);
     }
 
-    public Left(Eval<L> l) {
+    private Left(Eval<L> l) {
       this.l = l;
     }
 
@@ -169,6 +207,15 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       return l.value();
     }
 
+    /**
+     *
+     *
+     * @return
+     */
+      public L value() {
+      return l.value();
+    }
+
     @Override
     public R valueR() throws LeftException{
       throw new LeftException();
@@ -179,18 +226,40 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     public <A, B> Either<A, B> bimap(F1<? super L, A> fn1, F1<? super R, B> fn2) {
       return left$(l.map(fn1));
     }
+
+    @Override
+    public <A> A match(F1<Left<L, R>, A> left, F1<Right<L, R>, A> right) {
+      return left.call(this);
+    }
   }
 
-  private static class Right<L, R> extends Either<L, R> {
+  /**
+  *
+  */
+  public static class Right<L, R> extends Either<L, R> {
+
+    @Override
+    public String toString() {
+      return "Right : " + r.value();
+    }
 
     private final Eval<R> r;
 
-    public Right(F0<R> r) {
+    private Right(F0<R> r) {
       this.r = later(r);
     }
 
-    public Right(Eval<R> r) {
+    private Right(Eval<R> r) {
       this.r = r;
+    }
+
+    /**
+     *
+     *
+     * @return
+     */
+      public R value() {
+      return r.value();
     }
 
     @Override
@@ -217,6 +286,11 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
     public <A, B> Either<A, B> bimap(F1<? super L, A> fn1, F1<? super R, B> fn2) {
       return right$(r.map(fn2));
     }
+
+    @Override
+    public <A> A match(F1<Left<L, R>, A> left, F1<Right<L, R>, A> right) {
+      return right.call(this);
+    }
   }
 
   /**
@@ -239,22 +313,28 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
 
     @Override
     public <B> RightProjection<L, B> bind(
-        F1<? super R, ? extends Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B>> fn) {
+        F1<? super R, ? extends Bind<Hkt<drjoliv.fjava.data.Either.RightProjection.μ, L>, B>> fn) {
       return asRightProjection(join(map(fn.then(RightProjection::asRightProjection))));
     }
 
     @Override
     public <B> RightProjection<L, B> semi(
-        Bind<Hkt<me.functional.data.Either.RightProjection.μ, L>, B> mb) {
+        Bind<Hkt<drjoliv.fjava.data.Either.RightProjection.μ, L>, B> mb) {
       return bind(a -> mb);
     }
 
     @Override
-    public BindUnit<Hkt<me.functional.data.Either.RightProjection.μ, L>> yield() {
+    public BindUnit<Hkt<drjoliv.fjava.data.Either.RightProjection.μ, L>> yield() {
       return RightProjection::rightProjection;
     }
 
-    public RightProjection<L, R> consume(Consumer<R> consumer) {
+    /**
+     *
+     *
+     * @param consumer
+     * @return
+     */
+      public RightProjection<L, R> consume(Consumer<R> consumer) {
       Either<L,R> either = e.value();
       either.bimap(F1.<L>identity(), r -> {
         consumer.accept(r);
@@ -263,11 +343,22 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       return this;
     }
 
-    public Either<L,R> either() {
+    /**
+     *
+     *
+     * @return
+     */
+      public Either<L,R> either() {
       return e.value();
     }
 
-    public static <L,R> RightProjection<L,R> asRightProjection(Bind<Hkt<RightProjection.μ,L>,R> monad) {
+    /**
+     *
+     *
+     * @param monad
+     * @return
+     */
+      public static <L,R> RightProjection<L,R> asRightProjection(Bind<Hkt<RightProjection.μ,L>,R> monad) {
       return (RightProjection<L,R>) monad;
     }
 
@@ -296,22 +387,28 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
 
     @Override
     public <B> LeftProjection<B, R> bind(
-        F1<? super L, ? extends Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B>> fn) {
+        F1<? super L, ? extends Bind<Hkt<drjoliv.fjava.data.Either.LeftProjection.μ, R>, B>> fn) {
       return asLeftProjection(join(map(fn.then(LeftProjection::asLeftProjection))));
     }
 
     @Override
     public <B> LeftProjection<B, R> semi(
-        Bind<Hkt<me.functional.data.Either.LeftProjection.μ, R>, B> mb) {
+        Bind<Hkt<drjoliv.fjava.data.Either.LeftProjection.μ, R>, B> mb) {
       return bind(a -> mb);
     }
 
     @Override
-    public BindUnit<Hkt<me.functional.data.Either.LeftProjection.μ, R>> yield() {
+    public BindUnit<Hkt<drjoliv.fjava.data.Either.LeftProjection.μ, R>> yield() {
       return LeftProjection::leftProjection;
     }
 
-    public LeftProjection<L, R> consume(Consumer<L> consumer) {
+    /**
+     *
+     *
+     * @param consumer
+     * @return
+     */
+      public LeftProjection<L, R> consume(Consumer<L> consumer) {
       Either<L,R> either = e.value();
       either.bimap(l -> {
         consumer.accept(l);
@@ -320,11 +417,22 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       return this;
     }
 
-    public Either<L,R> either() {
+    /**
+     *
+     *
+     * @return
+     */
+      public Either<L,R> either() {
       return e.value();
     }
 
-    private static <L,R> LeftProjection<L,R> leftProjection(L l) {
+    /**
+     *
+     *
+     * @param l
+     * @return
+     */
+      private static <L,R> LeftProjection<L,R> leftProjection(L l) {
       return new LeftProjection<L,R>(later(() -> left(l)));
     }
 
@@ -337,6 +445,13 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
       public static <L,R> LeftProjection<L,R> asLeftProjection(Bind<Hkt<LeftProjection.μ,R>,L> monad) {
       return (LeftProjection<L, R>) monad;
     }
+  }
+
+  public static <A> A either(Either<A,A> e) {
+    return e.match(
+      l -> l.value()
+     ,r -> r.value() 
+    );
   }
 
   public static class LeftException extends RuntimeException {
@@ -356,7 +471,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R> {
      */
     private static final long serialVersionUID = 6550427707346121413L;
 
-    public RightException(){
+    public RightException() {
       super("This Either contains a Right value, but valueL was called.");
     }
   }

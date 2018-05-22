@@ -1,15 +1,15 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.T2.t2;
+import static drjoliv.fjava.data.T2.t2;
 
-import me.functional.data.Identity;
-import me.functional.data.T2;
-import me.functional.functions.F1;
-import me.functional.functions.F2;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.T2;
+import drjoliv.fjava.functions.F1;
+import static drjoliv.fjava.functions.F1.*;
+import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  *
@@ -33,7 +33,7 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
     return new StateT<M,S,B>(s -> {
       return runState.call(s)
         .bind(p -> {
-        return asStateT(fn.call(p.snd)).runState.call(p.fst);
+        return asStateT(fn.call(p._2)).runState.call(p._1);
       });
     }, mUnit);
   }
@@ -46,12 +46,12 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
   @Override
   public <B> Bind<Hkt2<μ, M, S>, B> map(final F1<? super A, B> fn) {
      return new StateT<M,S,B>(s -> {
-      return runState.call(s).map(p -> t2(p.fst,fn.call(p.snd)));
+      return runState.call(s).map(p -> p.bimap(identity(),fn));
     },mUnit);
   }
 
   @Override
-  public BindUnit<Hkt2<me.functional.transformers.StateT.μ, M, S>> yield() {
+  public BindUnit<Hkt2<drjoliv.fjava.control.bind.StateT.μ, M, S>> yield() {
     return unit(mUnit);
   }
 
@@ -69,11 +69,11 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
     }
 
     public A execute(final S s) {
-      return evalState(s).value().snd;
+      return evalState(s).value()._2;
     }
 
     public S executeState(final S s) {
-      return evalState(s).value().fst;
+      return evalState(s).value()._1;
     }
 
     @Override
@@ -83,12 +83,12 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
 
     @Override
     public <B> State<S,B> bind(
-        F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, S>, B>> fn) {
+        F1<? super A, ? extends Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, S>, B>> fn) {
       return new State<S,B>(asStateT(super.bind(fn)).runState);
     }
 
     @Override
-    public <B> State<S,B> semi(Bind<Hkt2<μ, me.functional.data.Identity.μ, S>, B> mb) {
+    public <B> State<S,B> semi(Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, S>, B> mb) {
       return bind(s -> mb);
     }
     
@@ -161,7 +161,7 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
   public static <S> BindUnit<Hkt2<StateT.μ,Identity.μ,S>> stateUnit() {
     return new BindUnit<Hkt2<StateT.μ,Identity.μ,S>>() {
       @Override
-      public <A> Bind<Hkt2<μ, me.functional.data.Identity.μ, S>, A> unit(A a) {
+      public <A> Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, S>, A> unit(A a) {
         return StateT.unit(a);
       }
     };

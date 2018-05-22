@@ -1,7 +1,6 @@
-package me.functional.data;
+package drjoliv.fjava.data;
 
-import static me.functional.data.Identity.asIdentity;
-
+import static drjoliv.fjava.control.bind.Identity.asIdentity;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -9,7 +8,8 @@ import org.junit.runner.RunWith;
 
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
-import me.functional.type.Bind;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.bind.Identity;
 
 @RunWith(JUnitQuickcheck.class)
 public class IdentityTest {

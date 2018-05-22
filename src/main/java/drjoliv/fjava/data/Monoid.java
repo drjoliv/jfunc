@@ -1,4 +1,4 @@
-package me.functional.type;
+package drjoliv.fjava.data;
 
 public interface Monoid<W> {
   W mempty();

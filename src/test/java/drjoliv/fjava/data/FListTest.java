@@ -12,7 +12,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import com.pholser.junit.quickcheck.From;
@@ -28,9 +30,12 @@ import drjoliv.fjava.functions.F1;
 @RunWith(JUnitQuickcheck.class)
 public class FListTest {
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   @Property
   public void add(@From(FListGenerator.class)FList<Integer> flist, Integer i) {
-    assertEquals(flist.add(i).unsafeHead(), i);
+    assertEquals(flist.add(i).head(), i);
   }
 
   @Property
@@ -167,6 +172,26 @@ public class FListTest {
   @Property
   public void filter(@From(FListGenerator.class)FList<Integer> m) {
     assertTrue(isEven(sum(m.filter(Numbers::isEven))));
+  }
+
+  @Property
+  public void update(@From(FListGenerator.class)FList<Integer> m, Integer a, @InRange(min = "0")int i) {
+    if(i - 1 > m.size()) {
+      thrown.expect(IndexOutOfBoundsException.class);
+      m.update(i,a);
+    } else {
+      FList<Integer> m2 = m.update(i,a);
+      assertEquals(m2.get(i), a);
+    }
+  }
+
+  @Property
+  public void suffixes(@From(FListGenerator.class)FList<Integer> m) {
+    FList<FList<Integer>> mSuff = m.suffixes();
+    for(FList<Integer> ms : mSuff) {
+      assertEquals(ms, m);
+      m = m.tail();
+    }
   }
 
   @Test

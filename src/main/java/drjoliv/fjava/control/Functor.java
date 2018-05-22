@@ -1,7 +1,7 @@
-package me.functional.type;
+package drjoliv.fjava.control;
 
-import me.functional.functions.F1;
-import me.functional.hkt.Witness;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  * Functor is a context in which values are transformed.

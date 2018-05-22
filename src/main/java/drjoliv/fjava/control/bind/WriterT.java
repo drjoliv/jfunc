@@ -1,23 +1,22 @@
-package me.functional.transformers;
+package drjoliv.fjava.control.bind;
 
-import static me.functional.data.FList.flist;
-import static me.functional.data.Identity.id;
-import static me.functional.data.T2.t2;
+import static drjoliv.fjava.control.bind.Identity.id;
+import static drjoliv.fjava.data.FList.flist;
+import static drjoliv.fjava.data.T2.t2;
 
-import me.functional.data.FList;
-import me.functional.data.Identity;
-import me.functional.data.Maybe;
-import me.functional.data.T2;
-import me.functional.data.Unit;
-import me.functional.functions.F0;
-import me.functional.functions.F1;
-import me.functional.functions.F3;
-import me.functional.hkt.Hkt2;
-import me.functional.hkt.Hkt3;
-import me.functional.hkt.Witness;
-import me.functional.type.Bind;
-import me.functional.type.BindUnit;
-import me.functional.type.Monoid;
+import drjoliv.fjava.control.Bind;
+import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.data.FList;
+import drjoliv.fjava.data.Maybe;
+import drjoliv.fjava.data.Monoid;
+import drjoliv.fjava.data.T2;
+import drjoliv.fjava.data.Unit;
+import drjoliv.fjava.functions.F0;
+import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F3;
+import drjoliv.fjava.hkt.Hkt2;
+import drjoliv.fjava.hkt.Hkt3;
+import drjoliv.fjava.hkt.Witness;
 
 /**
  *
@@ -40,15 +39,15 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
 
   @Override
   public <B> WriterT<M,W,B> map(F1<? super A, B> fn) {
-    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> t2(fn.call(p.fst),p.snd)), monoid, mUnit);
+    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> t2(fn.call(p._1),p._2)), monoid, mUnit);
   }
 
   @Override
   public <B> WriterT<M,W,B> bind(F1<? super A, ? extends Bind<Hkt2<μ, M, W>, B>> fn) {
     return new WriterT<M,W,B>(() -> {
       return Bind.For(runWriterT.call()
-          , p     -> asWriterT(fn.call(p.fst)).runWriterT.call()
-          ,(p,p2) -> mUnit.unit(t2(p2.fst, monoid.mappend(p.snd,p2.snd))));
+          , p     -> asWriterT(fn.call(p._1)).runWriterT.call()
+          ,(p,p2) -> mUnit.unit(t2(p2._1, monoid.mappend(p._2,p2._2))));
     }
     , monoid, mUnit);
   }
@@ -92,7 +91,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
    * @return
    */
   public Bind<M,W> execWriterT(){
-    return runWriterT.call().map(p -> p.snd);
+    return runWriterT.call().map(p -> p._2);
   }
 
   /**
@@ -133,7 +132,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      * @return
      */
     public W log() {
-      return runWriterT().value().snd;
+      return runWriterT().value()._2;
     }
 
     /**
@@ -142,7 +141,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      * @return
      */
     public A exec() {
-      return runWriterT().value().fst;
+      return runWriterT().value()._1;
     }
 
     @Override
@@ -153,14 +152,14 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
 
     @Override
     public <B> Writer<W,B> bind(
-        F1<? super A, ? extends Bind<Hkt2<μ, me.functional.data.Identity.μ, W>, B>> fn) {
+        F1<? super A, ? extends Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, W>, B>> fn) {
       final WriterT<Identity.μ,W,B> w = super.bind(fn);
       return new Writer<W,B>(w.runWriterT,w.monoid);
     }
 
     @Override
     public <B> Writer<W,B> semi(
-      final Bind<Hkt2<μ, me.functional.data.Identity.μ, W>, B> mb) {
+      final Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, W>, B> mb) {
       final WriterT<Identity.μ,W,B> w = super.semi(mb);
       return new Writer<W,B>(w.runWriterT,w.monoid);
     }
@@ -174,7 +173,10 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      *
      *
      * @param flist
-     * @return
+         * @param <M>
+        * @param <W>
+     * @param <A>
+    * @return
      */
     public static <M extends Witness, W, A> Maybe<WriterT<M,W,FList<A>>> sequence(FList<WriterT<M,W,A>> flist) {
         return flist
@@ -186,7 +188,10 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      *
      *
      * @param flist
-     * @return
+        * @param <M>
+        * @param <W>
+     * @param <A>
+  * @return
      */
     public static <M extends Witness, W, A> Maybe<WriterT<M,W,Unit>> sequence_(FList<WriterT<M,W,A>> flist) {
       return flist
@@ -200,7 +205,9 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      * @param a
      * @param w
      * @param m
-     * @return
+      * @param <W>
+     * @param <A>
+    * @return
      */
     public static <W,A> Writer<W,A> writer(A a, W w, Monoid<W> m) {
       return new Writer<W,A>(() -> id(t2(a,w)), m);
@@ -209,9 +216,11 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
     /**
      *
      *
-     * @param a
-     * @param m
-     * @return
+     * @param a the value contained within the writer.
+     * @param m the monoiod operation used when writiing.
+     * @param <W> the log type of the created wirter.
+     * @param <A> the type of the value contained within the writer.
+     * @return creates a writer from the given arguments.
      */
     public static <W,A> Writer<W,A> writer(A a, Monoid<W> m) {
       return new Writer<W,A>(() -> id(t2(a,m.mempty())), m);
@@ -219,19 +228,20 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
 
     /**
      *
-     *
-     * @param w
-     * @return
+     * Creates a first class function that produces writers.
+     * @param w the monoid used within the created function to create writers.
+     * @param <W> the log type of the created wirter.
+     * @param <A> the type of the value contained within the writer.
+     * @return a  first class function that produces writers.
      */
     public static <A,W> F1<A,Writer<W,A>> writer(Monoid<W> w) {
       return a -> writer(a,w);
     }
 
     /**
-     *
-     *
-     * @param mb
-     * @return
+     * Converts a instnace of bind whose witness type is {@code Hkt2<Writer.μ, Identity.μ, W>} to a instance of writer.
+     * @param mb the argument to convert to an instance of writer.
+     * @return a writer.
      */
     public static <W extends Witness,A> Writer<W,A> asWriter(Bind<Hkt2<Writer.μ, Identity.μ, W>, A> mb) {
       if(mb instanceof WriterT)

@@ -1,10 +1,8 @@
-package me.functional;
+package drjoliv.fjava;
 
-import static me.functional.data.FList.*;
-import static me.functional.data.FList.functions.allTrueWhile;
-import static me.functional.data.FList.functions.sequence;
+import static drjoliv.fjava.data.FList.*;
 
-import me.functional.data.FList;
+import drjoliv.fjava.data.FList;
 
 public class Numbers {
 
