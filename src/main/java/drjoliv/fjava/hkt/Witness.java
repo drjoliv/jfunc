@@ -1,4 +1,4 @@
-package me.functional.hkt;
+package drjoliv.fjava.hkt;
 
 /**
  * Types that are witnesses should implement this inteferace.
