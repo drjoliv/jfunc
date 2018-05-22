@@ -7,10 +7,15 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import drjoliv.fjava.control.Bind;
 import drjoliv.fjava.control.BindUnit;
+import drjoliv.fjava.control.bind.Eval;
+
+import drjoliv.fjava.control.bind.Trampoline;
+import static drjoliv.fjava.control.bind.Trampoline.*;
+import static drjoliv.fjava.control.bind.Eval.*;
+import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
@@ -22,32 +27,77 @@ import drjoliv.fjava.hkt.Witness;
  *
  * @author Desonte 'drjoliv' Jolivet eamil:drjoliv@gmail.com
  */
-public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
+public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Iterable<A> {
+
+    public static BindUnit<FList.μ> unit = new BindUnit<FList.μ>() {
+      @Override
+      public <A> Bind<μ, A> unit(A a) {
+        return FList.single(a);
+      }
+    };
+
+  @Override
+  public abstract <B> FList<B> map(F1<? super A, B> fn);
+
+  public abstract FList<FList<A>> suffixes();
+
+
+  @Override
+  public Iterator<A> iterator() {
+    final FList<A> self = this;
+    return new Iterator<A>() {
+
+      private FList<A> list = self;
+
+      @Override
+      public boolean hasNext() {
+        return !list.isEmpty();
+      }
+
+      @Override
+      public A next() {
+        A a = list.head();
+        list = list.tail();
+        return a;
+      }
+    };
+  }
 
   /**
   * The witness type of FList.
   */
   public static class μ implements Witness{}
 
-  @Override
-  public <B> FList<B> map(F1<? super A, B> fn) {
-    Objects.requireNonNull(fn);
-      if(isEmpty()) {
-      return Nil.instance();
-    } else {
-      return flist(fn.call(unsafeHead()), () -> tail().map(fn));
-    }
-  }
+
+  public abstract FList<A> update(int i, A a);
 
   @Override
   public <B> FList<B> bind(F1<? super A, ? extends Bind<FList.μ, B>> fn) {
-    Objects.requireNonNull(fn);
      if(isEmpty()) {
       return Nil.instance();
     } else {
-      return FList.functions.flatten((FList<FList<B>>)map(fn));
+      return FList.flatten((FList<FList<B>>)map(fn));
     }
   }
+
+  public <B> B foldr(F2<B,A,B> f2, B b) {
+    return foldr_prime(f2, b, this).result();
+  }
+
+  private static <A,B> Trampoline<B> foldr_prime(F2<B,A,B> f2, B b, FList<A> list) {
+    return list.isEmpty()
+      ? done(b)
+      : more(() -> foldr_prime(f2 , f2.call(b,list.head()), list.tail()));
+  }
+
+  public T2<FList<A>, FList<A>> split() {
+    int i = size();
+    return t2(take(i/2),drop(i/2));
+  }
+
+  public final FList<A> reverse() {
+    return FList.reverse(this);
+  } 
 
   @Override
   public <B> FList<B> semi(Bind<μ, B> mb) {
@@ -56,23 +106,16 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
 
   @Override
   public BindUnit<μ> yield() {
-    return monadUnit;
+    return FList::single;
   }
 
-
-  public static BindUnit<FList.μ> monadUnit = FList::flist;
-
   private FList(){}
-
 
   public final FList<FList<A>> window(int i) {
     return isEmpty()
       ? FList.empty()
       : flist(take(i), () -> take(i).window(i));
   }
-
-
-
 
   /**
    *
@@ -82,7 +125,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    */
   public FList<A> takeWhile(Predicate<A> predicate) {
     Objects.requireNonNull(predicate);
-    return FList.functions.takeWhile(this,predicate);
+    return FList.takeWhile(this,predicate);
   }
 
   /**
@@ -91,9 +134,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param a An element to append to this FLiist.
    * @return A new FList with the given value appended to it.
    */
-  public final FList<A> concat(A a) {
-    Objects.requireNonNull(a);
-    return FList.functions.concat(this, () -> flist(a));
+  public FList<A> concat(A a) {
+    return concat(flist(a));
   }
 
   /**
@@ -102,10 +144,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param a The FList that will be appended to this FList.
    * @return A new FList with the given FList appended to it.
    */
-  public final FList<A> concat(FList<A> a) {
-    Objects.requireNonNull(a);
-    return FList.functions.concat(this, () -> a);  
-  }
+  public abstract FList<A> concat(FList<A> a);
 
   /**
    * Creates a new FList in which the given element is the head of the new FList.
@@ -117,13 +156,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * // [1, 2, 3]
    * }
    * </pre>
-
    * @param a The element that will be prepend to the head of this list.
    * @return a new FList in which the given element is at the head.
    */
   public final FList<A> add(A a) {
-    Objects.requireNonNull(a);
-    return flist(a, () -> this);
+    return new Cons<>(a, now(this));
   }
 
   /**
@@ -137,13 +174,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * // [-1, 0, 2, 3]
    * }
    * </pre>
-  *
    * @param a The FList that will be appended the end of this FList.
    * @return A new FList with the given FList appended to it.
    */
   public final FList<A> add(FList<A> a) {
-    Objects.requireNonNull(a);
-    return FList.functions.concat(a, () -> this);  
+    return FList.concat(a, () -> this);  
   }
 
 
@@ -158,6 +193,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * // prints
    * // "apple"
    * }
+   * </pre>
   *
    * @param index The index of the element to retrieve.
    * @return The element at the given index.
@@ -165,14 +201,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
   public A unsafeGet(int index) {
     if(index < 0) throw new IllegalArgumentException("index can not be lower that zero");
     if(index == 0)
-      return unsafeHead();
+      return head();
     else if(isEmpty())
       return null;
     else {
       FList<A> list = this;
       for(int j = index; j > 0; j--)
         list = list.tail(); 
-      return list.unsafeHead();
+      return list.head();
     }
   }
 
@@ -185,14 +221,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
   public final Maybe<A> get(int index) {
     if(index < 0) throw new IllegalArgumentException("index can not be lower that zero");
     if(index == 0)
-      return head();
+      return safeHead();
     else if(isEmpty())
-      return Maybe.maybe(null);
+      return Maybe.nothing();
     else {
       FList<A> list = this;
       for(int j = index; j > 0; j--)
         list = list.tail(); 
-      return list.head();
+      return list.safeHead();
     }
   }
 
@@ -246,7 +282,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         list = list.tail();
         tail = list.tail();
       }
-      return list.unsafeHead();
+      return list.head();
     }
   }
 
@@ -279,17 +315,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         list = list.tail();
         tail = list.tail();
       }
-      return list.head();
+      return list.safeHead();
     }
   }
-
-
-  /**
-   * Returns a new FList containing the elements obtained by mapping <code> fn </code> over this FList.
-   *
-   * @param fn The function that will be applied to every element within this FList.
-   * @return A new FList containing the elements obtained by mapping the given function over this FList.
-   */
 
   /**
    * Return the Higher Kinded Type of FList
@@ -300,20 +328,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     return (Hkt<FList.μ, A>) this;
   }
 
-  /**
-   * Maps the <code> consumer </code> over this FList.
-   * @param consumer
-   */
-  public final void forEach(Consumer<A> consumer) {
-    Objects.requireNonNull(consumer);
-    for(A a : FList.functions.iterable(this))
-      consumer.accept(a); 
-  }
-
-
   @Override
   public final String toString() {
-    return FList.functions.toString(this);
+    return FList.toString(this);
   }
 
   /**
@@ -334,16 +351,16 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    *  System.out.println(list.reduce(0,(i, i2) -> i + i2)); //
    * }
    * </pre>
-   * @param predicate
+   * @param p the predicated used to filter this flist.
    * @return a new FList in which elements have been filtered out.
    */
   public final FList<A> filter(F1<A,Boolean> p) {
      if(isEmpty())
       return Nil.instance();
-    else if(p.call(unsafeHead()))
-      return flist(unsafeHead(), () -> tail().filter(p));
+    else if(p.call(head()))
+      return flist(head(), () -> tail().filter(p));
     else
-      return FList.functions.concat(Nil.instance(), () -> tail().filter(p));
+      return FList.concat(Nil.instance(), () -> tail().filter(p));
   }
 
   /**
@@ -354,11 +371,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    */
   public final FList<A> take(int i) {
     if(i < 0)
-      return FList.functions.reverse(this).take(Math.abs(i));
+      return reverse().take(Math.abs(i));
     if(isEmpty() || i == 0) {
       return Nil.instance();
     } else {
-      return flist(unsafeHead(), () -> tail().take(i-1));
+      return flist(head(), () -> tail().take(i-1));
     }
   }
 
@@ -370,10 +387,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @return A value 
    */
   public final A reduce(final A a, final F2<A,A,A> reducer) {
-    Objects.requireNonNull(a);
-    Objects.requireNonNull(reducer);
     A reducedValue = a;
-    Iterator<A> it = FList.functions.iterable(this).iterator();
+    Iterator<A> it = iterator();
     while(it.hasNext()) {
       reducedValue = reducer.call(reducedValue,it.next());
     }
@@ -389,7 +404,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
       return Maybe.nothing();
     }
     else {
-      Iterator<A> it = FList.functions.iterable(this).iterator();
+      Iterator<A> it = iterator();
       A reducedValue = it.next();
       while(it.hasNext()) {
         reducedValue = reducer.call(reducedValue,it.next());
@@ -403,7 +418,15 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    *
    * @return The number of elements within this FList.
    */
-  public abstract int size();
+    public int size() {
+      FList<A> f = this;
+      int i = 0;
+      while(f.isEmpty() == false) {
+        i++;
+        f = f.tail();
+      }
+      return i;
+    }
 
   /**
    * Returns a Flist with the head of this FList dropped.
@@ -419,7 +442,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    *
    * @return Returns the element at the head of this FList as a Maybe.
    */
-  public abstract Maybe<A> head();
+  public abstract Maybe<A> safeHead();
 
   /**
    * Returns the element at the head of this FList. This function is not safe
@@ -427,7 +450,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    *
    * @return The element at the head of this FList.
    */
-  public abstract A unsafeHead();
+  public abstract A head();
 
   /**
    * Returns true if this FList has zero elements, or false otherwise.
@@ -440,49 +463,36 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
 
     private final A datum; //The data withing this FList
 
-    /*
-     * A reference to the next FList or null if the Cons#tail() has not been called.
-     */
-    private volatile FList<A> tail;
 
     //A supplier that return the next FList in this LinkedList like structure
-    private final Supplier<FList<A>> tailSupplier;
+    private volatile Eval<FList<A>> tail;
 
-    private Cons(A datum, Supplier<FList<A>> tailSupplier) {
-      Objects.requireNonNull(datum);
-      Objects.requireNonNull(tailSupplier);
+    private Cons(A datum, Eval<FList<A>> tail) {
       this.datum = datum;
-      this.tailSupplier = tailSupplier;
+      this.tail = tail;
     }
+
+  /**
+   * Appends the given FList to this FList.
+   *
+   * @param a The FList that will be appended to this FList.
+   * @return A new FList with the given FList appended to it.
+   */
+  @Override
+  public FList<A> concat(FList<A> a) {
+    return new Cons<>(datum, tail.map(f -> f.concat(a)));
+  }
 
     @Override
     public FList<A> tail() {
-      if(isTailNull()) {
-        synchronized(this) {
-          if(isTailNull()){
-              tail = tailSupplier.get();
-          }
-        }
-        return tail;
-      }
-      else{
-        return tail;
-      }
-    }
-
-    private  Boolean isTailNull() {
-      return tail == null;
+      return tail.value();
     }
 
     @Override
-    public Maybe<A> head() {
+    public Maybe<A> safeHead() {
       return Maybe.maybe(datum);
     }
 
-    @Override
-    public int size() {
-      return 1 + tail.size();
-    }
 
     @Override
     public boolean isEmpty() {
@@ -490,8 +500,25 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     }
 
     @Override
-    public A unsafeHead() {
+    public A head() {
       return datum;
+    }
+
+    @Override
+    public <B> FList<B> map(F1<? super A, B> fn) {
+      return new Cons<B>(fn.call(head()), tail.map(l -> l.map(fn)));
+    }
+
+    @Override
+    public FList<A> update(int i, A a) {
+      return i == 0
+      ? tail().add(a)
+      : new Cons<>(head(), tail.map(t -> t.update(i - 1, a)));
+    }
+
+    @Override
+    public FList<FList<A>> suffixes() {
+      return new Cons<>(this, tail.map(t -> t.suffixes()));
     }
 
   }
@@ -503,14 +530,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     private Nil(){}
 
     @SuppressWarnings("unchecked")
-    public static <B> Nil<B> instance() {
+    private static <B> Nil<B> instance() {
       return (Nil<B>)instance;
     }
 
-    @Override
-    public int size() {
-      return 0;
-    }
+  @Override
+  public FList<A> concat(FList<A> a) {
+    return a;
+  }
 
     @Override
     public FList<A> tail() {
@@ -518,8 +545,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     }
 
     @Override
-    public Maybe<A> head() {
-      return Maybe.maybe(null);
+    public Maybe<A> safeHead() {
+      return Maybe.nothing();
     }
 
     @Override
@@ -528,8 +555,23 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     }
 
     @Override
-    public A unsafeHead() {
+    public A head() {
       return null;
+    }
+
+    @Override
+    public <B> FList<B> map(F1<? super A, B> fn) {
+      return Nil.empty();
+    }
+  
+    @Override
+    public FList<A> update(int i, A a) {
+      throw new IndexOutOfBoundsException();
+    }
+
+    @Override
+    public FList<FList<A>> suffixes() {
+      return flist(empty());
     }
   }
 
@@ -540,6 +582,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    */
   public static <A> FList<A> empty() {
     return Nil.instance();
+  }
+
+  public static <A> FList<A> single(A a) {
+    return flist(a);
   }
 
 
@@ -573,10 +619,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param supplier A supplier that is used to generated the tail of this FList.
    * @return A new FList.
    */
-  public static <B> FList<B> flist(B b, Supplier<FList<B>> supplier) {
-    Objects.requireNonNull(b);
-    Objects.requireNonNull(supplier);
-    return new Cons<B>(b, supplier);
+  public static <B> FList<B> flist(B b, F0<FList<B>> supplier) {
+    return new Cons<B>(b, later(supplier));
   }
 
   /**
@@ -587,10 +631,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param supplier A supplier that is used to generate the tail of the created FList.
    * @return A new FList.
    */
-  public static <B> FList<B> flist(B b, B b1, Supplier<FList<B>> supplier) {
-    Objects.requireNonNull(b);
-    Objects.requireNonNull(b1);
-    Objects.requireNonNull(supplier);
+  public static <B> FList<B> flist(B b, B b1, F0<FList<B>> supplier) {
    return flist(b, () -> flist(b1, supplier));
   }
 
@@ -603,11 +644,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param supplier A supplier that is used to generate the tail of the created FList.
    * @return a new FList.
    */
-  public static <B> FList<B> flist(B b, B b1, B b2, Supplier<FList<B>> supplier) {
-    Objects.requireNonNull(b);
-    Objects.requireNonNull(b1);
-    Objects.requireNonNull(b2);
-    Objects.requireNonNull(supplier);
+  public static <B> FList<B> flist(B b, B b1, B b2, F0<FList<B>> supplier) {
    return flist(b, () -> flist(b1, b2, supplier));
   }
 
@@ -621,20 +658,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
    * @param supplier A supplier that is used to generate the tail of the created FList.
    * @return a new FList.
    */
-  public static <B> FList<B> flist(B b, B b1, B b2, B b3, Supplier<FList<B>> supplier) {
-    Objects.requireNonNull(b);
-    Objects.requireNonNull(b1);
-    Objects.requireNonNull(b2);
-    Objects.requireNonNull(b3);
-    Objects.requireNonNull(supplier);
+  public static <B> FList<B> flist(B b, B b1, B b2, B b3, F0<FList<B>> supplier) {
    return flist(b, () -> flist(b1, b2, b3, supplier));
   }
-
-
-  /**
-  * A static class containing functions that can be used on FLists.
-  */
-  public static class functions {
 
   /**
    * Converts a FList to a String.
@@ -647,43 +673,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     StringBuilder builder = new StringBuilder(); 
     builder.append("[ ");
     Consumer<A> stringfy = a -> builder.append(a.toString()).append(" ");
-    Iterator<A> it = FList.functions.iterable(flist).iterator();
+    Iterator<A> it = flist.iterator();
     while(it.hasNext())
       stringfy.accept(it.next());
     builder.append("]");
     return builder.toString();
   }
-
-    /**
-     * Converts a FList into an Iterable.
-     *
-     * @param flist the FList that will be converted into an Iterable.
-     * @return a new Iterable.
-     */
-    public static final <A> Iterable<A> iterable(final FList<A> flist){
-      return new Iterable<A>() {
-        @Override
-        public Iterator<A> iterator() {
-          return new Iterator<A>() {
-            { this.list = flist; }
-
-            private FList<A> list;
-
-            @Override
-            public boolean hasNext() {
-              return !list.isEmpty();
-            }
-
-            @Override
-            public A next() {
-              final A a = list.unsafeHead();
-              list = list.tail();
-              return a;
-            }
-          };
-        }
-      };
-    }
 
     /**
      * Creates a FList from an Iterator.
@@ -707,7 +702,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     if(listOfList.isEmpty())
       return Nil.instance();
     else
-      return concat(listOfList.unsafeHead(), () -> flatten(listOfList.tail()));
+      return concat(listOfList.head(), () -> flatten(listOfList.tail()));
   }
 
     @SafeVarargs
@@ -723,13 +718,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
      * @param l2 A supplier that generated the end of the created FList.
      * @return A new FList with l1 as the beginning of theo FList and l2 as the end of the FList.
      */
-    public static final <A> FList<A> concat(final FList<A> l1, Supplier<FList<A>> l2) {
-    if(l1.isEmpty()) {
-      return l2.get();
-    } else {
-      return flist(l1.unsafeHead(), () -> concat(l1.tail(), l2));
+    public static final <A> FList<A> concat(final FList<A> l1, F0<FList<A>> l2) {
+      if(l1.isEmpty())
+        return l2.call();
+      else {
+        FList<A> tail = l1.tail();
+        return new Cons<>(l1.head(), later(() -> concat(tail,l2)));
+      }
     }
-  }
 
     /**
      * Takes elements from <code> list </code> while the predicate <code> p </code> is true.
@@ -743,8 +739,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(p);
      if(list.isEmpty())
         return Nil.instance(); 
-      else if (p.test(list.unsafeHead()))
-        return flist(list.unsafeHead(), () -> takeWhile(list.tail(), p));
+      else if (p.test(list.head()))
+        return flist(list.head(), () -> takeWhile(list.tail(), p));
       else
         return Nil.instance();
     }
@@ -761,7 +757,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(p);
  if(list.isEmpty())
         return true;
-      else if(p.test(list.unsafeHead()))
+      else if(p.test(list.head()))
         return allTrue(list.tail(), p);
       else
         return false;
@@ -781,8 +777,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(p);
      if(list.isEmpty())
         return true;
-      while(!list.isEmpty() && w.test(list.unsafeHead())) {
-        if(!p.test(list.unsafeHead()))
+      while(!list.isEmpty() && w.test(list.head())) {
+        if(!p.test(list.head()))
           return false;
         list = list.tail();
       }
@@ -805,7 +801,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(l2);
      if(l1.isEmpty() ||  l2.isEmpty())
         return Nil.instance();
-      return flist(fn.call(l1.unsafeHead(), l2.unsafeHead()), () -> zipWith(fn, l1.tail(), l2.tail()));
+      return flist(fn.call(l1.head(), l2.head()), () -> zipWith(fn, l1.tail(), l2.tail()));
     }
 
     public static <A,B,C> FList<T2<A,B>> zip(FList<A> l1, FList<B> l2) {
@@ -813,7 +809,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         Objects.requireNonNull(l2);
      if(l1.isEmpty() ||  l2.isEmpty())
         return Nil.instance();
-      return flist(t2(l1.unsafeHead(), l2.unsafeHead()), () -> zip(l1.tail(), l2.tail()));
+      return flist(t2(l1.head(), l2.head()), () -> zip(l1.tail(), l2.tail()));
     }
 
     /**
@@ -830,7 +826,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
         return false;
       } else if(l1.isEmpty()) {
         return true;
-      } else if(l1.unsafeHead() == l2.unsafeHead()){
+      } else if(l1.head() == l2.head()){
         return equals(l1.tail(), l2.tail());
       } else {
         return false;
@@ -887,16 +883,11 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
       return flist(seed, seed1, seed2, () -> sequence(seed3, seed4, seed5, generator));
     }
 
+
     public static <M extends Witness,A> Maybe<Bind<M,FList<A>>> merge(FList<Bind<M,FList<A>>> listOfMonadsOfFList) {
       return listOfMonadsOfFList.reduce((m1,m2) -> Bind.liftM2(m1,m2, (l1,l2) -> l1.concat(l2)));
     }
 
-    public static <A> FList<A> reverse(FList<A> list) {
-     if(list.isEmpty())
-        return Nil.instance();
-     else
-      return flist(list.unsafeLast(),  () -> reverse(list.tail()));
-    }
     /**
     *
     *
@@ -904,7 +895,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     * @return
     */
     public static <B> FList<B> asFList(Bind<FList.μ,B> wider) {
-    Objects.requireNonNull(wider);
       return (FList<B>) wider;
     }
 
@@ -914,10 +904,27 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A> {
     * @param list
     */
     public static <A> void print(FList<A> list) {
-      Objects.requireNonNull(list);
       System.out.println(list.toString());
     }
-  }
+
+    //private static <A> FList<A> reverse(FList<A> list) {
+    // if(list.isEmpty())
+    //    return Nil.instance();
+    // else
+    //  return flist(list.unsafeLast(),  () -> reverse(list.tail()));
+    //}
+
+    private static <A> FList<A> reverse(FList<A> l) {
+      return reverse_prime(l, FList.empty()).result();
+    }
+
+    private static <A> Trampoline<FList<A>> reverse_prime(FList<A> l, FList<A> acc) {
+      if(l.isEmpty())
+        return done(acc);
+      else {
+        return more(() -> reverse_prime(l.tail(), acc.add(l.head())));
+      }
+    }
 
   public static class instances {
     public static <A> Monoid<FList<A>> monoidInstance() {
