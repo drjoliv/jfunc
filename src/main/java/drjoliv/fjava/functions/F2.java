@@ -1,4 +1,4 @@
-package me.functional.functions;
+package drjoliv.fjava.functions;
 
 import java.util.function.BiFunction;
 

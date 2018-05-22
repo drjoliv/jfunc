@@ -1,4 +1,4 @@
-package me.functional.functions;
+package drjoliv.fjava.functions;
 
 public interface F3<A,B,C,D> {
 
