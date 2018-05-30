@@ -1,22 +1,27 @@
 package drjoliv.fjava.functions;
 
-import java.util.ArrayList;
+import static drjoliv.fjava.data.Dequeue.dequeue;
+import static drjoliv.fjava.functions.ComposedFunc.isComposedFunc;
+
 import java.util.function.Function;
 
-import drjoliv.fjava.data.DList;
-import drjoliv.fjava.data.Dequeue;
-import static drjoliv.fjava.data.Dequeue.*;
-import drjoliv.fjava.data.FList;
-import static drjoliv.fjava.data.FList.*;
-import drjoliv.fjava.data.Stack;
-import static drjoliv.fjava.functions.ComposedFunc.*;
+import drjoliv.fjava.control.Functor;
+import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Witness;
 
-public interface F1<A,B>{
+public interface F1<A,B> extends Functor<Hkt<F1.μ,A>,B>{
+
+  public class μ implements Witness{}
 
   public B call(A a);
 
   public default F1<A,F0<B>> curry() {
     return a -> () -> call(a);
+  }
+
+  @Override
+  public default <C> F1<A,C> map(F1< ? super B, C> fn) {
+    return then(fn);
   }
 
   public default Function<A,B> toJFunc() {
