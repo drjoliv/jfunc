@@ -1,4 +1,4 @@
-package me.functional;
+package drjoliv.fjava;
 
 import java.util.function.Function;
 

@@ -1,4 +1,4 @@
-package me.functional.hkt;
+package drjoliv.fjava.hkt;
 
 /**
  * A Higher Kinded Type with only one type parameter.
@@ -6,4 +6,4 @@ package me.functional.hkt;
  * @param <a> A type parameter.
  * @author drjoliv@gmail.com
  */
-public interface Hkt<M,a> {}
+public interface Hkt<M extends Witness,a> extends Witness{}
