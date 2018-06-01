@@ -1,7 +1,7 @@
 package drjoliv.fjava.functions;
 
 import static drjoliv.fjava.data.Dequeue.dequeue;
-import static drjoliv.fjava.functions.ComposedFunc.isComposedFunc;
+import static drjoliv.fjava.functions.F1Composed.isComposedFunc;
 
 import java.util.function.Function;
 
@@ -36,7 +36,7 @@ public interface F1<A,B> extends Functor<Hkt<F1.μ,A>,B>{
   public default <C> F1<C,B> before(F1<C ,? extends A> fn) {
     return isComposedFunc(fn)
       ? fn.then(this)
-      : new ComposedFunc<C,B>(dequeue(fn,this));
+      : new F1Composed<C,B>(dequeue(fn,this));
   }
 
   public static <A> F1<A, A> identity() {
