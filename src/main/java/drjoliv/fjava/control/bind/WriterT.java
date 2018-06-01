@@ -39,15 +39,15 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
 
   @Override
   public <B> WriterT<M,W,B> map(F1<? super A, B> fn) {
-    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> t2(fn.call(p._1),p._2)), monoid, mUnit);
+    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> p.map1(fn)), monoid, mUnit);
   }
 
   @Override
   public <B> WriterT<M,W,B> bind(F1<? super A, ? extends Bind<Hkt2<μ, M, W>, B>> fn) {
     return new WriterT<M,W,B>(() -> {
       return Bind.For(runWriterT.call()
-          , p     -> asWriterT(fn.call(p._1)).runWriterT.call()
-          ,(p,p2) -> mUnit.unit(t2(p2._1, monoid.mappend(p._2,p2._2))));
+          , p     -> asWriterT(fn.call(p._1())).runWriterT.call()
+          ,(p,p2) -> mUnit.unit(t2(p2._1(), monoid.mappend(p._2(),p2._2()))));
     }
     , monoid, mUnit);
   }
@@ -91,7 +91,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
    * @return
    */
   public Bind<M,W> execWriterT(){
-    return runWriterT.call().map(p -> p._2);
+    return runWriterT.call().map(p -> p._2());
   }
 
   /**
@@ -132,7 +132,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      * @return
      */
     public W log() {
-      return runWriterT().value()._2;
+      return runWriterT().value()._2();
     }
 
     /**
@@ -141,7 +141,7 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
      * @return
      */
     public A exec() {
-      return runWriterT().value()._1;
+      return runWriterT().value()._1();
     }
 
     @Override

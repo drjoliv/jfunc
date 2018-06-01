@@ -8,6 +8,7 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 
 import drjoliv.fjava.functions.F1;
 
+@SuppressWarnings("rawtypes")
 public class F1Generator<A,B> extends ComponentizedGenerator<F1> {
 
   public F1Generator() {

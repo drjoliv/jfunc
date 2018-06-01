@@ -21,7 +21,7 @@ public interface Eq<A> {
       @Override
       public boolean call(FList<A> a1, FList<A> a2) {
         return a1.size() == a2.size()
-          && trues((zip(a1,a2)
+          && and((zip(a1,a2)
           .map(fn.tuple())));
       }
     };
