@@ -95,6 +95,15 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     return t2(take(i/2),drop(i/2));
   }
 
+  public T2<FList<A>, FList<A>> splitAt(int i) {
+    return t2(take(i),drop(i));
+  }
+
+  
+  //public T2<FList<A>, FList<A>> splitWith(P1) {
+  //  return t2(take(i),drop(i));
+  //}
+
   public final FList<A> reverse() {
     return FList.reverse(this);
   } 
@@ -763,9 +772,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
         return false;
     }
 
-    public static boolean trues(FList<Boolean> list) {
+    public static boolean and(FList<Boolean> list) {
       F2<Boolean, Boolean, Boolean> fn = Boolean::logicalAnd;
       return list.foldr(fn,Boolean.TRUE).booleanValue();
+    }
+
+    public static boolean or(FList<Boolean> list) {
+      F2<Boolean, Boolean, Boolean> fn = Boolean::logicalOr;
+      return list.foldr(fn,Boolean.FALSE).booleanValue();
     }
 
     /**

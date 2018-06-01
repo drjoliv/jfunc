@@ -24,6 +24,8 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
 import drjoliv.fjava.Numbers;
+import drjoliv.fjava.data.FList;
+import static drjoliv.fjava.data.FList.*;
 import drjoliv.fjava.data.generators.FListGenerator;
 import drjoliv.fjava.functions.F1;
 
@@ -151,7 +153,7 @@ public class FListTest {
   }
 
   @Property
-  public void mBind(@From(FListGenerator.class)FList<Integer> m) {
+  public void bind(@From(FListGenerator.class)FList<Integer> m) {
     F1<Integer,FList<Integer>> f = i -> FList.flist(i * 2);
     F1<Integer,FList<Integer>> g = i -> FList.flist(i + 2);
     assertEquals(m.bind(f).bind(g),m.bind(x -> f.call(x).bind(g)));
@@ -194,6 +196,18 @@ public class FListTest {
     }
   }
 
+  @Property
+  public void and(@From(FListGenerator.class)final FList<Boolean> m) {
+    assertTrue(FList.and(m.filter(b -> b)));
+    assertFalse(FList.and(m.filter(b -> !b)));
+  }
+
+  @Property
+  public void or(@From(FListGenerator.class)final FList<Boolean> m) {
+    assertFalse(FList.or(m.filter(b -> !b)));
+    assertTrue(FList.or(flist(true,false)));
+  }
+
   @Test
   public void mulitiple_of_three_and_five() {
     //euler problem 1
@@ -212,5 +226,4 @@ public class FListTest {
       .filter(Numbers::isEven)
       .reduce(0L, Numbers::add));
   }
-
 }
