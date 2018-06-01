@@ -1,11 +1,12 @@
 package drjoliv.fjava.data;
 
+import static drjoliv.fjava.data.FList.*;
+
 /**
  *
- *
- * @author drjoliv@gmail.com
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Dequeue<A> {
+public interface Dequeue<A> extends Iterable<A> {
 
   /**
    *
@@ -81,4 +82,29 @@ public interface Dequeue<A> {
    */
   public Maybe<T2<A,Dequeue<A>>> popBack();
 
+  /**
+   *
+   *
+   * @param dequeue
+   * @return
+   */
+  public Dequeue<A> concat(Dequeue<A> dequeue);
+
+  public static <A> Dequeue<A> empty() {
+   return null; 
+  }
+
+  /**
+   *
+   *
+   * @param args
+   * @return
+   */
+  public static <A> Dequeue<A> dequeue(A... args) {
+    return dequeue(flist(args));
+  }
+
+  public static <A> Dequeue<A> dequeue(FList<A> list) {
+    return new DequeueImpl<A>(list);
+  }
 }

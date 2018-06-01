@@ -88,6 +88,22 @@ The Either type is vary useful for describing computation that can return one of
 ```
 
 ```java
+  public static Trampoline<Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
+    if(xi.isEmpty())
+      return done(right(empty()));
+    else if(xi.head() == 0)
+      return done(left("div by zero error"));
+    else
+      return more(() -> {
+        return divBy(i,xi.tail()).map( e -> e.match(
+              l -> l
+            , r -> right(flist(i / xi.head(), () -> r.value()))));
+      });
+  }
+
+```
+
+```java
   @POST
   @Path("/login")
   @Produces(MediaType.APPLICATION_JSON)

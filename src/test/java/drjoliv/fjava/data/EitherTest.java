@@ -49,23 +49,6 @@ public class EitherTest {
     };
   }
 
-  public static Trampoline<Either<String,FList<Integer>>> divBy(Integer i, FList<Integer> xi) {
-    if(xi.isEmpty())
-      return done(right(empty()));
-    else if(xi.head() == 0)
-      return done(left("div by zero error"));
-    else
-      return more(() -> {
-        return divBy(i,xi.tail()).map( e -> e.match(
-              l -> l
-            , r -> right(flist(i / xi.head(), () -> r.value()))));
-      });
-  }
-
-  @Test
-  public void readMeCode() {
-   System.out.println(divBy(1000, range(1,2000)).result());
-  }
 
   @Test
   public void isRight() {

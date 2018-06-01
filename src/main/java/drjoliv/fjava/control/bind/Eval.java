@@ -10,7 +10,7 @@ import drjoliv.fjava.hkt.Witness;
 
 public abstract class Eval<A> implements Bind<Eval.μ,A>{
 
-  public static class μ implements Witness{}
+  public static class μ implements drjoliv.fjava.hkt.Witness{}
 
   @Override
   public BindUnit<μ> yield() {

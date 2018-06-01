@@ -1,5 +1,6 @@
 package drjoliv.fjava.data;
 
+import drjoliv.fjava.control.bind.Eval;
 import drjoliv.fjava.functions.F8;
 
 /**
@@ -7,16 +8,16 @@ import drjoliv.fjava.functions.F8;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 public class T8<A,B,C,D,E,F,G,H> {
-  public final A _1;
-  public final B _2;
-  public final C _3;
-  public final D _4;
-  public final E _5;
-  public final F _6;
-  public final G _7;
-  public final H _8;
+  public final Eval<A> _1;
+  public final Eval<B> _2;
+  public final Eval<C> _3;
+  public final Eval<D> _4;
+  public final Eval<E> _5;
+  public final Eval<F> _6;
+  public final Eval<G> _7;
+  public final Eval<H> _8;
 
-  private T8(A _1, B _2, C _3, D _4, E _5, F _6, G _7, H _8) {
+  private T8(Eval<A> _1, Eval<B> _2, Eval<C> _3, Eval<D> _4, Eval<E> _5, Eval<F> _6, Eval<G> _7, Eval<H> _8) {
     this._1 = _1;
     this._2 = _2;
     this._3 = _3;
@@ -41,6 +42,10 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @param h the eighth element of this product.
    * @return the product of {@code a} x {@code b} x {@code c} x {@code d} x {@code e} x {@code f} x {@code g} x {@code h}.
    */
+  public static <A,B,C,D,E,F,G,H> T8<A,B,C,D,E,F,G,H> t8(A a, B b, C c, D d, E e, F f, G g, H h) {
+    return new T8<>(now(a), now(b), now(c), now(d), now(e), now(f), now(g), now(h));
+  }
+
   public static <A,B,C,D,E,F,G,H> T8<A,B,C,D,E,F,G,H> t8(A a, B b, C c, D d, E e, F f, G g, H h) {
     return new T8<>(a, b, c, d, e, f, g, h);
   }

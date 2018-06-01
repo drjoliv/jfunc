@@ -46,7 +46,7 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
     return bind(a -> mb);
   }
 
-  public static class μ implements Witness {}
+  public static class μ implements drjoliv.fjava.hkt.Witness {}
 
   public static <A> Trampoline<A> unit(A a) {
     return Trampoline.done(a);

@@ -14,6 +14,8 @@ import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
+import drjoliv.fjava.Eq;
+import static drjoliv.fjava.Eq.*;
 import drjoliv.fjava.Numbers;
 import drjoliv.fjava.control.Bind;
 import drjoliv.fjava.control.bind.Identity;
@@ -26,7 +28,6 @@ import static drjoliv.fjava.Numbers.*;
 import static drjoliv.fjava.control.Bind.*;
 import static drjoliv.fjava.control.bind.ReaderT.Reader.*;
 import static drjoliv.fjava.data.FList.*;
-import static drjoliv.fjava.data.FList.functions.*;
 
 @RunWith(JUnitQuickcheck.class)
 public class ReaderTTest {
@@ -81,7 +82,8 @@ public class ReaderTTest {
       })
     );
 
-    assertTrue(FList.functions.equals(reader.run(r), flist(r)));
+    Eq<FList<Integer>> eq = eqFList(eqInt);
+    assertTrue(eq.call(reader.run(r), flist(r)));
   }
 
   @Property

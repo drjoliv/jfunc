@@ -33,7 +33,7 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
     return new StateT<M,S,B>(s -> {
       return runState.call(s)
         .bind(p -> {
-        return asStateT(fn.call(p._2)).runState.call(p._1);
+        return asStateT(fn.call(p._2())).runState.call(p._1());
       });
     }, mUnit);
   }
@@ -69,11 +69,11 @@ public class StateT<M extends Witness,S,A> implements Bind<Hkt2<StateT.μ,M,S>,A
     }
 
     public A execute(final S s) {
-      return evalState(s).value()._2;
+      return evalState(s).value()._2();
     }
 
     public S executeState(final S s) {
-      return evalState(s).value()._1;
+      return evalState(s).value()._1();
     }
 
     @Override
