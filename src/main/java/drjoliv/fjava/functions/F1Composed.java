@@ -2,22 +2,22 @@ package drjoliv.fjava.functions;
 
 import drjoliv.fjava.data.Dequeue;
 
-class ComposedFunc<A,B> implements F1<A,B> {
+class F1Composed<A,B> implements F1<A,B> {
 
-  @SuppressWarnings("rawtypes")
-  static boolean isComposedFunc(F1 fn) {
-      return fn instanceof ComposedFunc;
+    @SuppressWarnings("rawtypes")
+    static boolean isComposedFunc(F1 fn) {
+      return fn instanceof F1Composed;
     }
 
-  @SuppressWarnings("rawtypes")
-  static ComposedFunc asComposedFunc(F1 fn) {
-      return (ComposedFunc)fn;
+    @SuppressWarnings("rawtypes")
+    static F1Composed asComposedFunc(F1 fn) {
+      return (F1Composed)fn;
     }
 
     @SuppressWarnings("rawtypes")
     private final Dequeue<F1> dequeue;
 
-    ComposedFunc(@SuppressWarnings("rawtypes") Dequeue<F1> dequeue) {
+    F1Composed(@SuppressWarnings("rawtypes") Dequeue<F1> dequeue) {
       this.dequeue = dequeue;
     }
 
@@ -34,15 +34,15 @@ class ComposedFunc<A,B> implements F1<A,B> {
     @Override
     public <C> F1<A, C> then(F1<? super B, C> fn) {
      return isComposedFunc(fn)
-          ? new ComposedFunc<A,C>(dequeue.concat(asComposedFunc(fn).dequeue))
-          : new ComposedFunc<A,C>(dequeue.pushBack(fn));
+          ? new F1Composed<A,C>(dequeue.concat(asComposedFunc(fn).dequeue))
+          : new F1Composed<A,C>(dequeue.pushBack(fn));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <C> F1<C, B> before(F1<C, ? extends A> fn) {
      return isComposedFunc(fn)
-          ? new ComposedFunc<C,B>(asComposedFunc(fn).dequeue.concat(dequeue))
-          : new ComposedFunc<C,B>(dequeue.pushFront(fn));
+          ? new F1Composed<C,B>(asComposedFunc(fn).dequeue.concat(dequeue))
+          : new F1Composed<C,B>(dequeue.pushFront(fn));
     }
 }
