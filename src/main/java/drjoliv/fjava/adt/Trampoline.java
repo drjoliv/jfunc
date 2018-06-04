@@ -1,14 +1,8 @@
-package drjoliv.fjava.control.bind;
+package drjoliv.fjava.adt;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
-import drjoliv.fjava.data.Either;
-import static drjoliv.fjava.data.Either.*;
-import static drjoliv.fjava.Numbers.*;
-import drjoliv.fjava.data.FList;
-import drjoliv.fjava.data.Maybe;
-
-import static drjoliv.fjava.data.FList.*;
+import static drjoliv.fjava.adt.Either.*;
+import static drjoliv.fjava.adt.FList.*;
+import static drjoliv.fjava.nums.Numbers.*;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -17,17 +11,19 @@ import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
 
-public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
+public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
 
   public static <A> Trampoline<A> zipWith(F2<A,A,A> fn, Trampoline<A> t1, Trampoline<A> t2) {
-      return asTrampoline(Bind.liftM2(t1,t2,fn));
+      return asTrampoline(Monad.liftM2(t1,t2,fn));
   }
 
   abstract <B> Trampoline<B> doBind(F1<? super A, Trampoline<B>> fn);
 
   @Override
-  public BindUnit<μ> yield() {
+  public MonadUnit<μ> yield() {
     return Trampoline::unit;
   }
 
@@ -37,12 +33,12 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
   }
 
   @Override
-  public <B> Trampoline<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+  public <B> Trampoline<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
     return new TrampolineBind<A,B>(this, fn.then(Trampoline::asTrampoline));
   }
 
   @Override
-  public <C> Trampoline<C> semi(Bind<μ, C> mb) {
+  public <C> Trampoline<C> semi(Monad<μ, C> mb) {
     return bind(a -> mb);
   }
 
@@ -68,7 +64,7 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
 
   public abstract Trampoline<A> step();
 
-  public static <B> Trampoline<B> asTrampoline(Bind<Trampoline.μ,B> monad) {
+  public static <B> Trampoline<B> asTrampoline(Monad<Trampoline.μ,B> monad) {
     return (Trampoline<B>) monad;
   }
 
@@ -169,7 +165,6 @@ public abstract class Trampoline<A> implements Bind<Trampoline.μ,A> {
       return fn.call(result.call());
     }
   }
-
 
   public static <A> Trampoline<A> more(F0<Trampoline<A>> more) {
     return new More<A>(more);
