@@ -1,7 +1,5 @@
-package drjoliv.fjava.control.bind;
+package drjoliv.fjava.monad;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.hkt.Hkt;
 import drjoliv.fjava.hkt.Witness;
@@ -12,7 +10,7 @@ import drjoliv.fjava.hkt.Witness;
  *
  * @author Desonte 'drjoliv' Jolivet
  */
-public final class Identity<E> implements Bind<Identity.μ,E>, Hkt<Identity.μ,E> {
+public final class Identity<E> implements Monad<Identity.μ,E>, Hkt<Identity.μ,E> {
 
   public static class μ implements Witness{}
 
@@ -33,18 +31,18 @@ public final class Identity<E> implements Bind<Identity.μ,E>, Hkt<Identity.μ,E
   }
 
   @Override
-  public <B> Identity<B> bind(F1<? super E, ? extends Bind<Identity.μ, B>> fn) {
+  public <B> Identity<B> bind(F1<? super E, ? extends Monad<Identity.μ, B>> fn) {
     return asIdentity(fn.call(e));
   }
 
   @Override
-  public <B> Identity<B> semi(Bind<Identity.μ, B> mIdentity) {
+  public <B> Identity<B> semi(Monad<Identity.μ, B> mIdentity) {
     return bind(e -> mIdentity);
   }
 
 
   @Override
-  public BindUnit<μ> yield() {
+  public MonadUnit<μ> yield() {
     return Identity::id;
   }
 
@@ -66,7 +64,7 @@ public final class Identity<E> implements Bind<Identity.μ,E>, Hkt<Identity.μ,E
    * @param bind the bind that will be narrowed into an identity.
    * @return an identity.
    */
-  public static <A> Identity<A> asIdentity(Bind<Identity.μ, A> bind) {
+  public static <A> Identity<A> asIdentity(Monad<Identity.μ, A> bind) {
     return (Identity<A>) bind;
   }
 
