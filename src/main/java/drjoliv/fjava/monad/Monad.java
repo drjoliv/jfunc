@@ -1,6 +1,7 @@
 package drjoliv.fjava.control;
 
 
+import drjoliv.fjava.data.FList;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
