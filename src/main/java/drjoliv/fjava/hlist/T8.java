@@ -1,6 +1,7 @@
 package drjoliv.fjava.data;
 
 import drjoliv.fjava.control.bind.Eval;
+import static drjoliv.fjava.control.bind.Eval.*;
 import drjoliv.fjava.functions.F8;
 
 /**
@@ -46,7 +47,7 @@ public class T8<A,B,C,D,E,F,G,H> {
     return new T8<>(now(a), now(b), now(c), now(d), now(e), now(f), now(g), now(h));
   }
 
-  public static <A,B,C,D,E,F,G,H> T8<A,B,C,D,E,F,G,H> t8(A a, B b, C c, D d, E e, F f, G g, H h) {
+  public static <A,B,C,D,E,F,G,H> T8<A,B,C,D,E,F,G,H> t8(Eval<A> a, Eval<B> b, Eval<C> c, Eval<D> d, Eval<E> e, Eval<F> f, Eval<G> g, Eval<H> h) {
     return new T8<>(a, b, c, d, e, f, g, h);
   }
 
@@ -66,7 +67,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the first element of this product.
    */
   public A _1() {
-    return _1;
+    return _1.value();
   }
 
   /**
@@ -74,7 +75,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the second element of this product.
    */
   public B _2() {
-    return _2;
+    return _2.value();
   }
 
   /**
@@ -82,7 +83,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the third element of this product.
    */
   public C _3() {
-    return _3;
+    return _3.value();
   }
 
   /**
@@ -90,7 +91,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the fourth element of this product.
    */
   public D _4() {
-    return _4;
+    return _4.value();
   }
 
 
@@ -99,7 +100,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the fifth element of this product.
    */
   public E _5() {
-    return _5;
+    return _5.value();
   }
 
   /**
@@ -107,7 +108,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the sixth element of this product.
    */
   public F _6() {
-    return _6;
+    return _6.value();
   }
 
   /**
@@ -115,7 +116,7 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the seventh element of this product.
    */
   public G _7() {
-    return _7;
+    return _7.value();
   }
 
   /**
@@ -123,7 +124,6 @@ public class T8<A,B,C,D,E,F,G,H> {
    * @return the eighth element of this product.
    */
   public H _8() {
-    return _8;
+    return _8.value();
   }
-
 }
