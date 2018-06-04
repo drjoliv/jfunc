@@ -28,6 +28,7 @@ import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 
 import drjoliv.fjava.adt.Either.RightException;
+import drjoliv.fjava.adt.generators.DequeueGenerator;
 import drjoliv.fjava.adt.generators.F1Generator;
 import drjoliv.fjava.adt.generators.FListGenerator;
 import drjoliv.fjava.functions.F1;
@@ -37,4 +38,53 @@ import drjoliv.fjava.nums.Numbers;
 @RunWith(JUnitQuickcheck.class)
 public class DequeueTest {
 
+  @Property
+  public void isEmpty(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void size(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void first(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void last(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void takeFront(@From(DequeueGenerator.class)Dequeue<Integer> que, int i) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void takeBack(@From(DequeueGenerator.class)Dequeue<Integer> que, int i) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void pushBack(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void pushFront(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void popFront(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
+
+  @Property
+  public void popBack(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+    fail("not yet implemented");
+  }
 }
