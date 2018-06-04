@@ -1,19 +1,19 @@
-package drjoliv.fjava.control.bind;
+package drjoliv.fjava.adt;
 
-import static drjoliv.fjava.control.bind.Trampoline.done$;
+import static drjoliv.fjava.adt.Trampoline.done$;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
 
-public abstract class Eval<A> implements Bind<Eval.μ,A>{
+public abstract class Eval<A> implements Monad<Eval.μ,A>{
 
   public static class μ implements drjoliv.fjava.hkt.Witness{}
 
   @Override
-  public BindUnit<μ> yield() {
+  public MonadUnit<μ> yield() {
     return Eval::now;
   }
 
@@ -21,10 +21,10 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
   public abstract <B> Eval<B> map(F1<? super A, B> fn);
 
   @Override
-  public abstract <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn);
+  public abstract <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn);
 
   @Override
-  public abstract <B> Eval<B> semi(Bind<μ, B> mb);
+  public abstract <B> Eval<B> semi(Monad<μ, B> mb);
 
   abstract public A value();
 
@@ -40,11 +40,11 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     return new Always<A>(fn);
   }
 
-  public static <B>  Eval<B> asEval(Bind<μ, B> monad) {
+  public static <B>  Eval<B> asEval(Monad<μ, B> monad) {
     return (Eval<B>)monad; 
   }
 
-  public static <B> F1<Bind<μ, B>, Eval<B>> asEval() {
+  public static <B> F1<Monad<μ, B>, Eval<B>> asEval() {
     return Eval::asEval;
   }
 
@@ -67,12 +67,12 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
       return asEval(fn.call(value));
     }
 
     @Override
-    public <B> Eval<B> semi(Bind<μ, B> mb) {
+    public <B> Eval<B> semi(Monad<μ, B> mb) {
       return bind(a -> mb);
     }
 
@@ -116,12 +116,12 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return asEval(Bind.join(map(fn.then(asEval()))));
+    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      return asEval(Monad.join(map(fn.then(asEval()))));
     }
     
     @Override
-    public <B> Eval<B> semi(Bind<μ, B> mb) {
+    public <B> Eval<B> semi(Monad<μ, B> mb) {
       return bind(a -> mb);
     }
   }
@@ -148,12 +148,12 @@ public abstract class Eval<A> implements Bind<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return asEval(Bind.join(map(fn.then(asEval()))));
+    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      return asEval(Monad.join(map(fn.then(asEval()))));
     }
 
     @Override
-    public <B> Eval<B> semi(Bind<μ, B> mb) {
+    public <B> Eval<B> semi(Monad<μ, B> mb) {
       return bind(a -> mb);
     }
   }
