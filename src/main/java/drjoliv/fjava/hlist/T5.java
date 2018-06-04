@@ -1,7 +1,8 @@
-package drjoliv.fjava.data;
+package drjoliv.fjava.hlist;
 
-import drjoliv.fjava.control.bind.Eval;
-import static drjoliv.fjava.control.bind.Eval.*;
+import static drjoliv.fjava.adt.Eval.*;
+
+import drjoliv.fjava.adt.Eval;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F5;
 
