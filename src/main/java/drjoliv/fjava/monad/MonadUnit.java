@@ -1,7 +1,7 @@
-package drjoliv.fjava.control;
+package drjoliv.fjava.monad;
 
 import drjoliv.fjava.hkt.Witness;
 
-public interface BindUnit<M extends Witness> {
-  public <A> Bind<M,A> unit(A a);
+public interface MonadUnit<M extends Witness> {
+  public <A> Monad<M,A> unit(A a);
 }
