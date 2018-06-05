@@ -1,6 +1,4 @@
-package drjoliv.fjava.data;
-
-import static drjoliv.fjava.data.T2.t2;
+package drjoliv.fjava.adt;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -8,34 +6,37 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
-import drjoliv.fjava.control.bind.Eval;
+import static drjoliv.fjava.hlist.T2.t2;
+import static drjoliv.fjava.adt.Eval.*;
+import static drjoliv.fjava.adt.Maybe.*;
+import static drjoliv.fjava.adt.Trampoline.*;
 
-import drjoliv.fjava.control.bind.Trampoline;
-import static drjoliv.fjava.control.bind.Trampoline.*;
-import static drjoliv.fjava.control.bind.Eval.*;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hlist.T2;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
+import drjoliv.fjava.monoid.Monoid;
 
 /**
  * 
  *
  * @author Desonte 'drjoliv' Jolivet eamil:drjoliv@gmail.com
  */
-public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Iterable<A> {
+public abstract class FList<A> implements Hkt<FList.μ,A>,
+       Monad<FList.μ,A>, Case2<FList<A>,FList.Nil<A>,FList.Cons<A>>, Iterable<A> {
 
   /**
   * The witness type of FList.
   */
   public static class μ implements drjoliv.fjava.hkt.Witness{}
 
-    public static BindUnit<FList.μ> unit = new BindUnit<FList.μ>() {
+    public static MonadUnit<FList.μ> unit = new MonadUnit<FList.μ>() {
       @Override
-      public <A> Bind<μ, A> unit(A a) {
+      public <A> Monad<μ, A> unit(A a) {
         return FList.single(a);
       }
     };
@@ -71,8 +72,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
 
   public abstract FList<A> update(int i, A a);
 
+  @SuppressWarnings("unchecked")
   @Override
-  public <B> FList<B> bind(F1<? super A, ? extends Bind<FList.μ, B>> fn) {
+  public <B> FList<B> bind(F1<? super A, ? extends Monad<FList.μ, B>> fn) {
      if(isEmpty()) {
       return Nil.instance();
     } else {
@@ -109,12 +111,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
   } 
 
   @Override
-  public <B> FList<B> semi(Bind<μ, B> mb) {
+  public <B> FList<B> semi(Monad<μ, B> mb) {
     return bind(a -> mb);
   }
 
   @Override
-  public BindUnit<μ> yield() {
+  public MonadUnit<FList.μ> yield() {
     return FList::single;
   }
 
@@ -315,17 +317,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
    */
 
   public Maybe<A> last() {
-    if(isEmpty())
-      return Maybe.nothing();
-    else {
-      FList<A> list = this;
-      FList<A> tail = list.tail();
-      while(!tail.isEmpty()) {
-        list = list.tail();
-        tail = list.tail();
-      }
-      return list.safeHead();
-    }
+    return match(
+        nil -> Maybe.nothing()
+      , cons -> {
+        A ret = null;
+        for(A a : cons)
+          ret = a;
+        return maybe(ret);
+    });
   }
 
   /**
@@ -468,7 +467,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
    */
   public abstract boolean isEmpty();
 
-  private static class Cons<A> extends FList<A> {
+  public static class Cons<A> extends FList<A> {
 
     private final A datum; //The data withing this FList
 
@@ -530,9 +529,14 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
       return new Cons<>(this, tail.map(t -> t.suffixes()));
     }
 
+    @Override
+    public <C> C match(F1<Nil<A>, C> f1, F1<Cons<A>, C> f2) {
+      return f2.call(this);
+    }
+
   }
 
-  private static class Nil<A> extends FList<A> {
+  public static class Nil<A> extends FList<A> {
 
     private static Nil<?> instance = new Nil();
 
@@ -543,10 +547,10 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
       return (Nil<B>)instance;
     }
 
-  @Override
-  public FList<A> concat(FList<A> a) {
-    return a;
-  }
+    @Override
+    public FList<A> concat(FList<A> a) {
+      return a;
+    }
 
     @Override
     public FList<A> tail() {
@@ -582,6 +586,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     public FList<FList<A>> suffixes() {
       return flist(empty());
     }
+
+    @Override
+    public <C> C match(F1<Nil<A>, C> f1, F1<Cons<A>, C> f2) {
+      return f1.call(this);
+    }
+
   }
 
   /**
@@ -903,8 +913,8 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     }
 
 
-    public static <M extends drjoliv.fjava.hkt.Witness,A> Maybe<Bind<M,FList<A>>> merge(FList<Bind<M,FList<A>>> listOfMonadsOfFList) {
-      return listOfMonadsOfFList.reduce((m1,m2) -> Bind.liftM2(m1,m2, (l1,l2) -> l1.concat(l2)));
+    public static <M extends drjoliv.fjava.hkt.Witness,A> Maybe<Monad<M,FList<A>>> merge(FList<Monad<M,FList<A>>> listOfMonadsOfFList) {
+      return listOfMonadsOfFList.reduce((m1,m2) -> Monad.liftM2(m1,m2, (l1,l2) -> l1.concat(l2)));
     }
 
     /**
@@ -913,7 +923,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>, Bind<FList.μ,A>, Ite
     * @param wider
     * @return
     */
-    public static <B> FList<B> asFList(Bind<FList.μ,B> wider) {
+    public static <B> FList<B> asFList(Monad<FList.μ,B> wider) {
       return (FList<B>) wider;
     }
 
