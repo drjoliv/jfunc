@@ -16,6 +16,11 @@ import static org.junit.Assert.*;
 
 import java.util.Random;
 
+import static org.hamcrest.number.OrderingComparison.*;
+import static org.hamcrest.Matchers.*;
+
+import org.hamcrest.Matcher;
+import org.hamcrest.number.OrderingComparison;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,51 +45,116 @@ public class DequeueTest {
 
   @Property
   public void isEmpty(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
+    if(que.size() != 0)
+      assertFalse(que.isEmpty());
+
+    while(que.size() != 0) {
+      que = que.popFront()
+        .toNull()._2(); 
+    }
+    assertTrue(que.isEmpty());
   }
 
   @Property
   public void size(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
+    int acc = 0;
+    int s = que.size();
+
+    while(que.size() != 0) {
+      que = que.popFront()
+        .toNull()._2(); 
+
+      acc++;
+    }
+    assertEquals(s,acc);
   }
 
   @Property
-  public void first(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
+  public void first(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+    que = que.pushFront(i);
+    assertEquals(i, que.first().toNull());
   }
 
   @Property
-  public void last(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
+  public void last(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+    que = que.pushBack(i);
+    assertEquals(i, que.last().toNull());
   }
 
   @Property
-  public void takeFront(@From(DequeueGenerator.class)Dequeue<Integer> que, int i) {
-    fail("not yet implemented");
+  public void takeFront(@From(DequeueGenerator.class)Dequeue<Integer> que, @InRange(minInt=0)Integer i) {
+    FList<Integer> l = que.takeFront(i);
+
+    if(i > que.size()) {
+      assertThat(new Integer(l.size()), is(que.size()));
+    }
+    assertThat(l.size(), OrderingComparison.lessThanOrEqualTo(que.size()));
+
+    while(que.size() != 0) {
+       Integer item = que.popFront()
+        .toNull()._1(); 
+       assertEquals(l.head(),item);
+       que = que.popFront()
+        .toNull()._2(); 
+       l = l.tail();
+    }
   }
 
   @Property
-  public void takeBack(@From(DequeueGenerator.class)Dequeue<Integer> que, int i) {
-    fail("not yet implemented");
+  public void takeBack(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+    FList<Integer> l = que.takeBack(i);
+
+    if(i > que.size()) {
+      assertThat(new Integer(l.size()), is(que.size()));
+    }
+    assertThat(l.size(), OrderingComparison.lessThanOrEqualTo(que.size()));
+
+    while(que.size() != 0) {
+       Integer item = que.popBack()
+        .toNull()._1(); 
+       assertEquals(l.head(),item);
+       que = que.popBack()
+        .toNull()._2(); 
+       l = l.tail();
+    }
   }
 
   @Property
   public void pushBack(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
-    fail("not yet implemented");
+    assertThat(que.pushBack(i).size(),
+        is(equalTo(que.size() + 1)));
+
+    assertThat(que.pushBack(i).last().toNull()
+        , is(equalTo(i)));
+
+    assertNotNull(que.pushBack(i)
+        .popBack().toNull()._1());
+
+    assertThat(que.pushBack(i)
+        .popBack().toNull()._1()
+        , is(equalTo(i)));
   }
 
-  @Property
-  public void pushFront(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
-    fail("not yet implemented");
-  }
+  //@Property
+  //public void pushFront(@From(DequeueGenerator.class)Dequeue<Integer> que, Integer i) {
+  //  assertThat(que.pushBack(i).size(),
+  //      is(equalTo(que.size() + 1)));
 
-  @Property
-  public void popFront(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
-  }
+  //  assertThat(que.pushBack(i).last().toNull()
+  //      , is(equalTo(i)));
 
-  @Property
-  public void popBack(@From(DequeueGenerator.class)Dequeue<Integer> que) {
-    fail("not yet implemented");
-  }
+  //  assertThat(que.pushBack(i)
+  //      .popBack().toNull()._1()
+  //      , is(equalTo(i)));
+  //}
+
+  //@Property
+  //public void popFront(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+  //  fail("not yet implemented");
+  //}
+
+  //@Property
+  //public void popBack(@From(DequeueGenerator.class)Dequeue<Integer> que) {
+  //  fail("not yet implemented");
+  //}
 }
