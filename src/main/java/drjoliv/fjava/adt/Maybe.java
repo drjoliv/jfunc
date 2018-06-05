@@ -1,30 +1,28 @@
-package drjoliv.fjava.data;
+package drjoliv.fjava.adt;
 
 import java.util.function.Function;
 
-import drjoliv.fjava.control.Alternative;
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
-import drjoliv.fjava.control.bind.Eval;
-import drjoliv.fjava.data.Maybe.μ;
+import drjoliv.fjava.adt.Maybe.μ;
+import drjoliv.fjava.alternative.Alternative;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt;
+import drjoliv.fjava.hkt.Hkt2;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
 
-import static drjoliv.fjava.control.Bind.*;
-import static drjoliv.fjava.control.bind.Eval.*;
+import static drjoliv.fjava.adt.Eval.*;
+import static drjoliv.fjava.monad.Monad.*;
 
 /**
  * Represents a value of something(Just) or a value of Nothing.
  *
  * @author drjoliv@gmail.com
  */
-public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>, 
-       Alternative<Hkt<Maybe.μ, A>> {
-
-  public abstract <B> B match(F1<Nothing<A>,B> left, F1<Just<A>,B> right);
+public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A>, 
+       Alternative<Hkt<Maybe.μ, A>>, Case2<Maybe<A>,Maybe.None<A>,Maybe.Just<A>>{
 
   @Override
   public Maybe<A> alt(Alternative<Hkt<Maybe.μ, A>> alt) {
@@ -40,15 +38,15 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   private Maybe() {}
 
   @Override
-  public abstract <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn);
+  public abstract <B> Maybe<B> bind(F1<? super A, ? extends Monad<μ, B>> fn);
 
   @Override
-  public <B> Maybe<B> semi(Bind<μ, B> mb) {
+  public <B> Maybe<B> semi(Monad<μ, B> mb) {
     return bind(a -> mb);
   }
 
   @Override
-  public BindUnit<μ> yield() {
+  public MonadUnit<μ> yield() {
     return Maybe::maybe;
   }
 
@@ -89,7 +87,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   */
   @SuppressWarnings("unchecked")
   public static <B> Maybe<B> nothing() {
-    return (Maybe<B>) Nothing.instance;
+    return (Maybe<B>) None.instance;
   }
 
   /**
@@ -98,7 +96,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
    * @param <B> the type of the contents of the narrowed bind.
    * @return a myabe
    */
-  public static <B> Maybe<B> asMaybe(Bind<Maybe.μ, B> monad) {
+  public static <B> Maybe<B> asMaybe(Monad<Maybe.μ, B> monad) {
     return (Maybe<B>) monad;
   }
 
@@ -159,10 +157,10 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   /**
    * The instance of maybe that does not contain a value.
    */
-  public static class Nothing<A> extends Maybe<A> {
-    private static Nothing<?> instance = new Nothing<>();
+  public static class None<A> extends Maybe<A> {
+    private static None<?> instance = new None<>();
 
-    private Nothing() {}
+    private None() {}
 
     @Override
     public boolean isSome() {
@@ -175,7 +173,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
+    public <B> Maybe<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
       return nothing();
     }
 
@@ -185,7 +183,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public <B> B match(F1<Nothing<A>, B> left, F1<Just<A>, B> right) {
+    public <B> B match(F1<None<A>, B> left, F1<Just<A>, B> right) {
       return left.call(this);
     }
   }
@@ -225,12 +223,12 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
     }
 
     @Override
-    public <B> Maybe<B> bind(F1<? super A, ? extends Bind<μ, B>> fn) {
-      return asMaybe(Bind.join(map(fn.then(Maybe::asMaybe))));
+    public <B> Maybe<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      return asMaybe(Monad.join(map(fn.then(Maybe::asMaybe))));
     }
 
     @Override
-    public <B> B match(F1<Nothing<A>, B> left, F1<Just<A>, B> right) {
+    public <B> B match(F1<None<A>, B> left, F1<Just<A>, B> right) {
       return right.call(this);
     }
   }
@@ -240,6 +238,73 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Bind<Maybe.μ, A>,
   }
 
   public static <A> F1<Maybe<Maybe<A>>, Maybe<A>> join() {
-    return m -> Bind.<μ, A>join().then(Maybe::asMaybe).call(m);
+    return m -> Monad.<μ, A>join().then(Maybe::asMaybe).call(m);
   }
+
+public static class MaybeT<M extends Witness,A> implements Monad<Hkt<MaybeT.μ,M>,A>, Hkt2<MaybeT.μ,M,A> {
+
+  public static class μ implements Witness{}
+
+  private final Monad<M,Maybe<A>> runMaybeT;
+  private final MonadUnit<M> mUnit;
+
+  @Override
+  public <B> MaybeT<M,B> map(F1<? super A, B> fn){
+    return maybeT(runMaybeT.map(maybe_value -> maybe_value.map(fn)));
+  }
+
+  @Override
+  public <B> MaybeT<M,B> semi(Monad<Hkt<μ, M>, B> mb) {
+    return bind(a -> mb);
+  }
+
+  @Override
+  public <B> MaybeT<M,B> bind(F1<? super A, ? extends Monad<Hkt<μ, M>, B>> fn) {
+    return maybeT(runMaybeT.bind(maybe_value -> {
+      return maybe_value.match(
+          n -> mUnit.unit(nothing())
+        , j -> asMaybeT(fn.call(j.value())).runMaybeT);
+   }));
+  }
+
+  @Override
+  public MonadUnit<Hkt<μ, M>> yield() {
+    return new MonadUnit<Hkt<μ, M>>() {
+      @Override
+      public <B> Monad<Hkt<μ, M>, B> unit(B b) {
+        return MaybeT.<M,B>maybeT().call(mUnit,b);
+      }
+    };
+  }
+
+
+  private MaybeT(Monad<M,Maybe<A>> runMaybeT) {
+    this.runMaybeT = runMaybeT;  
+    this.mUnit = runMaybeT.yield();
+  }
+
+  public static <M extends Witness,A> MaybeT<M,A> liftMaybeT(Monad<M,A> m) {
+    return new MaybeT<M,A>(m.map(a -> Maybe.maybe(a)));
+  }
+
+  public static <M extends Witness, A> F2<MonadUnit<M>,A,MaybeT<M,A>> maybeT() {
+    return (mUnit, a) -> new MaybeT<M, A>(mUnit.unit(Maybe.maybe(a)));
+  }
+
+  public static <M extends Witness,A> MaybeT<M,A> maybeT(Monad<M,Maybe<A>> runMaybeT) {
+    return new MaybeT<M,A>(runMaybeT);
+  }
+
+  public static <M extends Witness,A> MaybeT<M,A> maybeT(A a, MonadUnit<M> mUnit) {
+    return liftMaybeT(mUnit.unit(a));
+  }
+
+  public Monad<M,Maybe<A>> runMaybeT() {
+    return runMaybeT;
+  }
+
+  public static <M extends Witness, A> MaybeT<M, A> asMaybeT(Monad<Hkt<MaybeT.μ, M>, A> wider) {
+    return (MaybeT<M, A>) wider;
+  }
+}
 }
