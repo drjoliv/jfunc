@@ -1,19 +1,19 @@
-package drjoliv.fjava.data;
+package drjoliv.fjava.adt;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
-import drjoliv.fjava.control.Functor;
-import drjoliv.fjava.data.DList.μ;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
+import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Witness;
-import drjoliv.fjava.data.FList;
-import static drjoliv.fjava.data.FList.*;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
+import drjoliv.fjava.nums.Numbers;
+
+import static drjoliv.fjava.adt.FList.*;
 
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import drjoliv.fjava.Numbers;
+import drjoliv.fjava.adt.DList.μ;
 
 /**
  *
