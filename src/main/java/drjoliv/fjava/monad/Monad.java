@@ -2,6 +2,7 @@ package drjoliv.fjava.monad;
 
 
 import drjoliv.fjava.adt.FList;
+import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
@@ -9,7 +10,7 @@ import drjoliv.fjava.functions.F4;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Witness;
 
-public interface Monad<M extends Witness,A> extends Functor<M,A> {
+public interface Monad<M extends Witness,A> extends Applicative<M,A> {
 
   //m >>= return == m
   //(return x) >>= f == f x
@@ -19,6 +20,9 @@ public interface Monad<M extends Witness,A> extends Functor<M,A> {
   }
 
   public <B> Monad<M,B> semi(Monad<M,B> mb);
+
+  @Override
+  public <B> Monad<M,B> apply(Applicative<M,F1<? super A,B>> f);
 
   public static <M extends Witness, A, B> F2<Monad<M,A>, Monad<M,B>, Monad<M,B>> semi() {
     return (m1, m2) -> m1.semi(m2);
