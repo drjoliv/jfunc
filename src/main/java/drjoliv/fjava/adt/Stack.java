@@ -13,7 +13,7 @@ import drjoliv.fjava.hlist.T2;
 import static drjoliv.fjava.adt.FList.*;
 import static drjoliv.fjava.adt.Maybe.*;
 
-public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ,A>{
+public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ,A> {
 
   public static class μ implements Witness{private μ(){}}
 
@@ -29,7 +29,7 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
   }
 
   @Override
-  public <B> Stack<B> map(F1<? super A, B> fn) {
+  public <B> Stack<B> map(F1<? super A, B> fn) {  
     return new Stack<>(size, list.map(fn));
   }
 
