@@ -7,15 +7,27 @@ import drjoliv.fjava.adt.FList;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Witness;
 
+/**
+ * A computation that supplies a value.
+ * @author Deaonte 'drjoliv' Jolivet : drjoliv@gmail.com
+ */
+@FunctionalInterface
 public interface F0<A> extends Supplier<A>, Functor<F0.μ,A> {
 
-  public interface μ extends Witness{}
+  /**
+  * The witness type of {@code F0}.
+  */
+  public class μ implements Witness{private μ(){}}
 
+  /**
+   * Returns a result.
+   * @return a result.
+   */
   public A call();
 
   @Override
-  public default <B> F0<B> map(F1<? super A, B> fn) {
-    return fn.curry().call(call());
+  public default <B> F0<B> map(F1<? super A, ? extends B> fn) {
+    return F0Map.doMap(this,fn);
   }
 
   @Override
