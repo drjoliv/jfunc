@@ -1,167 +1,241 @@
-package drjoliv.fjava.control.bind;
+package drjoliv.fjava.trans.writer;
 
-import static drjoliv.fjava.control.bind.Identity.id;
-import static drjoliv.fjava.data.FList.flist;
-import static drjoliv.fjava.data.T2.t2;
+import static drjoliv.fjava.adt.FList.flist;
+import static drjoliv.fjava.hlist.T2.t2;
+import static drjoliv.fjava.monad.Identity.id;
 
-import drjoliv.fjava.control.Bind;
-import drjoliv.fjava.control.BindUnit;
-import drjoliv.fjava.data.FList;
-import drjoliv.fjava.data.Maybe;
-import drjoliv.fjava.data.Monoid;
-import drjoliv.fjava.data.T2;
-import drjoliv.fjava.data.Unit;
+import drjoliv.fjava.adt.Eval;
+import drjoliv.fjava.adt.FList;
+import drjoliv.fjava.adt.Maybe;
+import drjoliv.fjava.adt.Unit;
+import drjoliv.fjava.applicative.Applicative;
+import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.hkt.Hkt2;
 import drjoliv.fjava.hkt.Hkt3;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.hlist.T2;
+import drjoliv.fjava.monad.Monad;
+import static drjoliv.fjava.monad.Monad.*;
+import drjoliv.fjava.monad.MonadUnit;
+import drjoliv.fjava.monad.Identity;
+import drjoliv.fjava.monoid.Monoid;
+import drjoliv.fjava.nums.Numbers;
+import drjoliv.fjava.trans.writer.WriterT.μ;
+
+import static drjoliv.fjava.monoid.Monoid.*;
+
+import java.math.BigInteger;
+
 
 /**
- *
- *
- * @author Desonte 'drjoliv' Jolivet
+ * The WriterT is a monad that produces a stream of data in addition to a computed value, the stream of subcomputations are collected by combining them via a monoid.
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A>{
+public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
 
-  public static class μ implements Witness{}
+ /**
+  * Witness type of WriterT.
+  */
+  public static class μ implements Witness{private μ(){}}
 
-  private final F0<Bind<M,T2<A,W>>> runWriterT;
+  private final Monad<M,T2<A,W>> runWriterT;
   private final Monoid<W> monoid;
-  private final BindUnit<M> mUnit;
+  private final MonadUnit<M> mUnit;
 
-  private WriterT(F0<Bind<M,T2<A,W>>> runWriterT, Monoid<W> monoid, BindUnit<M> mUnit) {
+  private WriterT(Monad<M,T2<A,W>> runWriterT, Monoid<W> monoid, MonadUnit<M> mUnit) {
     this.runWriterT = runWriterT;
     this.monoid     = monoid;
     this.mUnit      = mUnit;
   }
 
   @Override
-  public <B> WriterT<M,W,B> map(F1<? super A, B> fn) {
-    return new WriterT<M,W,B>(() -> runWriterT.call().map(p -> p.map1(fn)), monoid, mUnit);
-  }
+  public abstract <B> WriterT<M,W,B> map(F1<? super A, ? extends B> fn);
 
   @Override
-  public <B> WriterT<M,W,B> bind(F1<? super A, ? extends Bind<Hkt2<μ, M, W>, B>> fn) {
-    return new WriterT<M,W,B>(() -> {
-      return Bind.For(runWriterT.call()
-          , p     -> asWriterT(fn.call(p._1())).runWriterT.call()
-          ,(p,p2) -> mUnit.unit(t2(p2._1(), monoid.mappend(p._2(),p2._2()))));
-    }
-    , monoid, mUnit);
-  }
+  public abstract <B> WriterT <M, W, B> apply(Applicative<Hkt2<μ, M, W>, ? extends F1<? super A, ? extends B>> applicative);
 
   @Override
-  public <B> WriterT<M,W,B> semi(Bind<Hkt2<μ, M, W>, B> mb) {
-    return bind(a -> mb);
-  }
+  public abstract ApplicativePure<Hkt2<μ, M, W>> pure();
 
   @Override
-  public BindUnit<Hkt2<μ, M, W>> yield() {
-    return new BindUnit<Hkt2<μ, M, W>>(){
-      @Override
-      public <B> Bind<Hkt2<μ, M, W>, B> unit(B b) {
-        return WriterT.<M,W,B>unit().call(mUnit,monoid,b);
-      }
-    };
-  }
+  public abstract <B> WriterT<M,W,B> bind(F1<? super A, ? extends Monad<Hkt2<μ, M, W>, B>> fn);
+
+  @Override
+  public abstract <B> WriterT<M,W,B> semi(Monad<Hkt2<μ, M, W>, B> mb);
+
+  @Override
+  public abstract MonadUnit<Hkt2<μ, M, W>> yield();
 
   /**
-   *
-   *
-   * @return
+   * Returns the monoid used by this WriterT.
+   * @return the monoid used by this WriterT.
    */
-  public Monoid<W> monoid() {
+  public final Monoid<W> monoid() {
     return monoid;
   }
 
   /**
-   *
-   *
-   * @return
+   * Returns the inner monad containing two values, the main computaion {@code A } and the accumulated subcomputations {@code W}.
+   * @return the inner monad containing two values the main computaion {@code A } and the accumulated subcomputations {@code W}.
    */
-  public Bind<M,T2<A,W>> runWriterT(){
-    return runWriterT.call();
+  public Monad<M,T2<A,W>> runWriterT(){
+    return runWriterT;
   }
 
   /**
-   *
-   *
-   * @return
+   * Returns the inner monad containing the accumulated subcomputations {@code W}.
+   * @return the inner monad containing the accumulated subcomputations {@code W}.
    */
-  public Bind<M,W> execWriterT(){
-    return runWriterT.call().map(p -> p._2());
+  public Monad<M,W> execWriterT(){
+    return runWriterT.map(T2::_2);
   }
 
-  /**
-   *
-   *
-   * @return
-   */
-  public static <M extends Witness,W,B> F3<BindUnit<M>, Monoid<W>, B, WriterT<M,W,B>>unit() {
-    return (mUnit, monoid, b) -> new WriterT<M,W,B>(() -> mUnit.unit(t2(b,monoid.mempty())), monoid, mUnit);
+  <D> Monad<M,D> u(D d) {
+    return mUnit.unit(d);
   }
 
-  @SuppressWarnings("unchecked")
-  public static <M extends Witness, W, A> WriterT<M, W, A> asWriterT(Bind<Hkt2<Writer.μ, M, W>, A> mb) {
-    return (WriterT<M, W, A>) mb;
+  MonadUnit<M> unit() {
+    return mUnit;
   }
 
-  /**
-  *
-  */
-  public static final class Writer<W,A> extends WriterT<Identity.μ,W,A> {
+  private static class WriterTImpl<M extends Witness,W,A> extends WriterT<M,W,A>  implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
 
-    private Writer(F0<Bind<Identity.μ,T2<A,W>>> runWriterT, Monoid<W> monoid) {
-      super(runWriterT, monoid, Identity::id);
-    }
-
-    /**
-     *
-     *
-     * @return
-     */
-    public T2<A,W> run() {
-      return runWriterT().value();
-    }
-
-    /**
-     *
-     *
-     * @return
-     */
-    public W log() {
-      return runWriterT().value()._2();
-    }
-
-    /**
-     *
-     *
-     * @return
-     */
-    public A exec() {
-      return runWriterT().value()._1();
+    private WriterTImpl(Monad<M,T2<A,W>> runWriterT, Monoid<W> monoid, MonadUnit<M> mUnit) {
+      super(runWriterT, monoid, mUnit);
     }
 
     @Override
-    public <B> Writer<W,B> map(F1<? super A, B> fn) {
-      final WriterT<Identity.μ,W,B> w = super.map(fn);
-      return new Writer<W,B>(w.runWriterT,w.monoid);
+    public MonadUnit<Hkt2<μ, M, W>> yield() {
+      MonadUnit<M> u = unit();
+      Monoid<W> m = monoid();
+      return new MonadUnit<Hkt2<μ, M, W>>(){
+        @Override
+        public <B> Monad<Hkt2<μ, M, W>, B> unit(B b) {
+          return new WriterTImpl<M,W,B>(u.unit(t2(b, m.mempty())), m, u );
+        }
+      };
+    }
+
+    @Override
+    public <B> WriterTImpl<M,W,B> map(F1<? super A, ? extends B> fn) {
+      Monad<M,T2<B,W>> mb = runWriterT().map(t -> t.map1(fn));
+      return new WriterTImpl<M,W,B>(mb, monoid(), unit());
+    }
+
+    @Override
+    public <B> WriterT <M, W, B> apply(Applicative<Hkt2<μ, M, W>, ? extends F1<? super A, ? extends B>> applicative) {
+      Monad<M,T2<F1<? super A, B>,W>> mf = ((WriterT <M, W, F1<? super A, B>>) applicative).runWriterT();
+      Monad<M,T2<A,W>>                ma = runWriterT();
+      Monad<M,T2<B,W>> mb =
+        Monad.For(mf
+            , tf      -> ma
+            ,(tf,ta)  -> {
+              A a = ta._1();
+              W w = ta._2();
+              return unit().unit(tf.bimap(f -> f.call(a) , ww -> monoid().mappend(w,ww)));
+          });
+      return new WriterTImpl<>(mb, monoid(), unit());
+    }
+
+    @Override
+    public ApplicativePure<Hkt2<μ, M, W>> pure() {
+      return new ApplicativePure<Hkt2<μ, M, W>>(){
+        @Override
+        public <B> Applicative<Hkt2<μ, M, W>, B> pure(B b) {
+          return new WriterTImpl<M,W,B>(unit().unit(t2(b, monoid().mempty())), monoid(), unit());
+        }
+      };
+    }
+
+    @Override
+    public <B> WriterT<M,W,B> bind(F1<? super A, ? extends Monad<Hkt2<μ, M, W>, B>> fn) {
+      Monad<M,T2<B,W>> mb
+        = Monad.For(runWriterT()
+            ,  a    -> monad(fn.call(a._1())).runWriterT()
+            , (a,b) -> {
+              Monad<Eval.μ, W> obj = Monad.liftM2(a._2, b._2, monoid()::mappend);
+              return u(b.set2(Eval.monad(obj)));
+            });
+      return new WriterTImpl<M,W,B>(mb , monoid(), unit());
+    }
+
+    @Override
+    public <B> WriterT<M,W,B> semi(Monad<Hkt2<μ, M, W>, B> mb) {
+      return bind(a -> mb);
+    }
+  }
+
+  /**
+  * Writer is a WriterT whose inner monad is the identity monad.
+  */
+  public static final class Writer<W,A> extends WriterT<Identity.μ,W,A> {
+
+    private Writer(Monad<Identity.μ,T2<A,W>> runWriterT, Monoid<W> monoid) {
+      super(runWriterT, monoid, Identity::id);
+    }
+
+    @Override
+    public <B> Writer<W,B> map(F1<? super A, ? extends B> fn) {
+      return new Writer<W,B>(runWriterT().map(t -> t.map1(fn)), monoid());
+    }
+
+    @Override
+    public <B> Writer<W, B> apply(Applicative<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, ? extends F1<? super A, ? extends B>> applicative) {
+        Identity<T2<F1<? super A, B>,W>> wf = isWriter(applicative)
+          ? ((Writer<W,F1<? super A, B>>) applicative).runWriterT()
+          : Identity.monad(((WriterT<Identity.μ,W,F1<? super A, B>>) applicative).runWriterT());
+
+        Identity<T2<B,W>> mb = wf.bind(tf -> {
+          final F1<? super A, B> f = tf._1();
+          final W ww = tf._2();
+
+          return runWriterT().map(t ->  t.bimap(a -> f.call(a), w -> monoid().mappend(w,ww))); 
+        });
+
+      return new Writer<W,B>(mb, monoid());
+    }
+
+    @Override
+    public ApplicativePure<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>> pure() {
+      return new ApplicativePure<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>>(){
+        @Override
+        public <B> Applicative<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, B> pure(B b) {
+          return new Writer<W,B>(id(t2(b, monoid().mempty())), monoid());
+        }
+      };
     }
 
     @Override
     public <B> Writer<W,B> bind(
-        F1<? super A, ? extends Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, W>, B>> fn) {
-      final WriterT<Identity.μ,W,B> w = super.bind(fn);
-      return new Writer<W,B>(w.runWriterT,w.monoid);
+        F1<? super A, ? extends Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, B>> fn) {
+      Identity<T2<B,W>> mb =
+        Identity.For(runWriterT()
+                  , t       ->  monad(fn.call(t._1())).runWriterT()
+                  , (ta,tb) ->  {
+                    Eval<W> w = Eval.liftM2(ta._2, tb._2, monoid()::mappend);
+                    return u(tb.set2(w));
+                  });
+      return new Writer<W,B>(mb,monoid());
     }
 
     @Override
     public <B> Writer<W,B> semi(
-      final Bind<Hkt2<μ, drjoliv.fjava.control.bind.Identity.μ, W>, B> mb) {
-      final WriterT<Identity.μ,W,B> w = super.semi(mb);
-      return new Writer<W,B>(w.runWriterT,w.monoid);
+      final Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, B> mb) {
+      return bind(a -> mb);
+    }
+
+    @Override
+    public MonadUnit<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>> yield() {
+      return new MonadUnit<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>>(){
+        @Override
+        public <B> Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, B> unit(B b) {
+          return new Writer<W,B>(id(t2(b, monoid().mempty())), monoid());
+        }
+      };
     }
 
     @Override
@@ -170,84 +244,109 @@ public class WriterT <M extends Witness,W,A> implements Bind<Hkt2<WriterT.μ,M,W
     }
 
     /**
-     *
-     *
-     * @param flist
-         * @param <M>
-        * @param <W>
-     * @param <A>
-    * @return
+     * Returns the unwrapped writer monad, yielding the return value {@code A} and accumulated subcomputations {@code W}.
+     * @return the unwrapped writer monad, yielding the return value {@code A} and accumulated subcomputations {@code W}.
      */
-    public static <M extends Witness, W, A> Maybe<WriterT<M,W,FList<A>>> sequence(FList<WriterT<M,W,A>> flist) {
-        return flist
-          .map(ma -> ma.map(a -> flist(a)))
-          .reduce((m1, m2) -> asWriterT(Bind.liftM2(m1, m2, (a1, a2) -> a1.concat(a2))));
+    public T2<A,W> run() {
+      return runWriterT().value();
     }
 
     /**
-     *
-     *
-     * @param flist
-        * @param <M>
-        * @param <W>
-     * @param <A>
-  * @return
+     * Returns the accumulated subcomputations.
+     * @return the accumulated subcomputations.
      */
-    public static <M extends Witness, W, A> Maybe<WriterT<M,W,Unit>> sequence_(FList<WriterT<M,W,A>> flist) {
-      return flist
-        .reduce((m1,m2) -> m1.semi(m2))
-        .map(w -> w.map(a -> Unit.unit));
+    public W log() {
+      return runWriterT().value()._2();
     }
 
     /**
-     *
-     *
-     * @param a
-     * @param w
-     * @param m
-      * @param <W>
-     * @param <A>
-    * @return
+     * Returns the return value.
+     * @return the return value.
      */
-    public static <W,A> Writer<W,A> writer(A a, W w, Monoid<W> m) {
-      return new Writer<W,A>(() -> id(t2(a,w)), m);
+    public A exec() {
+      return runWriterT().value()._1();
     }
 
-    /**
-     *
-     *
-     * @param a the value contained within the writer.
-     * @param m the monoiod operation used when writiing.
-     * @param <W> the log type of the created wirter.
-     * @param <A> the type of the value contained within the writer.
-     * @return creates a writer from the given arguments.
-     */
-    public static <W,A> Writer<W,A> writer(A a, Monoid<W> m) {
-      return new Writer<W,A>(() -> id(t2(a,m.mempty())), m);
-    }
-
-    /**
-     *
-     * Creates a first class function that produces writers.
-     * @param w the monoid used within the created function to create writers.
-     * @param <W> the log type of the created wirter.
-     * @param <A> the type of the value contained within the writer.
-     * @return a  first class function that produces writers.
-     */
-    public static <A,W> F1<A,Writer<W,A>> writer(Monoid<W> w) {
-      return a -> writer(a,w);
-    }
-
-    /**
-     * Converts a instnace of bind whose witness type is {@code Hkt2<Writer.μ, Identity.μ, W>} to a instance of writer.
-     * @param mb the argument to convert to an instance of writer.
-     * @return a writer.
-     */
-    public static <W extends Witness,A> Writer<W,A> asWriter(Bind<Hkt2<Writer.μ, Identity.μ, W>, A> mb) {
-      if(mb instanceof WriterT)
-        return new Writer<W,A>(asWriterT(mb).runWriterT, asWriterT(mb).monoid);
-      else
-        return (Writer<W,A>) mb;
+    private static boolean isWriter(Object obj) {
+      return obj instanceof Writer;
     }
   }
+
+  /**
+   * Creates a writer.
+   * @param a a return value.
+   * @param w a subcomuptation.
+   * @param m a monoid used to combine subcomputation.
+   * @param <W> subcomputation type.
+   * @param <A> return value type.
+   * @return a wrtier.
+   */
+  public static <W,A> Writer<W,A> writer(A a, W w, Monoid<W> m) {
+    return new Writer<W,A>(id(t2(a,w)), m);
+  }
+
+  /**
+   * Creates a writerT.
+   * @param a the return value
+   * @param w the  subcomputation.
+   * @param unit a strategy for lift values into the contect of the inner monad.
+   * @param mw a monoid used to combine subcomputations.
+   * @return a writerT.
+   */
+  public static <A,W,M extends Witness> WriterT<M,W,A> writer(A a, W w, MonadUnit<M> unit, Monoid<W> mw) {
+    return  new WriterTImpl<>(unit.unit(t2(a,w)), mw, unit);
+  }
+
+
+  /**
+   * Creates a strategy for constructing writers.
+   * @param m a monoid used to combine subcomputations of the created writer.
+   * @return a strategy for creating writers.
+   */
+  public static final <W> MonadUnit<Hkt2<WriterT.μ,Identity.μ,W>> WRITER_UNIT(Monoid<W> m) {
+    return new MonadUnit<Hkt2<WriterT.μ,Identity.μ,W>>(){
+      @Override
+      public <A> Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, W>, A> unit(A a) {
+        return new Writer<W,A>(id(t2(a, m.mempty())), m);
+      }
+    };
+  }
+
+
+  /**
+   * Creates a strategy for constructing writers.
+   * @param m the monoid used to combine subcmoputations of the created writer.
+   * @param unit a strategy for lifting values into the inner monad.
+   * @return a strategy for creating writers.
+   */
+  public static final <M extends Witness, W> MonadUnit<Hkt2<WriterT.μ,M,W>> WRITERT_MONAD_UNIT(Monoid<W> m, MonadUnit<M> unit) {
+    return new MonadUnit<Hkt2<WriterT.μ,M,W>>(){
+      @Override
+      public <A> Monad<Hkt2<μ, M, W>, A> unit(A a) {
+        return new WriterTImpl<M,W,A>(unit.unit(t2(a, m.mempty())), m, unit);
+      }
+    };
+  }
+
+  /**
+  * Converts a instnace of bind whose witness type is {@code Hkt2<Writer.μ, Identity.μ, W>} to a instance of writer.
+  * @param mb the argument to convert to an instance of writer.
+  * @return a writer.
+  */
+  public static <W, A> Writer<W,A> asWriter(Monad<Hkt2<WriterT.μ, Identity.μ, W>, A> mb) {
+    if(mb instanceof WriterT)
+      return new Writer<W,A>(monad(mb).runWriterT, monad(mb).monoid);
+    else
+      return (Writer<W,A>) mb;
+  }
+  
+  /**
+   * A helper function to convert/narrow a reference from a monad to its underlying type.
+   * @param monad the writerT to be casted to its original type.
+   * @return a writerT.
+   */
+  public static <M extends Witness,W,A> WriterT<M,W,A> monad(Monad<Hkt2<WriterT.μ,M,W>,A> monad) {
+    return (WriterT<M,W,A>)monad;
+  }
+
 }

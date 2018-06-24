@@ -65,13 +65,12 @@ import drjoliv.fjava.monad.MonadUnit;
 public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
 
   /**
-  * Witness type of Trampoline.
+  * Witness type of {@code Trampoline}.
   */
   public static class μ implements drjoliv.fjava.hkt.Witness {private μ(){}}
 
   private Trampoline(){}
 
-  //Allows for stackless bind and map opertations.
   abstract <B> Trampoline<B> doBind(F1<? super A, Trampoline<B>> fn);
 
   @Override
@@ -107,7 +106,7 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
 
   /**
    *
-   * Returns the value produces by this trampoline, the value is not cached.
+   * Returns the value produced by this trampoline, the value is not cached.
    * @return The resulting vaule of this trampoline.
    */
   public A result() {
@@ -235,8 +234,8 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
   }
 
   /**
-   * A helper function to convert/narrow a refernce from a monad to its underlying type.
-   * @param app the trampolint to be casted to its original type.
+   * A helper function to convert/narrow a refernce from an applicative to its underlying type.
+   * @param app the trampoline to be casted to its original type.
    * @return a trampoline.
    */
   public static <A,B> Trampoline<F1<A,B>> applicative(Applicative<Trampoline.μ, ? extends F1<? super A, ? extends B>> app) {
@@ -257,7 +256,7 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
    * Converts a supplier to a trampoine.
    * The value returned by the supplier is the valued use by the trampoline.
    * Trampoline.done(fn.call()) == Trampoline.done$(fn)
-   * The supplier is onlly evaludated when needed.
+   * The supplier is onlly evaluated when needed.
    * @param fn the supplier to be wrapped into a trampoline.
    * @return a trampoline.
    */
@@ -279,7 +278,7 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
    * Cratets a trampoline whose value depends on the result of two other trampolines.
    * Equivalient to Monad#liftM2.
    *
-   * @param fn A function to be applied to tthe contents of the given trmpoline.
+   * @param fn A function to be applied to the contents of the given trmpoline.
    * @param t1 a trampoline.
    * @param t2 a trmpaoline
    * @return A trampoline created from applying the function fn to the contents of the given
