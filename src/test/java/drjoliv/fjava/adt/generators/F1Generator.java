@@ -1,4 +1,4 @@
-package drjoliv.fjava.data.generators;
+package drjoliv.fjava.adt.generators;
 
 import com.pholser.junit.quickcheck.generator.ComponentizedGenerator;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
@@ -25,5 +25,4 @@ public class F1Generator<A,B> extends ComponentizedGenerator<F1> {
   public int numberOfNeededComponents() {
     return 2;
   }
-
 }

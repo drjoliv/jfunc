@@ -1,4 +1,4 @@
-package drjoliv.fjava.data.generators;
+package drjoliv.fjava.adt.generators;
 
 import com.pholser.junit.quickcheck.generator.ComponentizedGenerator;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
