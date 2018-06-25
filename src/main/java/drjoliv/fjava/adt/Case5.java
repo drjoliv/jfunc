@@ -18,4 +18,5 @@ public interface Case5<Base, A extends Base, B extends Base, C extends Base, D e
    * @return F
    */
   public <F> F match(F1<A, F> f1, F1<B, F> f2, F1<C, F> f3, F1<D, F> f4, F1<E, F> f5);
-i
+
+}
