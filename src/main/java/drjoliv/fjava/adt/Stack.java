@@ -1,20 +1,27 @@
 package drjoliv.fjava.adt;
 
-import static drjoliv.fjava.hlist.T2.*;
+import static drjoliv.fjava.adt.FList.flist;
+import static drjoliv.fjava.adt.Maybe.maybe;
+import static drjoliv.fjava.hlist.T2.t2;
 
 import java.util.Iterator;
 
-import drjoliv.fjava.adt.Stack.μ;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Hkt;
 import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
-import static drjoliv.fjava.adt.FList.*;
-import static drjoliv.fjava.adt.Maybe.*;
 
+/**
+ * Plain LIFO stack.
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
+ */
 public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ,A> {
 
+
+  /**
+  * The witness type of {@code Stack}.
+  */
   public static class μ implements Witness{private μ(){}}
 
   private static Stack EMPTY_STACK = new Stack(0,FList.empty());
@@ -29,7 +36,7 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
   }
 
   @Override
-  public <B> Stack<B> map(F1<? super A, B> fn) {  
+  public <B> Stack<B> map(F1<? super A, ? extends B> fn) {  
     return new Stack<>(size, list.map(fn));
   }
 
@@ -38,10 +45,27 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
     return list.iterator();
   }
 
+  /**
+   * Returns the size of this stack.
+   * @return the size
+   */
+  public int getSize() {
+    return size;
+  }
+
+  /**
+   * Returns a stack with the argument pushed onto it.
+   * @param a an argument that will be pushed onto this stack.
+   * @return a stack with the argument pushed onto it.
+   */
   public Stack<A> push(A a) {
     return new Stack<>(size + 1, list.add(a));
   }
 
+  /**
+   * Returns a maybe containing a tuple filled with the removed item and the newly created stack.
+   * @return a maybe containing a tuple filled with the removed item and the newly created stack.
+   */
   public Maybe<T2<A,Stack<A>>> pop() {
     return list.match(n -> Maybe.nothing()
         , c -> {
@@ -50,18 +74,36 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
         });
   }
 
+  /**
+   * Returns true if this stack is empty and false otherwise.
+   * @return true if this stack is empty and false otherwise.
+   */
   public boolean isEmpty() {
    return list.isEmpty();
   }
 
+  /**
+   * Returns an empty stack.
+   * @return the empty stack.
+   */
   public static <A> Stack<A> empty() {
     return EMPTY_STACK;
   }
 
+  /**
+   * Creates a stack from an array of items.
+   * @param a an array of items used to create a new stack.
+   * @return a new stack.
+   */
   public static <A> Stack<A> stack(A... a) {
     return fromFList(flist(a));
   }
 
+  /**
+   * Creates a stack from a flist of items.
+   * @param list a FList used to create a new stack.
+   * @return a new stack.
+   */
   public static <A> Stack<A> fromFList(FList<A> list) {
     return new Stack<>(list.size(), list);
   }
