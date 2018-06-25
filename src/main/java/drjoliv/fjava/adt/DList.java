@@ -1,84 +1,111 @@
 package drjoliv.fjava.adt;
 
+import static drjoliv.fjava.adt.FList.flist;
+import static drjoliv.fjava.functions.F1.compose;
+
 import drjoliv.fjava.functions.F1;
-import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Witness;
-import drjoliv.fjava.monad.Monad;
-import drjoliv.fjava.monad.MonadUnit;
-import drjoliv.fjava.nums.Numbers;
-
-import static drjoliv.fjava.adt.FList.*;
-
-import java.util.ArrayList;
-import java.util.function.Function;
-
-import drjoliv.fjava.adt.DList.μ;
 
 /**
- *
- *
- * @author drjoliv@gmail.com
+ * A differnece list allows for quicker concatenation of elements.
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 public class DList<A> implements Functor<DList.μ,A> {
 
-  public static interface μ extends Witness{}
+  /**
+  * The witness type of {@code DList}.
+  */
+  public static class μ implements Witness{private μ(){}}
 
   private final F1<FList<A>,FList<A>> list;
 
-  private DList(F1<FList<A>,FList<A>> list) {
+  @Override
+  public <B> DList<B> map(F1<? super A, ? extends B> fn) {
+    return new DList<>(list -> toList().map(fn));
+  }
+
+  private DList(F1<FList<A>, FList<A>> list) {
     this.list = list;
   }
 
-  public static <A> DList<A> fromList(FList<A> flist) {
-    return new DList<A>(DList.<A>concat().call(flist));
+  /**
+   * Adds an elment to the head of this list, returning a new one.
+   * @param a an element to prepend to his dlist.
+   * @return a dlist.
+   */
+  public DList<A> cons(A a) {
+    return new DList<>(list.then(ls -> ls.cons(a)));
   }
 
+  /**
+   * Prepends the given dlist to this dlist.
+   * @param dl a dlist that will be prepended to this list.
+   * @return a list with the argument prepended.
+   */
+  public DList<A> prepend(DList<A> dl) {
+    return new DList<>(compose(list, dl.list));
+  }
+
+  /**
+   * Appends the given element to the end of this list.
+   * @param a the element to append to this list.
+   * @return a list with the argument appended.
+   */
+  public DList<A> snoc(A a) {
+    return new DList<>(list.before(ls -> ls.cons(a)));
+  }
+
+  /**
+   * Appends a dlist to this dlist.
+   * @param dl a dlist to to append.
+   * @return a dlist with the argument appended.
+   */
+  public DList<A> append(DList<A> dl) {
+    return new DList<>(compose(dl.list, list));
+  }
+
+  /**
+   * Returns an empty dlist.
+   * @return an empty dlist.
+   */
   public static <A> DList<A> empty() {
     return new DList<>(F1.identity());
   }
 
+  /**
+   * Returns a dlist with a single element.
+   * @param a the element to insert into an empty dlist.
+   * @return a dlist containing the sinle argument.
+   */
+  public static <A> DList<A> singleton(A a) {
+    return new DList<>(ls -> ls.cons(a));
+  }
+
+  /**
+   * Converts a flist to a dlist.
+   * @param flist the flist to be converted to a dlist.
+   * @return a dlist.
+   */
+  public static <A> DList<A> fromList(FList<A> flist) {
+    return new DList<>(ls -> ls.append(flist));
+  }
+
+
+  /**
+   * Converst an array of elements to a dlist.
+   * @param as an arry of elements.
+   * @return a dlist.
+   */
   public static <A> DList<A> dlist(A... as) {
     return fromList(flist(as));
   }
 
-  public DList<A> concat(DList<A> a) {
-    return new DList<A>(list.before(a.list));
-  }
-
-  public DList<A> concat(A a) {
-    return concat(dlist(a));
-  }
-
+  /**
+   * Transforms this dlist into a flist.
+   * @return a flist.
+   */
   public FList<A> toList() {
     return list.call(FList.empty());
-  }
-
-  public DList<A> add(A a) {
-    return new DList<>( DList.<A>cons()
-        .call(a)
-        .before(list)
-    );
-  }
-
-  private static <A> F2<A,FList<A>,FList<A>> cons() {
-    return (a,ax) -> ax.add(a);
-  }
-
-  private static <A> F2<FList<A>,FList<A>,FList<A>> concat() {
-    return (l1,l2) -> l1.concat(l2);
-  }
-
-  public A reduce(final A a, final F2<A,A,A> fn) {
-    return toList().reduce(a,fn);
-  }
-
-  public Maybe<A> reduce(final F2<A,A,A> fn) {
-    return toList().reduce(fn);
-  }
-
-  @Override
-  public <B> DList<B> map(F1<? super A, B> fn) {
-    return new DList<>(list -> toList().map(fn));
   }
 }
