@@ -1,6 +1,15 @@
-package drjoliv.fjava.data;
+package drjoliv.fjava.adt;
 
+/**
+ * A type containing only one value witin it.
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
+ */
 public final class Unit {
-  public static Unit unit = new Unit();
+
+  /**
+  * The single value of the type Unit.
+  */
+  public static final Unit unit = new Unit();
+
   private Unit(){}
 }
