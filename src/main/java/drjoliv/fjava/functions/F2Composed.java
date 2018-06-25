@@ -3,14 +3,14 @@ package drjoliv.fjava.functions;
 class F2Composed<A,B,C,D> implements F2<A,B,D>{
 
   private final F2<A,B,C> f2;
-  private final F1<? super C, D> fn;
+  private final F1<? super C, ? extends D> fn;
 
-  private F2Composed(F2<A, B, C> f2, F1<? super C, D> fn) {
+  private F2Composed(F2<A, B, C> f2, F1<? super C, ? extends D> fn) {
     this.f2 = f2;
     this.fn = fn;
   }
 
-  static <A,B,C,D> F2<A,B,D> doMap(F2<A,B,C> f2, final F1<? super C, D> fn) {
+  static <A,B,C,D> F2<A,B,D> doMap(F2<A,B,C> f2, final F1<? super C, ? extends D> fn) {
     return new F2Composed<A,B,C,D>(f2,fn);
   }
 
@@ -20,7 +20,7 @@ class F2Composed<A,B,C,D> implements F2<A,B,D>{
   }
 
   @Override
-  public <E> F2<A, B, E> map(F1<? super D, E> fn) {
+  public <E> F2<A, B, E> map(F1<? super D, ? extends E> fn) {
     return new F2Composed<A,B,C,E>(f2, this.fn.then(fn));
   }
 }
