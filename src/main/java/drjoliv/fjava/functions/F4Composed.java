@@ -3,9 +3,9 @@ package drjoliv.fjava.functions;
 class F4Composed<A,B,C,D,E,F> implements F4<A,B,C,D,F> {
   
   private final F4<A,B,C,D,E> f4;
-  private final F1<? super E, F> fn;
+  private final F1<? super E, ? extends F> fn;
 
-  private F4Composed(F4<A, B, C, D, E> f4, F1<? super E, F> fn) {
+  private F4Composed(F4<A, B, C, D, E> f4, F1<? super E, ? extends F> fn) {
     this.f4 = f4;
     this.fn = fn;
   }
@@ -16,11 +16,11 @@ class F4Composed<A,B,C,D,E,F> implements F4<A,B,C,D,F> {
   }
 
   @Override
-  public <G> F4<A, B, C, D, G> map(F1<? super F, G> fn) {
+  public <G> F4<A, B, C, D, G> map(F1<? super F, ? extends G> fn) {
     return doMap(f4, this.fn.then(fn));
   }
 
-   static <A, B, C, D, E, F> F4<A, B, C, D, F> doMap(F4<A, B, C, D, E> f4, F1<? super E, F> fn) {
+   static <A, B, C, D, E, F> F4<A, B, C, D, F> doMap(F4<A, B, C, D, E> f4, F1<? super E, ? extends F> fn) {
     return new F4Composed<>(f4,fn);
   }
 }

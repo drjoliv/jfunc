@@ -1,6 +1,6 @@
 package drjoliv.fjava.functions;
 
-import drjoliv.fjava.data.Dequeue;
+import drjoliv.fjava.adt.Dequeue;
 
 class F1Composed<A,B> implements F1<A,B> {
 
@@ -32,7 +32,7 @@ class F1Composed<A,B> implements F1<A,B> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <C> F1<A, C> then(F1<? super B, C> fn) {
+    public <C> F1<A, C> then(F1<? super B, ? extends C> fn) {
      return isComposedFunc(fn)
           ? new F1Composed<A,C>(dequeue.concat(asComposedFunc(fn).dequeue))
           : new F1Composed<A,C>(dequeue.pushBack(fn));
@@ -40,7 +40,7 @@ class F1Composed<A,B> implements F1<A,B> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <C> F1<C, B> before(F1<C, ? extends A> fn) {
+    public <C> F1<C, B> before(F1<? super C, ? extends A> fn) {
      return isComposedFunc(fn)
           ? new F1Composed<C,B>(asComposedFunc(fn).dequeue.concat(dequeue))
           : new F1Composed<C,B>(dequeue.pushFront(fn));
