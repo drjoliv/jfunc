@@ -43,22 +43,24 @@ public class Dequeue<A> implements Iterable<A> {
 
   public FList<A> takeFront(int i) {
     return front.size() < i
-      ? front.concat(rear.reverse()).take(i)
+      ? front.append(rear.reverse()).take(i)
       : front.take(i);
   }
 
   public FList<A> takeBack(int i) {
     return rear.size() < i
-      ? rear.concat(front.reverse()).take(i)
+      ? rear.append(front.reverse()).take(i)
       : rear.take(i);
   }
 
   public Dequeue<A> pushBack(A a) {
-    return new Dequeue<A>(front, rear.add(a));
+    return front.isEmpty()
+      ? new Dequeue<A>(front.cons(a), rear)
+      : new Dequeue<A>(front, rear.cons(a));
   }
 
   public Dequeue<A> pushFront(A a) {
-    return new Dequeue<A>(front.add(a), rear);
+    return new Dequeue<A>(front.cons(a), rear);
   }
 
   public Maybe<T2<A, Dequeue<A>>> popFront() {
@@ -126,5 +128,4 @@ public class Dequeue<A> implements Iterable<A> {
     }
     return self;
   }
-
 }
