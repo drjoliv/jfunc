@@ -317,7 +317,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     }
 
     /**
-     * A helper function to convert/narrow a reference from a applicative to its underlying type.
+     * A helper function to convert/narrow a reference from an applicative to its underlying type.
      * @param f the applicative to be casted to its original type.
      * @return a tryT.
      */
@@ -326,7 +326,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     }
 
    /**
-     * A helper function to convert/narrow a reference from a applicative to its underlying type.
+     * A helper function to convert/narrow a reference from a monad to its underlying type.
     * @param monad the monad to be casted to its original type.
     * @return a tryT.
     */
