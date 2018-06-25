@@ -10,6 +10,7 @@ import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.nums.Numbers;
 
 /**
  * A data structure that can be folded.
@@ -81,7 +82,7 @@ public interface Foldable<M extends Witness,A> extends Functor<M,A>{
    * @return a FList representation of this data structure.
    */
   public default FList<A> toFList() {
-    F2<FList<A>,A,FList<A>> go = (l, a) -> l.add(a);
+    F2<FList<A>,A,FList<A>> go = (l, a) -> l.cons(a);
     return foldr(go,FList.empty());
   }
 
