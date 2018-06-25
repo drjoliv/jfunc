@@ -54,7 +54,7 @@ public interface Traversable<M extends Witness, A> extends Foldable<M,A> {
    * @param pure a strategy to for lifting values into a applicative.
    * @return an applicative cotaining a traversable.
    */
-  public static <N extends Witness, M extends Witness, A, B> Applicative<N, ? extends Traversable<M,B>> sequenceA(Traversable<M, ? extends Applicative<N,B>> tma, ApplicativePure<N> pure) {
+  public static <N extends Witness, M extends Witness, A, B> Applicative<N, Traversable<M,B>> sequenceA(Traversable<M, ? extends Applicative<N,B>> tma, ApplicativePure<N> pure) {
     return (Applicative<N, Traversable<M,B>>)tma.traverse(F1.identity(), pure); 
   }
 
@@ -65,7 +65,7 @@ public interface Traversable<M extends Witness, A> extends Foldable<M,A> {
    * @param ret a stregty for lifting values into a monad.
    * @return a monad containing a monad.
    */
-  public static <N extends Witness, M extends Witness, A, B> Monad<N, ? extends Traversable<M,B>> sequence(Traversable<M,? extends Monad<N,B>> tma, MonadUnit<N> ret) {
+  public static <N extends Witness, M extends Witness, A, B> Monad<N, Traversable<M,B>> sequence(Traversable<M,? extends Monad<N,B>> tma, MonadUnit<N> ret) {
     return (Monad<N, Traversable<M,B>>)tma.mapM(F1.identity(), ret);
   }
 }
