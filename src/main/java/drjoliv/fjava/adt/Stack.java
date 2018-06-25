@@ -59,7 +59,7 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
    * @return a stack with the argument pushed onto it.
    */
   public Stack<A> push(A a) {
-    return new Stack<>(size + 1, list.add(a));
+    return new Stack<>(size + 1, list.cons(a));
   }
 
   /**
