@@ -1,10 +1,10 @@
-package drjoliv.fjava.data.generators;
+package drjoliv.fjava.adt.generators;
 
 import com.pholser.junit.quickcheck.generator.ComponentizedGenerator;
 import com.pholser.junit.quickcheck.generator.GenerationStatus;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 
-import drjoliv.fjava.data.FList;
+import drjoliv.fjava.adt.FList;
 
 @SuppressWarnings("rawtypes")
 public class FListGenerator extends ComponentizedGenerator<FList> {
