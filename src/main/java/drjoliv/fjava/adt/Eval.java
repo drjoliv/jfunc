@@ -1,16 +1,38 @@
 package drjoliv.fjava.adt;
 
 import static drjoliv.fjava.adt.Trampoline.done$;
+import static drjoliv.fjava.adt.Trampoline.done;
 
+import drjoliv.fjava.adt.Eval.μ;
+import drjoliv.fjava.applicative.Applicative;
+import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
+import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
-public abstract class Eval<A> implements Monad<Eval.μ,A>{
+/**
+ * Delays the evaluation of an expression, caching the value the first time the expression is evaluated.
+ * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
+ */
+public abstract class Eval<A> implements Monad<Eval.μ,A> {
 
-  public static class μ implements drjoliv.fjava.hkt.Witness{}
+  /**
+  * The witness type of {@code Eval}.
+  */
+  public static class μ implements drjoliv.fjava.hkt.Witness{private μ(){}}
+
+  @Override
+  public <B> Eval<B> apply(Applicative<μ, ? extends F1<? super A, ? extends B>> f) {
+    return monad(Monad.liftM2(this, (Eval<F1<? super A, B>>)f, (a,fn) -> fn.call(a)));
+  }
+
+  @Override
+  public ApplicativePure<μ> pure() {
+    return Eval::now;
+  }
 
   @Override
   public MonadUnit<μ> yield() {
@@ -18,7 +40,7 @@ public abstract class Eval<A> implements Monad<Eval.μ,A>{
   }
 
   @Override
-  public abstract <B> Eval<B> map(F1<? super A, B> fn);
+  public abstract <B> Eval<B> map(F1<? super A, ? extends B> fn);
 
   @Override
   public abstract <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn);
@@ -26,31 +48,42 @@ public abstract class Eval<A> implements Monad<Eval.μ,A>{
   @Override
   public abstract <B> Eval<B> semi(Monad<μ, B> mb);
 
+  /**
+   * Returns the value witin this eval.
+   * @return the value within this eval.
+   */
   abstract public A value();
 
+  /**
+   * Constructs an eval from a value.
+   * @param a a value to be lifted into an eval.
+   * @return an eval.
+   */
   public static <A> Eval<A> now(A a) {
     return new Now<>(a);
   }
 
+  /**
+   * Constructs an eval from a supplier of a value.
+   * @param fn a supplier.
+   * @return an eval.
+   */
   public static <A> Eval<A> later(F0<A> fn) {
     return new Later<>(fn);
   }
 
-  public static <A> Eval<A> always(F0<A> fn) {
-    return new Always<A>(fn);
-  }
-
-  public static <B>  Eval<B> asEval(Monad<μ, B> monad) {
+  /**
+   * A helper function to convert/narrow a reference from a monad to its underlying type.
+   * @param monad the monad to be casted to its original type.
+   * @return a eval.
+   */
+  public static <B>  Eval<B> monad(Monad<μ, B> monad) {
     return (Eval<B>)monad; 
   }
 
-  public static <B> F1<Monad<μ, B>, Eval<B>> asEval() {
-    return Eval::asEval;
-  }
+  private static class Now<A> extends Eval<A> {
 
-  public static class Now<A> extends Eval<A> {
-
-    final A value;
+    private final A value;
 
     private Now(A value) {
       this.value = value;
@@ -62,44 +95,39 @@ public abstract class Eval<A> implements Monad<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> map(F1<? super A, B> fn) {
-      return later(fn.curry().call(value));
+    public <B> Eval<B> map(F1<? super A, ? extends B> fn) {
+      return later(f0(() -> value).map(fn));
     }
 
     @Override
     public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
-      return asEval(fn.call(value));
+      return new Later<>(f0(() -> monad(fn.call(value)).value()));
     }
 
     @Override
     public <B> Eval<B> semi(Monad<μ, B> mb) {
       return bind(a -> mb);
     }
-
   }
 
-  public static class Later<A> extends Eval<A> {
+  private static class Later<A> extends Eval<A> {
 
-    private volatile Trampoline<A> tramp;
+    private volatile F0<A> supplier;
     private A value;
 
     private Later(F0<A> fn) {
-      this.tramp = done$(fn);
-    }
-
-    private Later(Trampoline<A> fn) {
-      this.tramp = fn;
+      this.supplier = fn;
     }
 
     @Override
     public A value() {
-      return value != null ? value : computeValue();
+      return value == null ? computeValue() : value;
     }
 
     private synchronized A computeValue() {
       if(value == null) {
-        value = tramp.result();
-        tramp = null;
+        value = supplier.call();
+        supplier = null;
         return value;
       } else {
         return value;
@@ -107,17 +135,22 @@ public abstract class Eval<A> implements Monad<Eval.μ,A>{
     }
 
     @Override
-    public <B> Eval<B> map(F1<? super A, B> fn) {
-      if(tramp != null) {
-        return new Later<B>(tramp.map(fn));
-      } else {
-        return new Later<B>(done$(fn.curry().call(value)));
-      }
+    public <B> Eval<B> map(F1<? super A, ? extends B> fn) {
+      return (supplier == null)
+        ? new Later<B>(f0(() -> value).map(fn))
+        : new Later<B>(supplier.map(fn));
     }
 
     @Override
     public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
-      return asEval(Monad.join(map(fn.then(asEval()))));
+      if(supplier == null) {
+        return new Later<>(f0(() -> value))
+            .map(v -> monad(fn.call(v)).value());
+      } else {
+         F0<B> ret = supplier
+          .map(v -> monad(fn.call(v)).value());
+         return new Later<>(ret);
+      }
     }
     
     @Override
@@ -126,35 +159,15 @@ public abstract class Eval<A> implements Monad<Eval.μ,A>{
     }
   }
 
-  public static class Always<A> extends Eval<A> {
-    private final Trampoline<A> tramp;
+ private static <A> F0<A> f0(F0<A> supplier) {
+   return supplier;
+ }
 
-    private Always(F0<A> fn) {
-      this.tramp = done$(fn);
-    }
-
-    private Always(Trampoline<A> tramp) {
-      this.tramp = tramp;
-    }
-
-    @Override
-    public A value() {
-      return tramp.result();
-    }
-
-    @Override
-    public <B> Eval<B> map(F1<? super A, B> fn) {
-      return new Always<>(tramp.map(fn));
-    }
-
-    @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
-      return asEval(Monad.join(map(fn.then(asEval()))));
-    }
-
-    @Override
-    public <B> Eval<B> semi(Monad<μ, B> mb) {
-      return bind(a -> mb);
-    }
+  /**
+   * @see drjoliv.fjava.monad.Monad#liftM2(Monad,Monad,F2)
+   */
+  public static <A,B,C> Eval<C> liftM2(Monad<Eval.μ,A> m, Monad<Eval.μ,B> m1, F2<? super A,? super B, C> fn) {
+    return monad(Monad.liftM2(m,m1,fn));
   }
+
 }
