@@ -1,7 +1,6 @@
 drjoliv.fjava.adt
 drjoliv.fjava.alternative
 drjoliv.fjava.applicative
-drjoliv.fjava.eq
 drjoliv.fjava.foldable
 drjoliv.fjava.functions
 drjoliv.fjava.functor

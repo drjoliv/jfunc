@@ -1,8 +1,6 @@
 -encoding
 'UTF-8'
 -protected
--source
-'1.8'
 -sourcepath
 '/home/drjoliv/projects/functional-java/src/main/java'
 -author
