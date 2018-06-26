@@ -19,6 +19,14 @@ public class T2<A,B> {
     this._2 = b;
   }
 
+  public <C> T2<C,B> set1(Eval<C> eval) {
+    return new T2<>(eval, _2);
+  }
+
+  public <C> T2<A,C> set2(Eval<C> eval) {
+    return new T2<>(_1, eval);
+  }
+
   /**
    * Creates the product of {@code a} and {@code b}.
    *
@@ -48,15 +56,15 @@ public class T2<A,B> {
    * @param snd transforms the second element of this product.
    * @return the tuple produced by transforming the fisrt and second elements of this product.
    */
-  public <C,D >T2<C,D> bimap(F1<? super A,C> fst, F1<? super B,D>snd) {
+  public <C,D > T2<C,D> bimap(F1<? super A, ? extends C> fst, F1<? super B, ? extends D>snd) {
     return t2(_1.map(fst),_2.map(snd));
   }
 
-  public <C> T2<C,B> map1(F1<? super A,C> fn) {
+  public <C> T2<C,B> map1(F1<? super A, ? extends C> fn) {
    return t2(_1.map(fn),_2);
   }
 
-  public <C> T2<A,C> map2(F1<? super B,C> fn) {
+  public <C> T2<A,C> map2(F1<? super B, ? extends C> fn) {
    return t2(_1,_2.map(fn));
   }
 
