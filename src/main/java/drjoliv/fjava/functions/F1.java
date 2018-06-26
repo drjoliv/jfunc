@@ -81,4 +81,13 @@ public interface F1<A,B> extends Functor<Hkt<F1.μ,A>,B>{
   public static <A> F1<A, A> identity() {
     return a -> a;
   }
+
+  public static <A,B,C> F1<A,C> compose(F1<B,C> f2, F1<A,B> f1) {
+    return f2.before(f1);
+  }
+
+  public static <A,B,C,D> F1<A,D> compose(F1<C,D> f3, F1<B,C> f2, F1<A,B> f1) {
+    return f3.before(f2.before(f1));
+  }
+
 }
