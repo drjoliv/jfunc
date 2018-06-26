@@ -2,6 +2,9 @@ package drjoliv.fjava.io;
 
 import java.io.FileReader;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Scanner;
 
 import drjoliv.fjava.adt.Try;
@@ -29,6 +32,10 @@ public class IO {
     return buffer.toString();
   });
 
+  public static Try<String> now = Try.with(() -> {
+    return System.currentTimeMillis() + "";
+  });
+
 
   public static Try<String> getLine = Try.with(() -> {
     Scanner in = new Scanner(System.in);
@@ -36,5 +43,4 @@ public class IO {
     in.close();
     return s;
   });
-
 }
