@@ -28,8 +28,7 @@ import drjoliv.fjava.monoid.Monoid;
 import drjoliv.fjava.traversable.Traversable;
 
 /**
- * 
- *
+ * A stream of values.
  * @author Desonte 'drjoliv' Jolivet eamil:drjoliv@gmail.com
  */
 public abstract class FList<A> implements Hkt<FList.μ,A>,
@@ -42,9 +41,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
       return flist(a, () -> replicate(i - 1, a));
   }
 
-  //public static <B> FList<B> cons(FList<B> list, B b) {
-  //  return list.add(b);
-  //}
     @Override
     public <B> FList<B> apply(Applicative<μ, ? extends F1<? super A, ? extends B>> applicative) {
       FList<F1<? super A, ? extends B>> fx = (FList<F1<? super A, ? extends B>>)applicative;
@@ -70,7 +66,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   @Override
   public <N extends Witness, B> Monad<N, FList<B>> mapM(F1<A, ? extends Monad<N, B>> fn,
       MonadUnit<N> ret) {
-    //return (Monad<N, FList<B>>)Traversable.super.mapM(fn, ret);
     return mapM_prime(map(fn),ret);
   }
 
@@ -148,16 +143,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
       : more(() -> foldr_prime(f2 , f2.call(b,list.head()), list.tail()));
   }
 
-  //public Eval<B> B foldr$(F2<B,? super A,B> f2, B b) {
-  //  return foldr_prime(f2, b, this).result();
-  //}
-
-  //private static <A,B> Eval<B> foldr_prime$(F2<B,? super A,B> f2, B b, FList<A> list) {
-  //  return list.isEmpty()
-  //    ? done(b)
-  //    : more(() -> foldr_prime(f2 , f2.call(b,list.head()), list.tail()));
-  //}
-
   public T2<FList<A>, FList<A>> split() {
     int i = size();
     return t2(take(i/2),drop(i/2));
@@ -166,11 +151,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   public T2<FList<A>, FList<A>> splitAt(int i) {
     return t2(take(i),drop(i));
   }
-
-  
-  //public T2<FList<A>, FList<A>> splitWith(P1) {
-  //  return t2(take(i),drop(i));
-  //}
 
   public final FList<A> reverse() {
     return FList.reverse(this);
@@ -200,10 +180,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   }
 
   /**
-   *
-   *
+   * Take elements from this flist unti the predicate becomes false.
    * @param predicate
-   * @return
+   * @return elements from this flist unti the predicate becomes false.
    */
   public FList<A> takeWhile(Predicate<A> predicate) {
     Objects.requireNonNull(predicate);
@@ -212,7 +191,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
   /**
    * Appends a value to this FList.
-   *
    * @param a An element to append to this FLiist.
    * @return A new FList with the given value appended to it.
    */
@@ -222,7 +200,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
   /**
    * Appends the given FList to this FList.
-   *
    * @param a The FList that will be appended to this FList.
    * @return A new FList with the given FList appended to it.
    */
@@ -398,13 +375,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
     });
   }
 
-  /**
-   * Return the Higher Kinded Type of FList
-   *
-   * @return The Higher Kinded version of this FList.  */ public final Hkt<FList.μ, A> widen() {
-    return (Hkt<FList.μ, A>) this;
-  }
-
   @Override
   public final String toString() {
     return FList.toString(this);
@@ -561,7 +531,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   public FList<A> append(FList<A> a) {
     return new Cons<>(datum, tail.map(f -> f.append(a)));
   }
-    return new Cons<>(datum, tail.map(f -> f.concat(a)));
+
     @Override
     public FList<A> tail() {
       return tail.value();
@@ -678,7 +648,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
   /**
    * Creates an empty FList.
-   *
    * @return An empty FList.
    */
   public static <A> FList<A> empty() {
@@ -984,7 +953,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
     /**
     *
     * Creates a sequence from three seed elements and a TriFuction, <code>sequence</code> is useful when the previous elements in a
-    * sequence dicate later elements within the sequence.
+    * sequence dictate later elements within the sequence.
     *
     * @param seed First element within a sequence.
     * @param seed1 Second element within a sequence.
@@ -999,36 +968,9 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
       return flist(seed, seed1, seed2, () -> sequence(seed3, seed4, seed5, generator));
     }
 
-
-    public static <M extends drjoliv.fjava.hkt.Witness,A> Maybe<Monad<M,FList<A>>> merge(FList<Monad<M,FList<A>>> listOfMonadsOfFList) {
-      return listOfMonadsOfFList.reduce((m1,m2) -> Monad.liftM2(m1,m2, (l1,l2) -> l1.append(l2)));
-    }
-
-    /**
-    *
-    *
-    * @param wider
-    * @return
-    */
     public static <B> FList<B> asFList(Monad<FList.μ,B> wider) {
       return (FList<B>) wider;
     }
-
-    /**
-    
-    *
-    * @param list
-    */
-    public static <A> void print(FList<A> list) {
-      System.out.println(list.toString());
-    }
-
-    //private static <A> FList<A> reverse(FList<A> list) {
-    // if(list.isEmpty())
-    //    return Nil.instance();
-    // else
-    //  return flist(list.unsafeLast(),  () -> reverse(list.tail()));
-    //}
 
     private static <A> FList<A> reverse(FList<A> l) {
       return reverse_prime(l, FList.empty()).result();

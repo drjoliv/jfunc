@@ -23,6 +23,11 @@
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
+          <tags>
+            <tag>
+            <name>lazy</name>
+            </tag>
+          </tags>
         </configuration>
       </plugin>
       <plugin>
