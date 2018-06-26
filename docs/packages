@@ -4,7 +4,6 @@ drjoliv.fjava.traversable
 drjoliv.fjava.unsafe
 drjoliv.fjava.io
 drjoliv.fjava.foldable
-drjoliv.fjava.eq
 drjoliv.fjava.adt
 drjoliv.fjava.alternative
 drjoliv.fjava.monad
