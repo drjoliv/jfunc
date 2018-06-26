@@ -4,4 +4,4 @@ This library is an attempt at functional programming in Java. Operations within 
 
 See the [wiki](https://github.com/drjoliv/fjava/wiki) and [euler solutions repo](https://github.com/drjoliv/ProjectEulerSolutions) for examples.
 
-See [javadoc]() for documention.
+See [javadoc](https://drjoliv.github.io/jfunc) for documention.
