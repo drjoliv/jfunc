@@ -37,8 +37,8 @@ public interface Functor<F extends Witness,A> {
    * @param fn the function that will map over the contents of this functor.
    * @return a functor whose contents is a partially applioed function of arity 2.
    */
-  public default <B,C,D> Functor<F,F2<B,C,D>>  map(F3<? super A, B, C, D> fn) {
-    return map(fn.curry());
+  public default <B,C,D> Functor<F, F1<B, F1<C, D>>>  map(F3<? super A, B, C, D> fn) {
+    return map(fn.curry()).map(f -> f.curry());
   }
 
   /**
@@ -46,8 +46,9 @@ public interface Functor<F extends Witness,A> {
    * @param fn the function that will map over the contents of this functor.
    * @return a functor whose contents is a partially applioed function of arity 3.
    */
-  public default <B,C,D,E> Functor<F,F3<B,C,D,E>>  map(F4<? super A, B, C, D, E> fn) {
-    return map(fn.curry());
+  public default <B,C,D,E> Functor<F, F1<B, F1<C, F1<D, E>>>>  map(F4<? super A, B, C, D, E> fn) {
+    return map(fn.curry())
+      .map(f -> f.curry().map(h -> h.curry()));
   }
 
   /**
@@ -55,8 +56,9 @@ public interface Functor<F extends Witness,A> {
    * @param fn the function that will map over the contents of this functor.
    * @return a functor whose contents is a partially applioed function of arity 4.
    */
-  public default <B,C,D,E,G> Functor<F,F4<B,C,D,E,G>>  map(F5<? super A, B, C, D, E, G> fn) {
-    return map(fn.curry());
+  public default <B,C,D,E,G> Functor<F,F1<B, F1<C, F1<D, F1<E, G>>>>>  map(F5<? super A, B, C, D, E, G> fn) {
+    return map(fn.curry())
+      .map(f -> f.curry().map(h -> h.curry().map(i -> i.curry())));
   }
 
   /**
