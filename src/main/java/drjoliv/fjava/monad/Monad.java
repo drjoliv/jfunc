@@ -82,7 +82,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * Sequences bind operation, each function captures the value of previous compuations.
    * @param monad a monad
    * @param fn a function that produces a monad computation.
-   * @return
+   * @return a monad.
    */
   public static <M extends Witness,A,B> Monad<M,B> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn) {
     return monad.bind(fn);
