@@ -209,7 +209,7 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
 
     public static <R, A> Reader<R, A> asReader(Monad<Hkt2<ReaderT.μ, Identity.μ, R>, A> wider) {
       if(wider instanceof ReaderT)
-        return new Reader<R,A>(asReaderT(wider).runReaderT);
+        return new Reader<R,A>(monad(wider).runReaderT);
       else
         return (Reader<R, A>) wider;
     }
