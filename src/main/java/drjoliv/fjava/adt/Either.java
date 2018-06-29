@@ -37,6 +37,27 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
   public abstract <A,B> Either<A,B> bimap(F1<? super L, ? extends A> fn1, F1<? super R, ? extends B> fn2);
 
   /**
+   * Maps the two functions over this either returning the unmapped either. This is usefule for functions that have side side effects.
+   * @param left function applied to the left side of this either.
+   * @param right function applied to the right side of this either.
+   * @return this either.
+   */
+  public Either<L,R> consume(F1<L,Unit> left, F1<R,Unit> right) {
+    visit(left, right);
+    return this;
+  }
+
+  /**
+   * maps the appropreiate function on this either.
+   * @param left function applied to the left side of this either.
+   * @param right function applied to the right side of this either.
+   * @return the value returned by left or right..
+   */
+  public <S> S visit(F1<L,S> left, F1<R,S> right){
+    return match(l -> left.call(l.value()), r -> right.call(r.value()));
+  }
+
+  /**
    * Returns a maybe containing the value of this either if this either is left otherwise a maybe containing nothing.
    * @return a maybe containing the value of this either if this either is left otherwise a maybe containing nothing.
    */
