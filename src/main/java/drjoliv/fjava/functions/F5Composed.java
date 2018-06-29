@@ -11,7 +11,7 @@ class F5Composed<A,B,C,D,E,F,G> implements F5<A,B,C,D,E,G>{
   }
 
   @Override
-  public <H> F5<A, B, C, D, E, H> map(F1<? super G, ? extends H> fn) {
+  public <H> F5<A, B, C, D, E, H> then(F1<? super G, ? extends H> fn) {
     return doMap(f5,this.fn.then(fn));
   }
 

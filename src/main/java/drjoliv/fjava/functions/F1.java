@@ -15,12 +15,7 @@ import static drjoliv.fjava.adt.Dequeue.*;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F1<A,B> extends Functor<Hkt<F1.μ,A>,B>{
-
-  /**
-  * Teh witness type of {@code F1}.
-  */
-  public class μ implements Witness{private μ(){}}
+public interface F1<A,B> {
 
   /**
    * Returns the result of this function.
@@ -28,11 +23,6 @@ public interface F1<A,B> extends Functor<Hkt<F1.μ,A>,B>{
    * @return the result of this function.
    */
   public B call(A a);
-
-  @Override
-  public default <C> F1<A,C> map(F1< ? super B, ? extends C> fn) {
-    return then(fn);
-  }
 
   /**
    * Transfroms this function from {@code fn::A -> B} to {@code fn::A -> F0<B>}.

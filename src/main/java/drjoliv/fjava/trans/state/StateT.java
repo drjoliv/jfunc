@@ -150,7 +150,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
     @Override
     public <B> State<S,B> map(F1<? super A, ? extends B> fn) {
       return new State<S,B>(runState()
-          .map(ma -> ma.map(t -> t.map2(fn)))
+          .then(ma -> ma.map(t -> t.map2(fn)))
         );
     }
 

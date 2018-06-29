@@ -10,16 +10,11 @@ import drjoliv.fjava.hlist.T3;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F3<A,B,C,D> extends Functor<Hkt3<F1.μ,A,B,C>,D> {
+public interface F3<A,B,C,D> {
 
-  /**
-  * The witness type of {@code F3}.
-  */
-  public static class μ implements Witness {}
 
-  @Override
-  public default <E> F3<A,B,C,E> map(F1<? super D, ? extends E> fn) {
-    return F3Composed.doMap(this,fn);
+  public default <E> F3<A,B,C,E> then(F1<? super D, ? extends E> fn) {
+    return F3Composed.doMap(this, fn);
   }
 
   /**

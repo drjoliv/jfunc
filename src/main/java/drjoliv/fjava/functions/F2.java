@@ -12,21 +12,16 @@ import drjoliv.fjava.hlist.T2;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F2<A,B,C> extends BiFunction<A,B,C>, Functor<Hkt2<F2.μ,A,B>,C> {
+public interface F2<A,B,C> extends BiFunction<A,B,C> {
 
-  /**
-  * The witness type of {@code F2}
-  */
-  public static final class μ implements Witness{private μ(){}}
+  public default <D> F2<A,B,D> then(F1<? super C, ? extends D> fn) {
+    return F2Composed.doMap(this, fn);
+  }
+
 
   @Override
   public default C apply(A a, B b) {
     return call(a,b);
-  }
-
-  @Override
-  public default <D> F2<A,B,D> map(final F1<? super C, ? extends D> fn) {
-    return F2Composed.doMap(this, fn);
   }
 
   /**

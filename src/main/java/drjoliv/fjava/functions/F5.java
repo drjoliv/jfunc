@@ -10,16 +10,10 @@ import drjoliv.fjava.hlist.T5;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F5<A,B,C,D,E,F> extends Functor<Hkt5<F5.μ,A,B,C,D,E>,F> {
+public interface F5<A,B,C,D,E,F> { 
 
 
-  /**
-  * The witness type of {@code F5}.
-  */
-  public static class μ implements Witness{}
-
-  @Override
-  public default <G> F5<A,B,C,D,E,G> map(F1<? super F, ? extends G> fn) {
+  public default <G> F5<A,B,C,D,E,G> then(F1<? super F, ? extends G> fn) {
     return F5Composed.doMap(this,fn);
   }
 

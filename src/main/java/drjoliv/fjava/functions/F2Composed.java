@@ -20,7 +20,7 @@ class F2Composed<A,B,C,D> implements F2<A,B,D>{
   }
 
   @Override
-  public <E> F2<A, B, E> map(F1<? super D, ? extends E> fn) {
+  public <E> F2<A, B, E> then(F1<? super D, ? extends E> fn) {
     return new F2Composed<A,B,C,E>(f2, this.fn.then(fn));
   }
 }

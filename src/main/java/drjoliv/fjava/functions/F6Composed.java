@@ -19,7 +19,7 @@ class F6Composed<A,B,C,D,E,F,G,H> implements F6<A,B,C,D,E,F,H>{
   }
 
   @Override
-  public <I> F6<A, B, C, D, E, F, I> map(F1<? super H, ? extends I> fn) {
+  public <I> F6<A, B, C, D, E, F, I> then(F1<? super H, ? extends I> fn) {
     return doMap(f6, this.fn.then(fn));
   }
 }

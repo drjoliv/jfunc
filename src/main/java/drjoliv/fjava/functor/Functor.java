@@ -48,7 +48,7 @@ public interface Functor<F extends Witness,A> {
    */
   public default <B,C,D,E> Functor<F, F1<B, F1<C, F1<D, E>>>>  map(F4<? super A, B, C, D, E> fn) {
     return map(fn.curry())
-      .map(f -> f.curry().map(h -> h.curry()));
+      .map(f -> f.curry().then(h -> h.curry()));
   }
 
   /**
@@ -58,7 +58,7 @@ public interface Functor<F extends Witness,A> {
    */
   public default <B,C,D,E,G> Functor<F,F1<B, F1<C, F1<D, F1<E, G>>>>>  map(F5<? super A, B, C, D, E, G> fn) {
     return map(fn.curry())
-      .map(f -> f.curry().map(h -> h.curry().map(i -> i.curry())));
+      .map(f -> f.curry().then(h -> h.curry().then(i -> i.curry())));
   }
 
   /**
