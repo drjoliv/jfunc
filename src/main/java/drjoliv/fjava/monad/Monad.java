@@ -27,9 +27,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn a function that produces monadic computations.
    * @return A computation created from chaining together this computation with a function that produces computations.
    */
-  public default <B> Monad<M,B> bind(final F1<? super A,? extends Monad<M,B>> fn) {
-    return join(map(fn));
-  }
+  public <B> Monad<M,B> bind(final F1<? super A,? extends Monad<M,B>> fn);
 
   /**
    * Chains together this computation with the given argument, discarding the value within this monad returning a new monad.
