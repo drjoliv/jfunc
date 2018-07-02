@@ -16,65 +16,46 @@ import drjoliv.fjava.hkt.Hkt3;
 import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
-import drjoliv.fjava.trans.reader.ReaderT.μ;
 import drjoliv.fjava.monad.Identity;
 
 /**
  * The ReaderT monad.
  * @author Desonte 'drjoliv' Jolivet
  */
-public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
+public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
 
-  public static class μ implements Witness {private μ(){}}
+  public static class μ implements Witness{private μ(){}}
 
-  private final F1<R,Monad<M,A>> runReaderT;
   private final MonadUnit<M> mUnit;
 
-
-  private ReaderT(F1<R,Monad<M,A>> runReaderT, MonadUnit<M> mUnit) {
-    this.runReaderT = runReaderT;
+  ReaderT(MonadUnit<M> mUnit) {
     this.mUnit = mUnit;
+  }
+
+  <B> MonadUnit<M> mUnit() {
+    return mUnit;
+  }
+
+  <C> Monad<M,C>  mUnit(C c) {
+    return mUnit.unit(c);
+  }
+
+  public <B> ReaderT<M,R,B> apply(Applicative<Hkt2<μ,M,R>, ? extends F1<? super A, ? extends B>> app) {
+    return applicative(app).bind(f -> map(f));
+  }
+
+  public <B> ReaderT<M,R,B> applicative(Applicative<Hkt2<μ,M,R>, B> app) {
+    return (ReaderT<M,R,B>)app;
+  }
+
+  @Override
+  public <B> ReaderT<M,R,B> bind(F1<? super A, ? extends Monad<Hkt2<μ, M, R>, B>> fn) {
+    return new ReaderTBind<M,R,A,B>(this, fn, mUnit());
   }
 
   @Override
   public <B> ReaderT<M,R,B> map(F1<? super A, ? extends B> fn) {
-      return readerT(runReaderT.map(m -> m.map(fn)), mUnit);
-  }
-
-  @Override
-  public <B> ReaderT <M,R,B> apply(Applicative<Hkt2<μ, M, R>, ? extends F1<? super A, ? extends B>> applicative) {
-    return new ReaderT<M,R,B>(r -> {
-      ReaderT<M,R,F1<? super A, B>> f = (ReaderT<M,R,F1<? super A, B>>) applicative;
-      return runReader(r).apply(f.runReader(r));
-    } , mUnit);
-  }
-
-  @Override
-  public ApplicativePure<Hkt2<μ, M, R>> pure() {
-    return new ApplicativePure<Hkt2<drjoliv.fjava.trans.reader.ReaderT.μ, M, R>>() {
-      @Override
-      public <B> Monad<Hkt2<μ, M, R>, B> pure(B b) {
-        return ReaderT.<M,R,B>unit().call(mUnit,b);
-      }
-    };
-  }
-
-  @Override
-  public MonadUnit<Hkt2<drjoliv.fjava.trans.reader.ReaderT.μ, M, R>> yield() {
-    return new MonadUnit<Hkt2<drjoliv.fjava.trans.reader.ReaderT.μ, M, R>>() {
-      @Override
-      public <B> Monad<Hkt2<μ, M, R>, B> unit(B b) {
-        return ReaderT.<M,R,B>unit().call(mUnit,b);
-      }
-    };
-  }
-
-  @Override
-  public <B> ReaderT<M,R,B> bind(F1<? super A, ? extends Monad<Hkt2<ReaderT.μ, M, R>, B>> fn) {
-    return readerT(r -> {
-        return Monad.For(runReader(r)
-                    , a -> monad(fn.call(a)).runReader(r));
-    }, mUnit);
+    return bind(a -> reader(env -> mUnit(fn.call(a)), mUnit()));
   }
 
   @Override
@@ -83,151 +64,129 @@ public class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,
   }
 
 
-  /**
-  * Lifts the given computation into a readerT.
-  * @param ma A computation that will be lifted(wrapped) into the context of a readerT
-  * @param <M> the witness type of the contained compuation or context.
-  * @param <R> the type of the enviroment.
-  * @param <A> the type of the value obtained after running this readerT.
-  * @return a ReaderT whose emmbed with the given computation.
-  */
-  public static <M extends Witness,R,A> ReaderT<M,R,A> lift(Monad<M,A> ma) {
-    return ReaderT.readerT(r -> ma, ma.yield());
-  }
-
-
-  /**
-   * Creates a monadic like context from the given enviroment.
-   * @param r the envirement needed to to compute a bind value.
-   * @return a bind value.
-   */
-  public Monad<M,A> runReader(R r) {
-   return runReaderT.call(r); 
-  }
-
-  /**
-   * @param <M> the witness type of the contained compuation or context.
-   * @param <R> the type of the enviroment.
-   * @param <M>
-   * @param <R>
-   * @return
-   */
-  public static <M extends Witness, R> ReaderT<M,R,R> ask(MonadUnit<M> mUnit) {
-    return ReaderT.readerT(r -> mUnit.unit(r), mUnit);
-  }
-
-  /**
-   * @param <M> the witness type of the contained compuation or context.
-   * @param <R> the type of the enviroment.
-   *
-   * @return
-   */
-  public static <M extends Witness, R> F1<MonadUnit<M>, ReaderT<M,R,R>> ask() {
-    return (mUnit) -> ReaderT.readerT(r -> mUnit.unit(r), mUnit);
-  }
-
-  /**
-   *
-   * @param <M> the witness type of the contained compuation or context.
-   * @param <R> the type of the enviroment.
-   * @param <A> the type of the value obtained after running this readerT.
-   *
-   * @return
-   */
-  public static <M extends Witness, R, A> F2<F1<R,R>, ReaderT<M,R,A>, ReaderT<M,R,A>> local() {
-    return (fn, m) -> {
-      return ReaderT.readerT(fn.then(m.runReaderT), m.mUnit);
+  @Override
+  public MonadUnit<Hkt2<μ, M, R>> yield() {
+    return new MonadUnit<Hkt2<μ, M, R>>(){
+      @Override
+      public <C> Monad<Hkt2<μ, M, R>, C> unit(C c) {
+        return new ReaderTmpl<>(env -> mUnit(c), mUnit());
+      }
     };
   }
 
-  /**
-   * @param <M> the witness type of the contained compuation or context.
-   * @param <R> the type of the enviroment.
-   * @param <A> the type of the value obtained after running this readerT.
-   *
-   * @return
-   */
-  public static <M extends Witness, R, A> ReaderT<M,R,A> local(F1<R,R> fn, ReaderT<M,R,A> m) {
-      return ReaderT.readerT(fn.then(m.runReaderT), m.mUnit);
-  }
-
-  /**
-   *
-   *
-   * @param runReaderT
-   * @param mUnit
-   * @return
-   */
-  public static <M extends Witness, R, A> ReaderT<M, R, A> readerT(F1<R, Monad<M, A>> runReaderT, MonadUnit<M> mUnit) {
-    return new ReaderT<M, R, A>(runReaderT, mUnit);
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <M extends Witness, R, A> ReaderT<M, R, A> monad(Monad<Hkt2<ReaderT.μ, M, R>, A> wider) {
-    return (ReaderT<M, R, A>) wider;
-  }
-
-  private static <M extends Witness, R, A> F2<MonadUnit<M>, A, ReaderT<M, R, A>> unit() {
-    return (mUnit, a) -> new ReaderT<M, R, A>(r -> mUnit.unit(a), mUnit);
+  @Override
+  public ApplicativePure<Hkt2<μ, M, R>> pure() {
+    return new ApplicativePure<Hkt2<μ, M, R>>(){
+      @Override
+      public <C> Applicative<Hkt2<μ, M, R>, C> pure(C c) {
+        return new ReaderTmpl<>(env -> mUnit(c), mUnit());
+      }
+    };
   }
 
 
-  /**
-  * A ReaderT whose inner monad is the Identity monad.
-  */
-  public final static class Reader<R,A> extends ReaderT<Identity.μ,R,A>{
+  public Monad<M,A> runReader(R r) {
+   ReaderT reader = this;
+    while(reader instanceof ReaderTBind) {
+      reader = reader.step(r);
+    }
+    return (Monad<M,A>)reader.call(r);
+  }
 
-    private Reader(F1<R,Monad<Identity.μ,A>> runReaderT) {
-      super(runReaderT, Identity::id);
+  abstract ReaderT<M,R,A> step(R r);
+
+  abstract Monad<M,A> call(R r);
+
+  abstract <B> ReaderT<M,R,B> doBind(R r, F1<? super A, ? extends Monad<Hkt2<μ, M, R>, B>> fn);
+
+  public static <M extends Witness,R,B> ReaderT<M,R,B> monad(Monad<Hkt2<μ, M, R>, B> monad) {
+    return (ReaderT<M,R,B>)monad;
+  }
+
+  private static class ReaderTmpl<M extends Witness,R,A> extends ReaderT<M,R,A> {
+
+    private final F1<R,Monad<M,A>> fn;
+
+    private ReaderTmpl(F1<R, Monad<M, A>> fn, MonadUnit<M> mUnit) {
+      super(mUnit);
+      this.fn = fn;
+    }
+
+    public Monad<M,A> runReader(R r) {
+      return fn.call(r);
     }
 
     @Override
-    public <B> Reader<R,B> semi(
-        Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, R>, B> mb) {
-      return new Reader<R,B>(super.semi(mb).runReaderT);
+    Monad<M,A> call(R r) {
+      return fn.call(r);
     }
 
     @Override
-    public <B> Reader<R,B> bind(
-        F1<? super A, ? extends Monad<Hkt2<μ, drjoliv.fjava.monad.Identity.μ, R>, B>> fn) {
-      return new Reader<R,B>(super.bind(fn).runReaderT);
+    <B> ReaderT<M, R, B> doBind(R r, F1<? super A, ? extends Monad<Hkt2<μ, M, R>, B>> fn) {
+        Monad<M,A> ma = this.fn.call(r);
+        Monad<M,Monad<Hkt2<μ, M, R>, B>> mab = ma.map(fn);
+        Monad<M, ReaderT<M, R, B>> mabb = mab.map(ReaderT::monad);
+        Monad<M, Monad<M,B>> mba = mabb.map(rr -> rr.runReader(r));
+        Monad<M,B> mb = Monad.join(mba);
+        return new ReaderTmpl<M,R,B>(env -> mb, mUnit());
     }
 
     @Override
-    public <B> Reader<R,B> map(F1<? super A, ? extends B> fn) {
-      return new Reader<R,B>(((ReaderT<Identity.μ,R,B>)super.map(fn)).runReaderT);
+    ReaderT<M, R, A> step(R r) {
+      return this;
+    }
+  }
+
+  private static class ReaderTBind<M extends Witness,R,A,B> extends ReaderT<M,R,B>  {
+
+    private final ReaderT<M,R,A> reader;
+    private final F1<? super A, ? extends Monad<Hkt2<μ,M, R>, B>> fn;//[A -> R -> B]
+
+    private ReaderTBind(ReaderT<M,R,A> reader, F1<? super A, ? extends Monad<Hkt2<μ,M, R>, B>> binder
+        , MonadUnit<M> mUnit) {
+      super(mUnit);
+      this.reader = reader;
+      this.fn = binder;
+    }
+
+    public ReaderT<M,R,B> step(R r) {
+      return reader.doBind(r, fn);
+    }
+
+    public <C> ReaderT<M,R,C> doBind(R r, F1<? super B, ? extends Monad<Hkt2<μ,M, R>, C>> binder) {
+      return reader.bind(a -> {
+        ReaderT<M, R, B> mb = monad(fn.call(a));
+        return mb.bind(binder);
+      });
     }
 
     @Override
-    public Identity<A> runReader(R r) {
-      return (Identity<A>)super.runReader(r);
+    public Monad<M,B> call(R r) {
+      throw new UnsupportedOperationException();
+    }
+  }
+
+  public static <M extends Witness,R,A> ReaderT<M,R,A> reader(F1<R,Monad<M,A>> fn, MonadUnit<M> mUnit) {
+    return new ReaderTmpl<>(fn, mUnit);
+  };
+
+
+  public static void main(String [] args) {
+
+    ReaderT<Identity.μ, Integer, Integer> rt = reader(i -> Identity.id(i), null);
+
+    F1<Integer,ReaderT<Identity.μ,Integer, Integer>> add = a ->  reader(i -> {
+      //System.out.println("i hope this is lazy");
+      return Identity.id(i + a);
+    }, null);
+
+    for (int i = 0; i < 1000000; i++) {
+      rt = rt.bind(add);
     }
 
-    public A run(R r) {
-      return ((Identity<A>)super.runReader(r)).value();
-    }
-
-    public static <R, A> Reader<R, A> asReader(Monad<Hkt2<ReaderT.μ, Identity.μ, R>, A> wider) {
-      if(wider instanceof ReaderT)
-        return new Reader<R,A>(monad(wider).runReaderT);
-      else
-        return (Reader<R, A>) wider;
-    }
-
-    public static <R, A> Reader<R, A> reader(F1<R,A> fn) {
-      return new Reader<R,A>(r -> Identity.id(fn.call(r)));
-    }
-
-    public static <R, A> Reader<R, A> reader(A a) {
-      return reader(r -> a);
-    }
-
-    public static <R> Reader<R, R> readerAsk() {
-      return reader(r -> r);
-    }
-
-    public static <R,A> Reader<R, A> readerLocal(F1<R,R> fn, Reader<R,A> ma) {
-      return asReader(local(fn,ma));
-    }
+    long now = System.currentTimeMillis();
+    Monad<Identity.μ, Integer> m = rt.runReader(1);
+    System.out.println(Identity.monad(m).value());
+    System.out.println(System.currentTimeMillis() - now);
   }
 }
