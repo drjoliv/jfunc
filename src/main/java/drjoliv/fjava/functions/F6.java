@@ -11,15 +11,9 @@ import drjoliv.fjava.hlist.T6;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F6<A,B,C,D,E,F,G> extends Functor<Hkt6<F6.μ,A,B,C,D,E,F>,G>{
+public interface F6<A,B,C,D,E,F,G> {
 
-  /**
-  * The witness type of {@code F6}
-  */
-  public static class μ implements Witness{}
-
-  @Override
-  public default <H> F6<A,B,C,D,E,F,H> map(F1<? super G, ? extends H> fn) {
+  public default <H> F6<A,B,C,D,E,F,H> then(F1<? super G, ? extends H> fn) {
     return F6Composed.doMap(this,fn);
   }
 

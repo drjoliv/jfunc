@@ -10,15 +10,10 @@ import drjoliv.fjava.hlist.T4;
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
 @FunctionalInterface
-public interface F4<A,B,C,D,E> extends Functor<Hkt4<F4.μ,A,B,C,D>,E> {
+public interface F4<A,B,C,D,E> {
 
-  /**
-  * The witness type of {@code F4}.
-  */
-  public static class μ implements Witness{}
 
-  @Override
-  public default <F> F4<A,B,C,D,F> map(F1<? super E, ? extends F> fn) {
+  public default <F> F4<A,B,C,D,F> then(F1<? super E, ? extends F> fn) {
     return F4Composed.doMap(this,fn);
   }
 

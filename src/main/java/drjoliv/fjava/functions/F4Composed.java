@@ -16,7 +16,7 @@ class F4Composed<A,B,C,D,E,F> implements F4<A,B,C,D,F> {
   }
 
   @Override
-  public <G> F4<A, B, C, D, G> map(F1<? super F, ? extends G> fn) {
+  public <G> F4<A, B, C, D, G> then(F1<? super F, ? extends G> fn) {
     return doMap(f4, this.fn.then(fn));
   }
 
