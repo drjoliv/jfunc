@@ -24,6 +24,10 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
   */
   public static class μ implements drjoliv.fjava.hkt.Witness{private μ(){}}
 
+  abstract <B> Eval<B> doBind(F1<? super A, ? extends Monad<μ, B>> fn);
+
+  abstract Eval<A> step();
+
   @Override
   public <B> Eval<B> apply(Applicative<μ, ? extends F1<? super A, ? extends B>> f) {
     return monad(Monad.liftM2(this, (Eval<F1<? super A, B>>)f, (a,fn) -> fn.call(a)));
@@ -43,16 +47,19 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
   public abstract <B> Eval<B> map(F1<? super A, ? extends B> fn);
 
   @Override
-  public abstract <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn);
-
+  public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
+    return new EvalBind<A,B>(this, fn);
+  }
   @Override
-  public abstract <B> Eval<B> semi(Monad<μ, B> mb);
+  public <B> Eval<B> semi(Monad<μ, B> mb) {
+    return bind(a -> mb);
+  }
 
   /**
    * Returns the value witin this eval.
    * @return the value within this eval.
    */
-  abstract public A value();
+  public abstract A value();
 
   /**
    * Constructs an eval from a value.
@@ -90,84 +97,131 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
     }
 
     @Override
+    public <B> Eval<B> map(F1<? super A, ? extends B> fn) {
+      return later(f0(value).map(fn));
+    }
+
+    @Override
+    Eval<A> step() {
+      return this;
+    }
+
+    @Override
+    <B> Eval<B> doBind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      return monad(fn.call(value));
+    }
+
+    @Override
     public A value() {
       return value;
     }
+  }
 
-    @Override
-    public <B> Eval<B> map(F1<? super A, ? extends B> fn) {
-      return later(f0(() -> value).map(fn));
+  private static class EvalBind<A,B> extends Eval<B> {
+    private Eval<A> eval;
+    private F1<? super A, ? extends Monad<μ, B>> binder;
+    private B cached   = null;
+
+    public EvalBind(Eval<A> eval, F1<? super A, ? extends Monad<μ, B>> binder) {
+      this.eval = eval;
+      this.binder = binder;
+    }
+
+    public Eval<B> step() {
+      return eval.doBind(binder);
+    }
+
+    public <C> Eval<C> doBind(F1<? super B, ? extends Monad<μ, C>> fn) {
+      return eval.bind(binder).bind(fn);
     }
 
     @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
-      return new Later<>(f0(() -> monad(fn.call(value)).value()));
+    public B value() {
+      if(cached == null) {
+        synchronized(this) {
+          Eval<B> eval = this;
+          while(eval instanceof EvalBind)
+            eval = eval.step();
+          cached = eval.value();
+          eval   = null;
+          binder = null;
+          return cached;
+        }
+      } else {
+        return cached;
+      }
     }
 
     @Override
-    public <B> Eval<B> semi(Monad<μ, B> mb) {
-      return bind(a -> mb);
+    public <C> Eval<C> map(F1<? super B, ? extends C> fn) {
+      if(cached != null) {
+        return later(f0(cached).map(fn));
+      } else {
+        return bind(a -> now(fn.call(a)));
+      }
+    }
+
+    @Override
+    public <C> Eval<C> bind(F1<? super B, ? extends Monad<μ, C>> fn) {
+       if(cached != null) {
+       return super.bind(fn);
+      } else {
+        return now(cached).bind(fn);
+      }
     }
   }
 
   private static class Later<A> extends Eval<A> {
 
     private volatile F0<A> supplier;
-    private A value;
+    private A cache;
 
     private Later(F0<A> fn) {
       this.supplier = fn;
     }
 
-    @Override
-    public A value() {
-      return value == null ? computeValue() : value;
+    private synchronized A computeValue() {
+      if(cache == null) {
+        cache = supplier.call();
+        supplier = null;
+        return cache;
+      } else {
+        return cache;
+      }
     }
 
-    private synchronized A computeValue() {
-      if(value == null) {
-        value = supplier.call();
-        supplier = null;
-        return value;
-      } else {
-        return value;
-      }
+    @Override
+    public A value() {
+      return supplier == null ? cache : computeValue();
+    }
+
+    @Override
+    <B> Eval<B> doBind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      return monad(fn.call(value()));
     }
 
     @Override
     public <B> Eval<B> map(F1<? super A, ? extends B> fn) {
-      return (supplier == null)
-        ? new Later<B>(f0(() -> value).map(fn))
-        : new Later<B>(supplier.map(fn));
+      if(supplier == null)
+        return later(f0(cache).map(fn));
+      else
+        return later(supplier.map(fn));
     }
 
     @Override
-    public <B> Eval<B> bind(F1<? super A, ? extends Monad<μ, B>> fn) {
-      if(supplier == null) {
-        return new Later<>(f0(() -> value))
-            .map(v -> monad(fn.call(v)).value());
-      } else {
-         F0<B> ret = supplier
-          .map(v -> monad(fn.call(v)).value());
-         return new Later<>(ret);
-      }
-    }
-    
-    @Override
-    public <B> Eval<B> semi(Monad<μ, B> mb) {
-      return bind(a -> mb);
+    Eval<A> step() {
+      return this;
     }
   }
 
- private static <A> F0<A> f0(F0<A> supplier) {
-   return supplier;
+ private static <A> F0<A> f0(A a) {
+   return () -> a;
  }
 
   /**
    * @see drjoliv.fjava.monad.Monad#liftM2(Monad,Monad,F2)
    */
-  public static <A,B,C> Eval<C> liftM2(Monad<Eval.μ,A> m, Monad<Eval.μ,B> m1, F2<? super A,? super B, C> fn) {
-    return monad(Monad.liftM2(m,m1,fn));
+  public static <A, B, C> Eval<C> liftM2(Monad<Eval.μ, A> m, Monad<Eval.μ, B> m1, F2<? super A, ? super B, C> fn) {
+    return monad(Monad.liftM2(m, m1, fn));
   }
-
 }
