@@ -123,12 +123,10 @@ public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<Read
 
     @Override
     <B> ReaderT<M, R, B> doBind(R r, F1<? super A, ? extends Monad<Hkt2<μ, M, R>, B>> fn) {
+      
         Monad<M,A> ma = this.fn.call(r);
-        Monad<M,Monad<Hkt2<μ, M, R>, B>> mab = ma.map(fn);
-        Monad<M, ReaderT<M, R, B>> mabb = mab.map(ReaderT::monad);
-        Monad<M, Monad<M,B>> mba = mabb.map(rr -> rr.runReader(r));
-        Monad<M,B> mb = Monad.join(mba);
-        return new ReaderTmpl<M,R,B>(env -> mb, mUnit());
+        Monad<M,B> mab = Monad.join(ma.map(a -> ((ReaderT<M,R,B>)fn.call(a)).runReader(r) ));
+        return new ReaderTmpl<M,R,B>(env -> mab, mUnit());
     }
 
     @Override
@@ -173,19 +171,18 @@ public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<Read
 
   public static void main(String [] args) {
 
-    ReaderT<Identity.μ, Integer, Integer> rt = reader(i -> Identity.id(i), null);
+    ReaderT<Identity.μ, Integer, Integer> rt = reader(i -> { System.out.println("rt"); return Identity.id(i);}, null);
 
     F1<Integer,ReaderT<Identity.μ,Integer, Integer>> add = a ->  reader(i -> {
-      //System.out.println("i hope this is lazy");
       return Identity.id(i + a);
     }, null);
 
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 1; i < 10000; i++) {
       rt = rt.bind(add);
     }
 
     long now = System.currentTimeMillis();
-    Monad<Identity.μ, Integer> m = rt.runReader(1);
+    Monad<Identity.μ, Integer> m = rt.runReader(3);
     System.out.println(Identity.monad(m).value());
     System.out.println(System.currentTimeMillis() - now);
   }
