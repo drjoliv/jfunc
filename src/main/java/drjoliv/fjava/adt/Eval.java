@@ -1,6 +1,9 @@
 package drjoliv.fjava.adt;
 
 import static drjoliv.fjava.adt.Trampoline.done$;
+
+import java.util.Objects;
+
 import static drjoliv.fjava.adt.Trampoline.done;
 
 import drjoliv.fjava.adt.Eval.μ;
@@ -10,6 +13,7 @@ import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.monad.Identity;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
@@ -108,6 +112,7 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
 
     @Override
     <B> Eval<B> doBind(F1<? super A, ? extends Monad<μ, B>> fn) {
+      Objects.requireNonNull(value); 
       return monad(fn.call(value));
     }
 
@@ -128,11 +133,13 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
     }
 
     public Eval<B> step() {
+      //System.out.println("infinte step");
       return eval.doBind(binder);
     }
 
     public <C> Eval<C> doBind(F1<? super B, ? extends Monad<μ, C>> fn) {
-      return eval.bind(binder).bind(fn);
+      //System.out.println("infinte dobind");
+      return eval.bind(a -> ((Eval<B>)binder.call(a)).bind(fn));
     }
 
     @Override
@@ -142,10 +149,10 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
           Eval<B> eval = this;
           while(eval instanceof EvalBind)
             eval = eval.step();
-          cached = eval.value();
-          eval   = null;
-          binder = null;
-          return cached;
+          //cached = eval.value();
+          //eval   = null;
+          //binder = null;
+          return eval.value();
         }
       } else {
         return cached;
@@ -154,21 +161,26 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
 
     @Override
     public <C> Eval<C> map(F1<? super B, ? extends C> fn) {
-      if(cached != null) {
-        return later(f0(cached).map(fn));
-      } else {
         return bind(a -> now(fn.call(a)));
-      }
+      //System.out.println("infinte map");
+      //if(cached != null) {
+      //  return later(f0(cached).map(fn));
+      //} else {
+      //  return bind(a -> now(fn.call(a)));
+      //}
     }
 
-    @Override
-    public <C> Eval<C> bind(F1<? super B, ? extends Monad<μ, C>> fn) {
-       if(cached != null) {
-       return super.bind(fn);
-      } else {
-        return now(cached).bind(fn);
-      }
-    }
+    //@Override
+    //public <C> Eval<C> bind(F1<? super B, ? extends Monad<μ, C>> fn) {
+    //   if(cached == null) {
+    //  System.out.println("infinte bind not cached");
+    //   return super.bind(fn);
+    //  } else {
+    //  System.out.println("infinte bind cached");
+    //    Objects.requireNonNull(cached);
+    //    return now(cached).bind(fn);
+    //  }
+    //}
   }
 
   private static class Later<A> extends Eval<A> {
@@ -223,5 +235,20 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
    */
   public static <A, B, C> Eval<C> liftM2(Monad<Eval.μ, A> m, Monad<Eval.μ, B> m1, F2<? super A, ? super B, C> fn) {
     return monad(Monad.liftM2(m, m1, fn));
+  }
+  
+  public static void main(String[] args) {
+    
+      F1<Integer,Eval<Integer>> f = i -> liftM2(now(i), now(i), (b,c) -> b + c);
+      Eval<Integer> m = now(1);
+      
+      for(int i = 0; i < 3; i++) {
+          m = m.bind(f);
+        }
+   //Eval<Integer> one = liftM2(now(1), now(1), (a,b) -> a + b);
+    
+    System.out.println(m.value());
+
+    
   }
 }
