@@ -348,5 +348,4 @@ public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<Writ
   public static <M extends Witness,W,A> WriterT<M,W,A> monad(Monad<Hkt2<WriterT.μ,M,W>,A> monad) {
     return (WriterT<M,W,A>)monad;
   }
-
 }

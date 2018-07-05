@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
+import drjoliv.fjava.functions.C1;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.hkt.Hkt;
@@ -42,8 +43,9 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
    * @param right function applied to the right side of this either.
    * @return this either.
    */
-  public Either<L,R> consume(F1<L,Unit> left, F1<R,Unit> right) {
-    visit(left, right);
+  public Either<L,R> consume(C1<L> left, C1<R> right) {
+    visit(l -> {left.call(l); return Unit.unit;}
+        , r -> {right.call(r); return Unit.unit;});
     return this;
   }
 
