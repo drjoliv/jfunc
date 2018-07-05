@@ -9,7 +9,6 @@ import java.util.Iterator;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functor.Functor;
 import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
 
 /**
@@ -22,7 +21,7 @@ public class Stack<A> implements Iterable<A>, Hkt<Stack.μ,A> , Functor<Stack.μ
   /**
   * The witness type of {@code Stack}.
   */
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private static Stack EMPTY_STACK = new Stack(0,FList.empty());
 

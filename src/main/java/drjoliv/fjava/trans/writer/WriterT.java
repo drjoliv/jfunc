@@ -1,46 +1,31 @@
 package drjoliv.fjava.trans.writer;
 
-import static drjoliv.fjava.adt.FList.flist;
 import static drjoliv.fjava.hlist.T2.t2;
 import static drjoliv.fjava.monad.Identity.id;
 
 import drjoliv.fjava.adt.Eval;
-import drjoliv.fjava.adt.FList;
-import drjoliv.fjava.adt.Maybe;
-import drjoliv.fjava.adt.Unit;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
-import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
-import drjoliv.fjava.functions.F2;
-import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.hkt.Hkt2;
 import drjoliv.fjava.hkt.Hkt3;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
-import drjoliv.fjava.monad.Monad;
-import static drjoliv.fjava.monad.Monad.*;
-import drjoliv.fjava.monad.MonadUnit;
 import drjoliv.fjava.monad.Identity;
+import drjoliv.fjava.monad.Monad;
+import drjoliv.fjava.monad.MonadUnit;
 import drjoliv.fjava.monoid.Monoid;
-import drjoliv.fjava.nums.Numbers;
-import drjoliv.fjava.trans.writer.WriterT.μ;
-
-import static drjoliv.fjava.monoid.Monoid.*;
-
-import java.math.BigInteger;
 
 
 /**
  * The WriterT is a monad that produces a stream of data in addition to a computed value, the stream of subcomputations are collected by combining them via a monoid.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
+public abstract class WriterT <M,W,A> implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
 
  /**
   * Witness type of WriterT.
   */
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final Monad<M,T2<A,W>> runWriterT;
   private final Monoid<W> monoid;
@@ -102,7 +87,7 @@ public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<Writ
     return mUnit;
   }
 
-  private static class WriterTImpl<M extends Witness,W,A> extends WriterT<M,W,A>  implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
+  private static class WriterTImpl<M,W,A> extends WriterT<M,W,A>  implements Monad<Hkt2<WriterT.μ,M,W>,A>, Hkt3<WriterT.μ,M,W,A> {
 
     private WriterTImpl(Monad<M,T2<A,W>> runWriterT, Monoid<W> monoid, MonadUnit<M> mUnit) {
       super(runWriterT, monoid, mUnit);
@@ -293,7 +278,7 @@ public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<Writ
    * @param mw a monoid used to combine subcomputations.
    * @return a writerT.
    */
-  public static <A,W,M extends Witness> WriterT<M,W,A> writer(A a, W w, MonadUnit<M> unit, Monoid<W> mw) {
+  public static <A,W,M> WriterT<M,W,A> writer(A a, W w, MonadUnit<M> unit, Monoid<W> mw) {
     return  new WriterTImpl<>(unit.unit(t2(a,w)), mw, unit);
   }
 
@@ -319,7 +304,7 @@ public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<Writ
    * @param unit a strategy for lifting values into the inner monad.
    * @return a strategy for creating writers.
    */
-  public static final <M extends Witness, W> MonadUnit<Hkt2<WriterT.μ,M,W>> WRITERT_MONAD_UNIT(Monoid<W> m, MonadUnit<M> unit) {
+  public static final <M, W> MonadUnit<Hkt2<WriterT.μ,M,W>> WRITERT_MONAD_UNIT(Monoid<W> m, MonadUnit<M> unit) {
     return new MonadUnit<Hkt2<WriterT.μ,M,W>>(){
       @Override
       public <A> Monad<Hkt2<μ, M, W>, A> unit(A a) {
@@ -345,7 +330,7 @@ public abstract class WriterT <M extends Witness,W,A> implements Monad<Hkt2<Writ
    * @param monad the writerT to be casted to its original type.
    * @return a writerT.
    */
-  public static <M extends Witness,W,A> WriterT<M,W,A> monad(Monad<Hkt2<WriterT.μ,M,W>,A> monad) {
+  public static <M,W,A> WriterT<M,W,A> monad(Monad<Hkt2<WriterT.μ,M,W>,A> monad) {
     return (WriterT<M,W,A>)monad;
   }
 }

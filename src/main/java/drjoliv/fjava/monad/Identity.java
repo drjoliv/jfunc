@@ -6,8 +6,6 @@ import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Witness;
-import drjoliv.fjava.monad.Identity.μ;
 
 /**
  * A a contextt that simply applies the binded function with no further effect.
@@ -20,7 +18,7 @@ public final class Identity<E> implements Monad<Identity.μ,E>, Hkt<Identity.μ,
   /**
   * The witness type of Identity.
   */
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final Eval<E> e;
 

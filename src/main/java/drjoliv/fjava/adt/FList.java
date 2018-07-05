@@ -1,17 +1,18 @@
 package drjoliv.fjava.adt;
 
+import static drjoliv.fjava.adt.Eval.later;
+import static drjoliv.fjava.adt.Eval.now;
+import static drjoliv.fjava.adt.Maybe.maybe;
+import static drjoliv.fjava.adt.Trampoline.done;
+import static drjoliv.fjava.adt.Trampoline.more;
+import static drjoliv.fjava.hlist.T2.t2;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import static drjoliv.fjava.hlist.T2.t2;
-import static drjoliv.fjava.adt.Eval.*;
-import static drjoliv.fjava.adt.Maybe.*;
-import static drjoliv.fjava.adt.Trampoline.*;
-
-import drjoliv.fjava.adt.FList.μ;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
@@ -19,9 +20,7 @@ import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
-import drjoliv.fjava.io.IO;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 import drjoliv.fjava.monoid.Monoid;
@@ -51,7 +50,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
     }
 
   @Override
-  public <N extends Witness, F, B> Applicative<N, FList<B>> traverse(F1<A, ? extends Applicative<N, B>> fn,
+  public <N, F, B> Applicative<N, FList<B>> traverse(F1<A, ? extends Applicative<N, B>> fn,
       ApplicativePure<N> pure) {
     F2<FList<B>, B, FList<B>> cons = (FList<B> list, B b) -> list.cons(b);
     final Applicative<N, FList<B>> empty = pure.pure(empty());
@@ -64,12 +63,12 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
 
   @Override
-  public <N extends Witness, B> Monad<N, FList<B>> mapM(F1<A, ? extends Monad<N, B>> fn,
+  public <N, B> Monad<N, FList<B>> mapM(F1<A, ? extends Monad<N, B>> fn,
       MonadUnit<N> ret) {
     return mapM_prime(map(fn),ret);
   }
 
-  private static <N extends Witness, B> Monad<N,FList<B>> mapM_prime(FList<Monad<N,B>> mb, MonadUnit<N> ret) {
+  private static <N, B> Monad<N,FList<B>> mapM_prime(FList<Monad<N,B>> mb, MonadUnit<N> ret) {
     if(mb.isEmpty())
       return ret.unit(empty());
     else {
@@ -87,7 +86,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   /**
   * The witness type of FList.
   */
-  public static class μ implements drjoliv.fjava.hkt.Witness{}
+  public static class μ {private μ(){}}
 
     public static MonadUnit<FList.μ> unit = new MonadUnit<FList.μ>() {
       @Override

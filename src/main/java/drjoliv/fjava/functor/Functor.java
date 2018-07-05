@@ -5,13 +5,12 @@ import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.functions.F4;
 import drjoliv.fjava.functions.F5;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * Functor is a context in which values are transformed.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Functor<F extends Witness,A> {
+public interface Functor<F, A> {
 
   /**
    * Map applies the function {@code fn} to the contents of this Functor, returning a new Functor

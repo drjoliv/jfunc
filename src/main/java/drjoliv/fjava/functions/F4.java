@@ -1,8 +1,5 @@
 package drjoliv.fjava.functions;
 
-import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Hkt4;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T4;
 
 /**

@@ -1,30 +1,21 @@
 package drjoliv.fjava.trans.reader;
 
-import static drjoliv.fjava.adt.FList.flist;
-
-import java.util.function.Function;
-
-import drjoliv.fjava.adt.FList;
-import drjoliv.fjava.adt.Maybe;
-import drjoliv.fjava.adt.Unit;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F1;
-import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt2;
 import drjoliv.fjava.hkt.Hkt3;
-import drjoliv.fjava.hkt.Witness;
+import drjoliv.fjava.monad.Identity;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
-import drjoliv.fjava.monad.Identity;
 
 /**
  * The ReaderT monad.
  * @author Desonte 'drjoliv' Jolivet
  */
-public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
+public abstract class ReaderT <M,R,A> implements Monad<Hkt2<ReaderT.μ,M,R>,A>, Hkt3<ReaderT.μ,M,R,A> {
 
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final MonadUnit<M> mUnit;
 
@@ -99,11 +90,11 @@ public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<Read
 
   abstract <B> ReaderT<M,R,B> doBind(R r, F1<? super A, ? extends Monad<Hkt2<μ, M, R>, B>> fn);
 
-  public static <M extends Witness,R,B> ReaderT<M,R,B> monad(Monad<Hkt2<μ, M, R>, B> monad) {
+  public static <M,R,B> ReaderT<M,R,B> monad(Monad<Hkt2<μ, M, R>, B> monad) {
     return (ReaderT<M,R,B>)monad;
   }
 
-  private static class ReaderTmpl<M extends Witness,R,A> extends ReaderT<M,R,A> {
+  private static class ReaderTmpl<M,R,A> extends ReaderT<M,R,A> {
 
     private final F1<R,Monad<M,A>> fn;
 
@@ -135,7 +126,7 @@ public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<Read
     }
   }
 
-  private static class ReaderTBind<M extends Witness,R,A,B> extends ReaderT<M,R,B>  {
+  private static class ReaderTBind<M,R,A,B> extends ReaderT<M,R,B>  {
 
     private final ReaderT<M,R,A> reader;
     private final F1<? super A, ? extends Monad<Hkt2<μ,M, R>, B>> fn;//[A -> R -> B]
@@ -164,7 +155,7 @@ public abstract class ReaderT <M extends Witness,R,A> implements Monad<Hkt2<Read
     }
   }
 
-  public static <M extends Witness,R,A> ReaderT<M,R,A> reader(F1<R,Monad<M,A>> fn, MonadUnit<M> mUnit) {
+  public static <M,R,A> ReaderT<M,R,A> reader(F1<R,Monad<M,A>> fn, MonadUnit<M> mUnit) {
     return new ReaderTmpl<>(fn, mUnit);
   };
 

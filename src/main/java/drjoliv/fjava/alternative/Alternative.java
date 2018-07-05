@@ -1,13 +1,12 @@
 package drjoliv.fjava.alternative;
 
 import drjoliv.fjava.applicative.Applicative;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * A monoid for applicative functors.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Alternative<M extends Witness, A, Fa extends Applicative<M,A>> {
+public interface Alternative<M, A, Fa extends Applicative<M,A>> {
 
   /**
    * Returns the identity of this applicative.

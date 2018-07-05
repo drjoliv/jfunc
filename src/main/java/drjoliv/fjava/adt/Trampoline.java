@@ -1,20 +1,12 @@
 package drjoliv.fjava.adt;
 
-import static drjoliv.fjava.adt.Either.*;
-import static drjoliv.fjava.adt.FList.*;
-import static drjoliv.fjava.nums.Numbers.*;
+import static drjoliv.fjava.unsafe.Usafe.cast;
 
-import java.math.BigInteger;
-import java.util.HashMap;
-
-import static drjoliv.fjava.unsafe.Usafe.*;
-import drjoliv.fjava.adt.Trampoline.μ;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
@@ -67,7 +59,7 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
   /**
   * Witness type of {@code Trampoline}.
   */
-  public static class μ implements drjoliv.fjava.hkt.Witness {private μ(){}}
+  public static class μ {private μ(){}}
 
   private Trampoline(){}
 

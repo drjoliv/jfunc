@@ -1,31 +1,27 @@
 package drjoliv.fjava.trans.state;
 
-import drjoliv.fjava.functions.F1;
-import static drjoliv.fjava.functions.F1.*;
 import static drjoliv.fjava.hlist.T2.t2;
 
-import drjoliv.fjava.adt.Either;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
+import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
+import drjoliv.fjava.monad.Identity;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
-import drjoliv.fjava.trans.state.StateT.μ;
-import drjoliv.fjava.monad.Identity;
 
 /**
  * The StateT monad.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT.μ,M,S>,A> {
+public abstract class StateT<M,S,A> implements Monad<Hkt2<StateT.μ,M,S>,A> {
 
   /**
    * The Witness type of {@code StateT}.
    */
-  public static class μ implements Witness {private μ(){}}
+  public static class μ {private μ(){}}
 
   private final F1<S, Monad<M, T2<S, A>>> runState;
 
@@ -93,7 +89,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
   }
 
 
-  private static class StateTImpl<M extends Witness, S, A> extends StateT<M, S, A>{
+  private static class StateTImpl<M, S, A> extends StateT<M, S, A>{
 
     private StateTImpl(final F1<S,Monad<M,T2<S,A>>> runState, final MonadUnit<M> mUnit){
      super(runState, mUnit);
@@ -124,7 +120,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
       }, mUnit());
     }
 
-    private static <M extends Witness,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
+    private static <M,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
       return monad(fn.call(a)).runState(s);
     }
 
@@ -183,7 +179,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
       return bind(s -> mb);
     }
 
-    private static <M extends Witness,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
+    private static <M,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
       return monad(fn.call(a)).runState(s);
     }
   }
@@ -195,7 +191,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
    * @param runState
    * @return
    */
-  public static <M extends Witness,S,A> StateT<M,S,A> stateT(final F1<S,T2<S,A>> runState, MonadUnit<M> mUnit) {
+  public static <M,S,A> StateT<M,S,A> stateT(final F1<S,T2<S,A>> runState, MonadUnit<M> mUnit) {
     return new StateTImpl<M,S,A>(runState.then(p -> mUnit.unit(p)), mUnit);
   }
 
@@ -204,12 +200,12 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
   }
 
   @SuppressWarnings("unchecked")
-  public static <M extends Witness,S,A> StateT<M,S,A> monad(final Monad<Hkt2<μ, M, S>, A> monad) {
+  public static <M,S,A> StateT<M,S,A> monad(final Monad<Hkt2<μ, M, S>, A> monad) {
     return (StateT<M,S,A>) monad;
   }
 
   @SuppressWarnings("unchecked")
-  public static <M extends Witness,S,A,B> StateT<M,S,F1<A,B>> applicative(final Applicative<Hkt2<μ, M, S>, ? extends F1<? super A, ? extends B>> app) {
+  public static <M,S,A,B> StateT<M,S,F1<A,B>> applicative(final Applicative<Hkt2<μ, M, S>, ? extends F1<? super A, ? extends B>> app) {
     return (StateT<M,S,F1<A,B>>) app;
   }
 
@@ -228,11 +224,11 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
     return new State<S, S>(state -> Identity.id(t2(s, s)));
   }
 
-  public static <M extends Witness, S> StateT<M,S,S> get(MonadUnit<M> mUnit) {
+  public static <M, S> StateT<M,S,S> get(MonadUnit<M> mUnit) {
     return new StateTImpl<M, S, S>(s -> mUnit.unit(t2(s, s)), mUnit);
   }
 
-  public static <M extends Witness, S> F2<MonadUnit<M>,S,StateT<M,S, S>> put() {
+  public static <M, S> F2<MonadUnit<M>,S,StateT<M,S, S>> put() {
     return (mUnit, s) -> new StateTImpl<M, S, S>(state -> mUnit.unit((t2(s, s))), mUnit);
   }
 
@@ -240,7 +236,7 @@ public abstract class StateT<M extends Witness,S,A> implements Monad<Hkt2<StateT
     return new State<S, A>(s -> Identity.id(t2(s, a)));
   }
 
-  public static <M extends Witness,S> MonadUnit<Hkt2<StateT.μ,M,S>> unit(MonadUnit<M> mUnit) {
+  public static <M,S> MonadUnit<Hkt2<StateT.μ,M,S>> unit(MonadUnit<M> mUnit) {
     return new MonadUnit<Hkt2<StateT.μ,M,S>>() {
       @Override
       public <A> Monad<Hkt2<μ, M, S>, A> unit(A a) {

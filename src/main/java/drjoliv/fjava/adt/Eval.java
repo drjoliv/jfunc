@@ -1,19 +1,12 @@
 package drjoliv.fjava.adt;
 
-import static drjoliv.fjava.adt.Trampoline.done$;
-
 import java.util.Objects;
 
-import static drjoliv.fjava.adt.Trampoline.done;
-
-import drjoliv.fjava.adt.Eval.μ;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
-import drjoliv.fjava.hkt.Witness;
-import drjoliv.fjava.monad.Identity;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
@@ -26,7 +19,7 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
   /**
   * The witness type of {@code Eval}.
   */
-  public static class μ implements drjoliv.fjava.hkt.Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   abstract <B> Eval<B> doBind(F1<? super A, ? extends Monad<μ, B>> fn);
 

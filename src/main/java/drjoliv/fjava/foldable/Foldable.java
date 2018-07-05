@@ -9,7 +9,6 @@ import drjoliv.fjava.adt.Maybe;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.nums.Numbers;
 
 /**
@@ -23,7 +22,7 @@ import drjoliv.fjava.nums.Numbers;
 
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Foldable<M extends Witness,A> extends Functor<M,A>{
+public interface Foldable<M, A> extends Functor<M, A>{
 
   /**
    * Right associative fold of this structure.

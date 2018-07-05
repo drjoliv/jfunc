@@ -2,24 +2,19 @@ package drjoliv.fjava.adt;
 
 import static drjoliv.fjava.adt.Either.left;
 import static drjoliv.fjava.adt.Either.right;
-import static drjoliv.fjava.adt.Eval.*;
+import static drjoliv.fjava.adt.Eval.later;
 import static drjoliv.fjava.adt.Eval.now;
+import static drjoliv.fjava.adt.Trampoline.done;
+import static drjoliv.fjava.monad.Monad.For;
 
-import static drjoliv.fjava.adt.Trampoline.*;
-import drjoliv.fjava.adt.Trampoline.*;
-import drjoliv.fjava.adt.Try.μ;
-import drjoliv.fjava.alternative.Alternative;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
-import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.Try0;
 import drjoliv.fjava.hkt.Hkt;
 import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
-import static drjoliv.fjava.monad.Monad.*;
 import drjoliv.fjava.monad.MonadUnit;
 
 /**
@@ -33,7 +28,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
   /**
   * The witness type of {@code Try}.
   */
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final Trampoline<Either<Exception,A>> trampoline;
 
@@ -206,12 +201,12 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
   /**
    * The monad transformer for Try.
    */
-  public static class TryT<M extends Witness,A> implements Monad<Hkt<TryT.μ,M>, A>, Hkt2<TryT.μ,M,A> {
+  public static class TryT<M,A> implements Monad<Hkt<TryT.μ,M>, A>, Hkt2<TryT.μ,M,A> {
 
     /**
     * The witness type of TryT.
     */
-    public static class μ implements Witness{private μ(){}}
+    public static class μ {private μ(){}}
 
     private final Eval<Monad<M,Try<A>>> runTryT;
     private final MonadUnit<M> mUnit;
@@ -298,7 +293,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
      * @param mUnit a strategy for lifting a value into a monad.
      * @return a tryt.
      */
-    public static <M extends Witness, B> TryT<M,B> tryT(B b, MonadUnit<M> mUnit) {
+    public static <M, B> TryT<M,B> tryT(B b, MonadUnit<M> mUnit) {
       return new TryT<>(success(b), mUnit);
     }
 
@@ -307,7 +302,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
      * @param t a monad containing a try.
      * @return a tryt.
      */
-    public static <M extends Witness, B> TryT<M,B> tryT(Monad<M,Try<B>> t) {
+    public static <M, B> TryT<M,B> tryT(Monad<M,Try<B>> t) {
       return new TryT<>(t);
     }
 
@@ -316,7 +311,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
      * @param t a monad.
      * @return a tryT.
      */
-    public static <M extends Witness, B> TryT<M,B> lift(Monad<M,B> t) {
+    public static <M, B> TryT<M,B> lift(Monad<M,B> t) {
       return new TryT<M,B>(t.map(b -> success(b)));
     }
 
@@ -325,7 +320,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
      * @param f the applicative to be casted to its original type.
      * @return a tryT.
      */
-    public static <M extends Witness, B> TryT<M,B> applicative(Applicative<Hkt<drjoliv.fjava.adt.Try.TryT.μ, M>, B> f) {
+    public static <M, B> TryT<M,B> applicative(Applicative<Hkt<drjoliv.fjava.adt.Try.TryT.μ, M>, B> f) {
       return (TryT<M,B>) f;
     }
 
@@ -334,7 +329,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     * @param monad the monad to be casted to its original type.
     * @return a tryT.
     */
-    public static <M extends Witness, B> TryT<M, B> monad(Monad<Hkt<μ, M>, B> monad) {
+    public static <M, B> TryT<M, B> monad(Monad<Hkt<μ, M>, B> monad) {
       return (TryT<M, B>) monad;
     }
   }

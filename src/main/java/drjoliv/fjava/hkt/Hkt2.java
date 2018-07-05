@@ -7,4 +7,4 @@ package drjoliv.fjava.hkt;
  * @param <b> A type parameter.
  * @author drjoliv@gmail.com
  */
-public interface Hkt2<M extends Witness, a, b> extends Hkt<Hkt<M, a>, b> {}
+public interface Hkt2<M, a, b> extends Hkt<Hkt<M, a>, b> {}

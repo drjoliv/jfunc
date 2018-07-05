@@ -1,22 +1,15 @@
 package drjoliv.fjava.adt;
 
-import java.util.function.Function;
+import static drjoliv.fjava.adt.Eval.later;
 
-import drjoliv.fjava.adt.Maybe.μ;
-import drjoliv.fjava.alternative.Alternative;
 import drjoliv.fjava.applicative.Applicative;
 import drjoliv.fjava.applicative.ApplicativePure;
 import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
-
-import static drjoliv.fjava.adt.Eval.*;
-import static drjoliv.fjava.monad.Monad.*;
 
 /**
  * Represents a value of something(Just) or a value of Nothing.
@@ -27,7 +20,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A>, 
   /**
   * The witness type of Maybe.
   */
-  public static class μ implements Witness {private μ(){}}
+  public static class μ {private μ(){}}
 
   private Maybe() {}
 

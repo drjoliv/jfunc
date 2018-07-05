@@ -5,7 +5,6 @@ import static drjoliv.fjava.functions.F1.compose;
 
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * A differnece list allows for quicker concatenation of elements.
@@ -16,7 +15,7 @@ public class DList<A> implements Functor<DList.μ,A> {
   /**
   * The witness type of {@code DList}.
   */
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final F1<FList<A>,FList<A>> list;
 

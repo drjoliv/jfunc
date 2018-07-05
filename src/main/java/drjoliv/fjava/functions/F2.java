@@ -2,9 +2,6 @@ package drjoliv.fjava.functions;
 
 import java.util.function.BiFunction;
 
-import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.hlist.T2;
 
 /**

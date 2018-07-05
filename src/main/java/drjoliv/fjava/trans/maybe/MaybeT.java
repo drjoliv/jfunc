@@ -7,7 +7,6 @@ import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.hkt.Hkt;
 import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
@@ -15,9 +14,9 @@ import drjoliv.fjava.monad.MonadUnit;
  * Transformer of Maybe.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public class MaybeT<M extends Witness,A> implements Monad<Hkt<MaybeT.μ,M>,A>, Hkt2<MaybeT.μ,M,A> {
+public class MaybeT<M,A> implements Monad<Hkt<MaybeT.μ,M>,A>, Hkt2<MaybeT.μ,M,A> {
 
-  public static class μ implements Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   private final Monad<M,Maybe<A>> runMaybeT;
   private final MonadUnit<M> mUnit;
@@ -75,19 +74,19 @@ public class MaybeT<M extends Witness,A> implements Monad<Hkt<MaybeT.μ,M>,A>, H
     this.mUnit = runMaybeT.yield();
   }
 
-  public static <M extends Witness,A> MaybeT<M,A> lift(Monad<M,A> m) {
+  public static <M,A> MaybeT<M,A> lift(Monad<M,A> m) {
     return new MaybeT<M,A>(m.map(a -> Maybe.maybe(a)));
   }
 
-  public static <M extends Witness, A> F2<MonadUnit<M>,A,MaybeT<M,A>> maybeT() {
+  public static <M, A> F2<MonadUnit<M>,A,MaybeT<M,A>> maybeT() {
     return (mUnit, a) -> new MaybeT<M, A>(mUnit.unit(Maybe.maybe(a)));
   }
 
-  public static <M extends Witness,A> MaybeT<M,A> maybeT(Monad<M,Maybe<A>> runMaybeT) {
+  public static <M,A> MaybeT<M,A> maybeT(Monad<M,Maybe<A>> runMaybeT) {
     return new MaybeT<M,A>(runMaybeT);
   }
 
-  public static <M extends Witness,A> MaybeT<M,A> maybeT(A a, MonadUnit<M> mUnit) {
+  public static <M,A> MaybeT<M,A> maybeT(A a, MonadUnit<M> mUnit) {
     return lift(mUnit.unit(a));
   }
 
@@ -95,7 +94,7 @@ public class MaybeT<M extends Witness,A> implements Monad<Hkt<MaybeT.μ,M>,A>, H
     return runMaybeT;
   }
 
-  public static <M extends Witness, A> MaybeT<M, A> monad(Monad<Hkt<MaybeT.μ, M>, A> wider) {
+  public static <M, A> MaybeT<M, A> monad(Monad<Hkt<MaybeT.μ, M>, A> wider) {
     return (MaybeT<M, A>) wider;
   }
 }

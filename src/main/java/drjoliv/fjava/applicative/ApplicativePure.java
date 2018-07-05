@@ -1,12 +1,11 @@
 package drjoliv.fjava.applicative;
 
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * A strategy for lifting values into an applicative context.
  * @author Desonte 'drjoilv' Jolivet : drjoliv@gmail.com
  */
-public interface ApplicativePure<M extends Witness> {
+public interface ApplicativePure<M> {
 
   /**
    * Returns an applicative containing the argument.

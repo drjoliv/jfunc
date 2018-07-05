@@ -7,20 +7,19 @@ import drjoliv.fjava.functions.F2;
 import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.functions.F4;
 import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * A computation that can be chain with other computations.
  * Each monad determins how computaions are chained allowing for unique sidee effects for different monads when chaining computaitons.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Monad<M extends Witness,A> extends Applicative<M,A> {
+public interface Monad<M, A> extends Applicative<M, A> {
 
   @Override
-  public <B> Monad<M,B> map(F1<? super A, ? extends B> fn);
+  public <B> Monad<M, B> map(F1<? super A, ? extends B> fn);
 
   @Override
-  public <B> Monad<M,B> apply(Applicative<M,? extends F1<? super A, ? extends B>> f);
+  public <B> Monad<M, B> apply(Applicative<M,? extends F1<? super A, ? extends B>> f);
 
   /**
    * Chains together this computation with a function that produces computations of this type.
@@ -56,7 +55,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param monad a monad containing a monad.
    * @return a flattened monad.
    */
-  public static <M extends Witness, A> Monad<M,A> join(Monad<M,? extends Monad<M,A>> monad) {
+  public static <M, A> Monad<M,A> join(Monad<M,? extends Monad<M,A>> monad) {
     return monad.bind(m -> m);
   }
 
@@ -64,7 +63,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * First class function of bind.
    * @return a first class version of bind.
    */
-  public static <M extends Witness, A, B> F2<Monad<M,A>, F1<? super A,? extends Monad<M,B>>, Monad<M,B>> bind() {
+  public static <M, A, B> F2<Monad<M,A>, F1<? super A,? extends Monad<M,B>>, Monad<M,B>> bind() {
     return (m,f) -> m.bind(f);
   }
 
@@ -72,7 +71,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * A first class function of join. 
    * @return a first class function of join.
    */
-  public static <M extends Witness, A> F1<Monad<M,? extends Monad<M,A>>, Monad<M,A>> join() {
+  public static <M, A> F1<Monad<M,? extends Monad<M,A>>, Monad<M,A>> join() {
     return Monad::join;
   }
 
@@ -82,7 +81,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn a function that produces a monad computation.
    * @return a monad.
    */
-  public static <M extends Witness,A,B> Monad<M,B> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn) {
+  public static <M, A, B> Monad<M,B> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn) {
     return monad.bind(fn);
   } 
 
@@ -94,7 +93,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn2 a function of arity two that producues a monad computation.
    * @return a monad.
    */
-    public static <M extends Witness,A,B,C> Monad<M,C> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
+    public static <M, A, B, C> Monad<M,C> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
         F2<? super A, ? super B, ? extends Monad<M,C>> fn2) {
     return monad.bind(a -> {
       Monad<M,B> mb = fn.call(a);
@@ -113,7 +112,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn3 a function of arity three that produces a monad computation
    * @return a monad.
    */
-    public static <M extends Witness,A,B,C,D> Monad<M,D> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
+    public static <M, A, B, C, D> Monad<M,D> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
         F2<? super A,? super  B, ? extends Monad<M,C>> fn2, F3<? super A,? super B,? super C, ? extends Monad<M,D>> fn3) {
     return monad.bind(a -> {
       Monad<M,B> mb = fn.call(a);
@@ -136,7 +135,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn4 a function of arity four that produces a monad computation.
    * @return a monad.
    */
-    public static <M extends Witness,A,B,C,D,E> Monad<M,E> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
+    public static <M, A, B, C, D, E> Monad<M,E> For(Monad<M,A> monad, F1<? super A,  ? extends Monad<M,B>> fn,
         F2<? super A,? super  B, ? extends Monad<M,C>> fn2, F3<? super A,? super B,? super C, ? extends Monad<M,D>> fn3,
         F4<? super A,? super B,? super C,? super D, ? extends Monad<M,E>> fn4) {
     return monad.bind(a -> {
@@ -161,7 +160,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn the function to be promoted to a monad.
    * @return a monad created by apply the arguments({@code m, m1}) to the promoted function {@code fn}.
    */
-  public static <M extends Witness,A,B,C> Monad<M,C> liftM2(Monad<M,A> m, Monad<M,B> m1, F2<? super A,? super B,C> fn) {
+  public static <M, A, B, C> Monad<M,C> liftM2(Monad<M,A> m, Monad<M,B> m1, F2<? super A,? super B,C> fn) {
     return Monad.For( m
                     , a    -> m1
                     ,(a,b) -> m.yield().unit((fn.apply(a,b))));
@@ -175,7 +174,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn the function to be promoted to a monad.
    * @return a monad created by apply the arguments({@code m, m1, m2}) to the promoted function {@code fn}.
    */
-  public static <M extends Witness,A,B,C,D> Monad<M,D> liftM3(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2,
+  public static <M, A, B, C, D> Monad<M,D> liftM3(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2,
       F3<? super A,? super B, ? super C, D> fn) {
     return Monad.For( m
                     , a      -> m1
@@ -192,7 +191,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param fn the function to be promoted to a monad.
    * @return a monad created by apply the arguments({@code m, m1, m2, m3}) to the promoted function {@code fn}.
    */
-  public static <M extends Witness,A,B,C,D,E> Monad<M,E> liftM4(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2, Monad<M,D> m3,
+  public static <M, A, B, C, D, E> Monad<M,E> liftM4(Monad<M,A> m, Monad<M,B> m1, Monad<M,C> m2, Monad<M,D> m3,
       F4<? super A,? super B, ? super C, ? super D,E> fn) {
     return Monad.For( m
                     , a        -> m1
@@ -206,7 +205,7 @@ public interface Monad<M extends Witness,A> extends Applicative<M,A> {
    * @param ma a monad.
    * @return a monad whose action will repeat forever.
    */
-  public static <M extends Witness, A> Monad<M,A> forever(Monad<M,A> ma) {
+  public static <M, A> Monad<M,A> forever(Monad<M,A> ma) {
     F2<Monad<M,A>, A, Monad<M,A>> f = Forever.<M,A,A>forever();
     return ma.bind(f.call(ma));
   }

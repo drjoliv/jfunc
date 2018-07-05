@@ -1,14 +1,7 @@
 package drjoliv.fjava.functions;
 
+import static drjoliv.fjava.adt.Dequeue.dequeue;
 import static drjoliv.fjava.functions.F1Composed.isComposedFunc;
-
-import java.util.function.Function;
-
-import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Hkt;
-import drjoliv.fjava.hkt.Witness;
-import drjoliv.fjava.adt.Dequeue;
-import static drjoliv.fjava.adt.Dequeue.*;
 
 /**
  * A function from {@code A} to {@code B}.

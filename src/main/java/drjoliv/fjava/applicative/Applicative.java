@@ -6,13 +6,12 @@ import drjoliv.fjava.functions.F3;
 import drjoliv.fjava.functions.F4;
 import drjoliv.fjava.functions.F5;
 import drjoliv.fjava.functor.Functor;
-import drjoliv.fjava.hkt.Witness;
 
 /**
  * An applicative lies between a functor and monad, by using an applicative you are able to map a function that's inside a functor over another functor.
  * @author Desont 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface Applicative<M extends Witness, A> extends Functor<M,A> {
+public interface Applicative<M, A> extends Functor<M,A> {
 
   /**
    * Returns a strategy for creating an applicative of this type.
