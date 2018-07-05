@@ -80,8 +80,8 @@ public interface F4<A,B,C,D,E> {
    * @param a a argument to be applied.
    * @return a partially applied function of arity 3.
    */
-  public static <A,B,C,D,E> F3<B,C,D,E> partial(F4<A,B,C,D,E> fn4, A a) {
-    return (b,c,d) -> fn4.call(a,b,c,d);
+  public static <A,B,C,D,E> F3<B,C,D,E> partial(F4<A,B,C,D,E> fn, A a) {
+    return (b,c,d) -> fn.call(a,b,c,d);
   }
 }
 

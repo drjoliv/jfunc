@@ -54,7 +54,7 @@ public interface F5<A,B,C,D,E,F> {
 
   /**
    * Paritally applies an argument, returning a function that takes four arguments.
-   * @param an argument.
+   * @param a an argument.
    * @return a function that takes four arguments.
    */
   public default F4<B,C,D,E,F> call(A a) {

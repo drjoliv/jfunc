@@ -78,7 +78,7 @@ public interface F6<A,B,C,D,E,F,G> {
 
   /**
    * Paritally applies an argument, returning a function that takes five arguments.
-   * @param an argument.
+   * @param a an argument.
    * @return a function that takes five arguments.
    */
   public default F5<B,C,D,E,F,G> call(A a) {
@@ -107,7 +107,7 @@ public interface F6<A,B,C,D,E,F,G> {
    * @param a a argument to be applied.
    * @return a partially applied function of arity 5.
    */
-  public static <A,B,C,D,E,F,G> F5<B,C,D,E,F,G> partial(F6<A,B,C,D,E,F,G> fn6, A a) {
-    return (b,c,d,e,f) -> fn6.call(a,b,c,d,e,f);
+  public static <A,B,C,D,E,F,G> F5<B,C,D,E,F,G> partial(F6<A,B,C,D,E,F,G> fn, A a) {
+    return (b,c,d,e,f) -> fn.call(a,b,c,d,e,f);
   }
 }

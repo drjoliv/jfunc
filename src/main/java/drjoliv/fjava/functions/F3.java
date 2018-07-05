@@ -70,8 +70,8 @@ public interface F3<A,B,C,D> {
    * @param a a argument to be applied.
    * @return a partially applied function.
    */
-  public static <A,B,C,D> F2<B,C,D> partial(F3<A,B,C,D> fn3, A a) {
-    return (b,c) -> fn3.call(a,b,c);
+  public static <A,B,C,D> F2<B,C,D> partial(F3<A,B,C,D> fn, A a) {
+    return (b,c) -> fn.call(a,b,c);
   }
 
 }
