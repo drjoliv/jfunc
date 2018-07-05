@@ -102,7 +102,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     final Trampoline<Either<Exception,A>> ma = trampoline;
     final Trampoline<Either<Exception,A>> mb = t.trampoline;
     Monad<Trampoline.μ,Either<Exception,A>> ret = For(ma
-            , a  -> mb
+            , a    -> mb
             ,(a,b) -> a.match(ex -> b.match(ll -> ma, rr -> mb)
                             , r  -> ma));
 
@@ -118,10 +118,14 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
    */
   public <E extends Exception> Try<A> recoverWith(Class<E> cls, F1<E, Try<A>> fn) {
     final Trampoline<Either<Exception,A>> ret = 
-      trampoline.bind(e -> e.match(l -> l.getClass().equals(cls)
-                                        ? trampoline
-                                        : fn.call((E)l.value()).trampoline
-                                 , r -> trampoline));
+      trampoline.bind(e -> e.match(l -> {
+        Class<?> c  = l.value().getClass();
+        boolean bool = c.equals(cls);
+        return (bool || cls.isInstance(l.value()))
+        ? fn.call((E)l.value()).trampoline
+        : done(l);
+      }
+      , r -> done(r)));
     return new Try<>(Trampoline.monad(ret));
   }
 
