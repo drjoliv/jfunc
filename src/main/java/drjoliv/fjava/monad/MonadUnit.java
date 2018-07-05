@@ -1,12 +1,10 @@
 package drjoliv.fjava.monad;
 
-import drjoliv.fjava.hkt.Witness;
-
 /**
  * A strategy for creating a monad.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public interface MonadUnit<M extends Witness> {
+public interface MonadUnit<M> {
 
   /**
    * Returns a monad containing the agiven argument.

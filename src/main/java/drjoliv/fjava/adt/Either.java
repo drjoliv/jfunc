@@ -13,7 +13,6 @@ import drjoliv.fjava.functions.F0;
 import drjoliv.fjava.functions.F1;
 import drjoliv.fjava.hkt.Hkt;
 import drjoliv.fjava.hkt.Hkt2;
-import drjoliv.fjava.hkt.Witness;
 import drjoliv.fjava.monad.Monad;
 import drjoliv.fjava.monad.MonadUnit;
 
@@ -26,7 +25,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
   /**
   * The witness type of {@code Either}.
   */
-  public static class μ implements drjoliv.fjava.hkt.Witness{private μ(){}}
+  public static class μ {private μ(){}}
 
   /**
    * Applies the functions {@code fn1} and {@code fn2} to the contents of this either,
@@ -231,7 +230,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
     /**
      * The witness type of {@code RightProjection}.
      */
-    public static class μ implements drjoliv.fjava.hkt.Witness {}
+    public static class μ {}
 
     private final Eval<Either<L,R>> e;
 
@@ -321,7 +320,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
     /**
      * The witness type of {@code LeftProjection}.
      */
-    public static class μ implements drjoliv.fjava.hkt.Witness {private μ(){}}
+    public static class μ {private μ(){}}
 
     private final Eval<Either<L,R>> e;
 
