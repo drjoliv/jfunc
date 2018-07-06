@@ -2,7 +2,7 @@ language : java
 
 jdk :
   - oraclejdk8
-  - openjdk9
+  - openjdk8
 
 # code coverage plugin
 script : "mvn cobertura:cobertura"
