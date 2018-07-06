@@ -5,7 +5,7 @@ jdk :
   - openjdk8
 
 # code coverage plugin
-script : "mvn clean site"
+script : "mvn site"
 # - "mvn clean cobertura:cobertura"
 
 deploy:
