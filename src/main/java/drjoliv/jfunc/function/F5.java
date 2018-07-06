@@ -80,7 +80,7 @@ public interface F5<A,B,C,D,E,F> {
    * @param a a argument to be applied.
    * @return a partially applied function of arity 4.
    */
-  public static <A,B,C,D,E,F> F4<B,C,D,E,F> partial(F5<A,B,C,D,E,F> fn4, A a) {
-    return (b,c,d,e) -> fn4.call(a,b,c,d,e);
+  public static <A,B,C,D,E,F> F4<B,C,D,E,F> partial(F5<A,B,C,D,E,F> fn, A a) {
+    return (b,c,d,e) -> fn.call(a,b,c,d,e);
   }
 }

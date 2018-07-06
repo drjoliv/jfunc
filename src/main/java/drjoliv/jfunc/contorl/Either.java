@@ -117,7 +117,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
 
   /**
   * Creates an either that is of type right.
-  * @param l the value to store wihin a right.
+  * @param r the value to store wihin a right.
   * @param <L> the type of the left value.
   * @param <R> the type of the right value.
   * @return an either of type right.
@@ -129,7 +129,7 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
 
   /**
   * Creates an either that is of type right.
-  * @param l the value to store wihin a right.
+  * @param r the value to store wihin a right.
   * @param <L> the type of the left value.
   * @param <R> the type of the right value.
   * @return an either of type right.

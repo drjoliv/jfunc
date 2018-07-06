@@ -52,7 +52,7 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A>, 
   }
 
   /**
-   * Pattern match against this maybe, returning the reuslt of function {@code none} if this is a none or the result of function {@code some) if this is a some.
+   * Pattern match against this maybe, returning the reuslt of function {@code none} if this is a none or the result of function {@code some} if this is a some.
    * @param none a function.
    * @param some a function.
    * @return the result of either one the argument functions.
