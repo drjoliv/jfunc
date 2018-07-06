@@ -4,5 +4,9 @@ jdk :
   - oraclejdk8
   - openjdk9
 
+# code coverage plugin
+script : "mvn cobertura:cobertura"
+
+# push code coverage result to codecov
 after_success:
   - bash <(curl -s https://codecov.io/bash)
