@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 
 import drjoliv.jfunc.applicative.Applicative;
 import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.collection.FList.μ;
 import drjoliv.jfunc.contorl.Case2;
 import drjoliv.jfunc.contorl.Eval;
 import drjoliv.jfunc.contorl.Maybe;
@@ -23,6 +24,7 @@ import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
+import drjoliv.jfunc.function.F4;
 import drjoliv.jfunc.hkt.Hkt;
 import drjoliv.jfunc.hlist.T2;
 import drjoliv.jfunc.monad.Monad;
@@ -85,6 +87,27 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
               return ret.unit(l);
             });
     }
+  }
+
+  @Override
+  public <B, C> FList<C> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2) {
+    return asFList(Monad.super.For(fn, fn2));
+  }
+
+  @Override
+  public <B, C, D> FList<D> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<μ, D>> fn3) {
+    return asFList(Monad.super.For(fn, fn2, fn3));
+  }
+
+  @Override
+  public <B, C, D, E> FList<E> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<μ, D>> fn3,
+      F4<? super A, ? super B, ? super C, ? super D, ? extends Monad<μ, E>> fn4) {
+    return asFList(Monad.super.For(fn, fn2, fn3, fn4));
   }
 
   /**
@@ -986,4 +1009,5 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
         return more(() -> reverse_prime(l.tail(), acc.cons(l.head())));
       }
     }
+
 }

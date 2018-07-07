@@ -49,7 +49,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     Trampoline<Either<Exception ,F1<? super A, ? extends B>>> tramp
       = ((Try<F1<? super A, ? extends B>>)f).trampoline;
     Monad<Trampoline.μ,Either<Exception,B>> ret = 
-    For(tramp
+    Monad.For(tramp
       , ef     -> trampoline
       ,(ef,e) -> ef.match(l -> done(left(l.value()))
                         , r -> done(e.bimap(F1.identity(),r.value()))));
@@ -96,7 +96,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
   public Try<A> recoverWith(Try<A> t) {
     final Trampoline<Either<Exception,A>> ma = trampoline;
     final Trampoline<Either<Exception,A>> mb = t.trampoline;
-    Monad<Trampoline.μ,Either<Exception,A>> ret = For(ma
+    Monad<Trampoline.μ,Either<Exception,A>> ret = Monad.For(ma
             , a    -> mb
             ,(a,b) -> a.match(ex -> b.match(ll -> ma, rr -> mb)
                             , r  -> ma));
@@ -257,7 +257,7 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     @Override
     public <B> TryT<M,B> bind(F1<? super A, ? extends Monad<Hkt<μ, M>, B>> fn) {
       Eval<Monad<M,Try<B>>> eval_mb = runTryT.map(ma -> {
-        return For(ma
+        return Monad.For(ma
           ,ta -> ta.run().match(l -> mUnit.unit(failure(l.value()))
                                ,r -> monad(fn.call(r.value())).runTryT()));
       });

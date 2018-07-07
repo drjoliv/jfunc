@@ -85,6 +85,42 @@ public interface Monad<M, A> extends Applicative<M, A> {
     return monad.bind(fn);
   } 
 
+  /**
+   * Sequences bind operation starting with this monad.
+   * @param fn a function that produces a monad computation.
+   * @param fn2 a function of arity two that producues a monad computation.
+   * @return a monad.
+   */
+  public default <B, C> Monad<M,C> For(F1<? super A,  ? extends Monad<M,B>> fn,
+      F2<? super A, ? super B, ? extends Monad<M,C>> fn2) {
+    return Monad.For(this, fn, fn2);
+  } 
+
+  /**
+  * Sequences bind operation starting with this monad.
+  * @param fn a function that produces a monad computation.
+  * @param fn2 a function of arity two that producues a monad computation.
+  * @param fn3 a function of arity three that produces a monad computation
+  * @return a monad.
+  */
+  public default <B, C, D> Monad<M,D> For(F1<? super A,  ? extends Monad<M,B>> fn,
+        F2<? super A,? super  B, ? extends Monad<M,C>> fn2, F3<? super A,? super B,? super C, ? extends Monad<M,D>> fn3) {
+    return Monad.For(this, fn, fn2, fn3);
+  }
+
+ /**
+  * Sequences bind operation starting with this monad.
+  * @param fn a function that produces a monad computation.
+  * @param fn2 a function of arity two that producues a monad computation.
+  * @param fn3 a function of arity three that produces a monad computation
+  * @param fn4 a function of arity four that produces a monad computation
+  * @return a monad.
+  */
+  public default <B, C, D, E> Monad<M,E> For(F1<? super A,  ? extends Monad<M,B>> fn,
+        F2<? super A,? super  B, ? extends Monad<M,C>> fn2, F3<? super A,? super B,? super C, ? extends Monad<M,D>> fn3,
+        F4<? super A,? super B,? super C,? super D, ? extends Monad<M,E>> fn4) {
+    return Monad.For(this, fn, fn2, fn3, fn4);
+  }
 
   /**
    * Sequences bind operation, each function captures the value of previous compuations.

@@ -5,7 +5,17 @@ jdk :
   - openjdk8
 
 # code coverage plugin
-script : "mvn cobertura:cobertura"
+script :
+  - "mvn cobertura:cobertura"
+  - "mvn javadoc:javadoc"
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  local-dir: ./target/site/apidocs
+  on:
+    branch: master
 
 # push code coverage result to codecov
 after_success:

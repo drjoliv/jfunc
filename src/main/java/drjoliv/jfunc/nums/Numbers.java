@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.Comparator;
 
 import drjoliv.jfunc.collection.FList;
+import drjoliv.jfunc.function.F1;
 
 public class Numbers {
 
@@ -62,6 +63,10 @@ public class Numbers {
     return flist(i, () -> start(i + 1));
   }
 
+  public static FList<Integer> start(Integer i) {
+    return flist(i, () -> start(i + 1));
+  }
+
   public static boolean even(long i) {
     return i % 2 == 0;
   }
@@ -69,6 +74,93 @@ public class Numbers {
   public static boolean odd(long i) {
     return !even(i);
   }
+
+  public static F1<Long,Long> increment(Long l) {
+    return ll -> ll + l;
+  }
+
+  public static F1<Integer,Integer> increment(Integer i) {
+    return ii -> ii + i;
+  }
+
+  public static F1<Long,Long> decrement(Long l) {
+    return ll -> ll - l;
+  }
+
+  public static F1<Integer,Integer> decrement(Integer i) {
+    return ii -> ii - i;
+  }
+
+  public static F1<Long,Long> multiply(Long l) {
+    return ll -> ll * l;
+  }
+
+  public static F1<Integer,Integer> multiply(Integer i) {
+    return ii -> ii * i;
+  }
+
+  public static FList<Long>range(Long from, Long to, F1<Long,Long> fn ) {
+    if(from == to)
+      return flist(from);
+    else if(from > to)
+      return dec(from, to, fn);
+    else
+      return inc(from, to, fn);
+  }
+
+  public static FList<Integer>range(Integer from, Integer to, F1<Integer,Integer> fn ) {
+    if(from == to)
+      return flist(from);
+    else if(from > to)
+      return dec(from, to, fn);
+    else
+      return inc(from, to, fn);
+  }
+
+  public static FList<Integer> naturals() {
+    return start(1);
+  }
+
+  public static FList<Integer> triangles() {
+      return triangle_prime(1,2,1);
+  }
+
+  private static FList<Integer> triangle_prime(int n, int next, int sum) {
+    return flist(n, () -> triangle_prime(next + sum, next + 1, next + sum));
+  }
+
+
+  private static FList<Long> inc(Long from, Long to, F1<Long,Long> fn) {
+    if(from > to)
+      return FList.empty();
+    else
+      return flist(from, () -> inc(fn.call(from), to, fn));
+  }
+
+  private static FList<Long> dec(Long from, Long to, F1<Long,Long> fn) {
+    if(from < to)
+      return FList.empty();
+    else
+      return flist(from, () -> dec(fn.call(from), to, fn));
+  }
+
+  private static FList<Integer> inc(Integer from, Integer to, F1<Integer,Integer> fn) {
+    if(from > to)
+      return FList.empty();
+    else
+      return flist(from, () -> inc(fn.call(from), to, fn));
+  }
+
+  private static FList<Integer> dec(Integer from, Integer to, F1<Integer,Integer> fn) {
+    if(from < to)
+      return FList.empty();
+    else
+      return flist(from, () -> dec(fn.call(from), to, fn));
+  }
+
+
+
+
 
   public static FList<Integer> range(Integer from, Integer to) {
     if(from > to)
