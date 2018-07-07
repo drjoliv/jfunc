@@ -953,8 +953,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
      * @return A infinite FList.
      */
     public static <A> FList<A> sequence(A seed, F1<A,A> generator) {
-       Objects.requireNonNull(seed);
-        Objects.requireNonNull(generator);
      return flist(seed , () -> sequence(generator.call(seed), generator));
     }
 
@@ -1009,5 +1007,4 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
         return more(() -> reverse_prime(l.tail(), acc.cons(l.head())));
       }
     }
-
 }
