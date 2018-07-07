@@ -39,4 +39,4 @@ Coming Soon
 
 
 ## Author
-* ![Desonte 'drjoliv' Jolivet](https://drjoliv.github.io)
+* [Desonte 'drjoliv' Jolivet](https://drjoliv.github.io)
