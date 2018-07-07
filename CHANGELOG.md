@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+##  Added
+* `Monad#For` instance method
+* `Numbers#range` static method
 
 ## 0.1 - 2018-07-05
 
