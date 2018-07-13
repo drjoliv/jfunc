@@ -1,12 +1,13 @@
-package drjoliv.jfunc.collection;
+package drjoliv.jfunc.data.stack;
 
-import static drjoliv.jfunc.collection.FList.flist;
 import static drjoliv.jfunc.contorl.Maybe.maybe;
+import static drjoliv.jfunc.data.list.FList.flist;
 import static drjoliv.jfunc.hlist.T2.t2;
 
 import java.util.Iterator;
 
 import drjoliv.jfunc.contorl.Maybe;
+import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.functor.Functor;
 import drjoliv.jfunc.hkt.Hkt;

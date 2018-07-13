@@ -1,6 +1,6 @@
 package drjoliv.jfunc.function;
 
-import static drjoliv.jfunc.collection.Dequeue.dequeue;
+import static drjoliv.jfunc.data.deque.Deque.dequeue;
 import static drjoliv.jfunc.function.F1Composed.isComposedFunc;
 
 /**

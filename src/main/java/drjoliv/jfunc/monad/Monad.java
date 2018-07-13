@@ -1,12 +1,10 @@
 package drjoliv.jfunc.monad;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.collection.FList;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
 import drjoliv.jfunc.function.F4;
-import drjoliv.jfunc.functor.Functor;
 
 /**
  * A computation that can be chain with other computations.
