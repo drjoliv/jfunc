@@ -88,6 +88,15 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
     return trampoline.result();
   }
 
+  public A get() throws Exception {
+    Either<Exception, A> e = run();
+    Maybe<A> ma = e.valueR();
+    if(ma.isSome())
+      return ma.toNull();
+    else
+      throw e.valueL().toNull();
+  }
+
   /**
    * Recovers with the given try if this try is a failure.
    * @param t a try to recover with if this try is a failure.
