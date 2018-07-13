@@ -19,7 +19,7 @@ public interface Traversable<M, A> extends Foldable<M,A> {
    * @param pure a strategy for creating applicatives.
    * @return an applicative cotaining a traversable.
    */
-  public  <N, F, B> Applicative<N,? extends Traversable<M,B>> traverse(F1<A, ? extends Applicative<N,B>> fn, ApplicativePure<N> pure);
+  public  <N, F, B> Applicative<N,? extends Traversable<M,B>> mapA(F1<A, ? extends Applicative<N,B>> fn, ApplicativePure<N> pure);
 
   /**
    * Maps each element of this traverable to a monad, the monads are then evaluated from left to rigt to collect the result.
@@ -29,7 +29,7 @@ public interface Traversable<M, A> extends Foldable<M,A> {
    * @return a monad containing a monad.
    */
   public default <N,B> Monad<N,? extends Traversable<M,B>> mapM(F1<A, ? extends Monad<N,B>> fn, MonadUnit<N> ret) {
-    return (Monad<N,Traversable<M,B>>)traverse(fn, new ApplicativePure<N>(){
+    return (Monad<N,Traversable<M,B>>)mapA(fn, new ApplicativePure<N>(){
       @Override
       public <W> Applicative<N, W> pure(W a) {
         return ret.unit(a);
@@ -44,7 +44,7 @@ public interface Traversable<M, A> extends Foldable<M,A> {
    * @return an applicative cotaining a traversable.
    */
   public static <N, M, A, B> Applicative<N, Traversable<M,B>> sequenceA(Traversable<M, ? extends Applicative<N,B>> tma, ApplicativePure<N> pure) {
-    return (Applicative<N, Traversable<M,B>>)tma.traverse(F1.identity(), pure); 
+    return (Applicative<N, Traversable<M,B>>)tma.mapA(F1.identity(), pure); 
   }
 
   /**
