@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 * `Numbers#range` static method
 * `Try#get`, obtains valule within try.
 * `P1`, predicate of arity one.
-* `... data.list.Functions` for first class functions for lists.
+* `... data.list.Functions` first class functions for FLists.
 
 ### Chnaged
 * **Breaking Change**: Reorganized package structure.
