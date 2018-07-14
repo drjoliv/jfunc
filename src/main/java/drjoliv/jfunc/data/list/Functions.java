@@ -83,6 +83,10 @@ public final class Functions {
     return l -> p.test(l.head());
   }
 
+  public static <A,B> F1<FList<A>,FList<B>> map(F1<? super A, ? extends B> fn) {
+    return l -> l.map(fn);
+  }
+
     /**
      * Takes elements from <code> list </code> while the predicate <code> p </code> is true.
      *
