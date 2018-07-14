@@ -4,7 +4,7 @@ import static drjoliv.jfunc.contorl.Eval.later;
 
 import drjoliv.jfunc.applicative.Applicative;
 import drjoliv.jfunc.applicative.ApplicativePure;
-import drjoliv.jfunc.collection.Unit;
+import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;

@@ -1,6 +1,6 @@
 package drjoliv.jfunc.function;
 
-import drjoliv.jfunc.collection.Dequeue;
+import drjoliv.jfunc.data.deque.Deque;
 
 class F1Composed<A,B> implements F1<A,B> {
 
@@ -15,9 +15,9 @@ class F1Composed<A,B> implements F1<A,B> {
     }
 
     @SuppressWarnings("rawtypes")
-    private final Dequeue<F1> dequeue;
+    private final Deque<F1> dequeue;
 
-    F1Composed(@SuppressWarnings("rawtypes") Dequeue<F1> dequeue) {
+    F1Composed(@SuppressWarnings("rawtypes") Deque<F1> dequeue) {
       this.dequeue = dequeue;
     }
 

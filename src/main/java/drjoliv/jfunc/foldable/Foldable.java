@@ -4,9 +4,9 @@ import static drjoliv.jfunc.contorl.Eval.*;
 
 import java.util.Comparator;
 
-import drjoliv.jfunc.collection.FList;
 import drjoliv.jfunc.contorl.Eval;
 import drjoliv.jfunc.contorl.Maybe;
+import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
 import drjoliv.jfunc.functor.Functor;
@@ -43,12 +43,22 @@ public interface Foldable<M, A> extends Functor<M, A>{
     return later(() -> foldr(fn,b));
   }
 
+  public class EmptyFoldableException extends RuntimeException{}
+
+  public default A maximum(Comparator<A> comp) {
+    Maybe<A> ma = safeMaximum(comp);
+    if(ma.isSome())
+      return ma.toNull();
+    else
+      throw new EmptyFoldableException();
+  }
+
   /**
    * Retuns the largest value within this structure or nothing if it is empty.
    * @param comp a strategy for ordering the data within this structure.
    * @return the largest value within this structure or nothing if it is empty.
    */
-  public default Maybe<A> maximum(Comparator<A> comp) {
+  public default Maybe<A> safeMaximum(Comparator<A> comp) {
     F3<Comparator<A>,A,A,A> m = Numbers::max;
     F2<A,A,A> max = m.call(comp);
     F2<Maybe<A>, A, Maybe<A>> go = (ma, a) -> {
@@ -60,12 +70,20 @@ public interface Foldable<M, A> extends Functor<M, A>{
     return foldr(go, Maybe.nothing());
   }
 
+  public default A minimum(Comparator<A> comp) {
+    Maybe<A> ma = safeMinimum(comp);
+    if(ma.isSome())
+      return ma.toNull();
+    else
+      throw new EmptyFoldableException();
+  }
+
   /**
    * Retuns the smallest value within this structure or nothing if it is empty.
    * @param comp a strategy for ordering the data within this structure.
    * @return the smallest value within this structure or nothing if it is empty.
    */
-  public default Maybe<A> minimum(Comparator<A> comp) {
+  public default Maybe<A> safeMinimum(Comparator<A> comp) {
     F3<Comparator<A>,A,A,A> m = Numbers::min;
     F2<A,A,A> min = m.call(comp);
     F2<Maybe<A>, A, Maybe<A>> go = (ma, a) -> {

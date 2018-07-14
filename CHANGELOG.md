@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ##  Added
 * `Monad#For` instance method
 * `Numbers#range` static method
+* `Try#get`, obtains valule within try.
+* `P1`, predicate of arity one.
+* `... data.list.Functions` first class functions for FLists.
+
+### Chnaged
+* **Breaking Change**: Reorganized package structure.
+* **Breaking Change**: Changed `Traversable#traverse` -> `Traversable#mapA`.
 
 ## 0.1 - 2018-07-05
 
@@ -15,7 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 * `C1` a version of `java.util.Consumer`
 * `Either#visit` and `Either#consume`
 
-### Chnaged
+### Changed
 * **Breaking Change**: Removed `Witness` interface.
 * **Breaking Change**: Reorganized package structure.
 * **Breaking Change**: Function interfaces no longer instances of `Functor`.

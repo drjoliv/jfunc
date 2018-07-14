@@ -1,8 +1,9 @@
-package drjoliv.jfunc.collection;
+package drjoliv.jfunc.data.dlist;
 
-import static drjoliv.jfunc.collection.FList.flist;
+import static drjoliv.jfunc.data.list.FList.flist;
 import static drjoliv.jfunc.function.F1.compose;
 
+import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.functor.Functor;
 

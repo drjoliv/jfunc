@@ -1,4 +1,4 @@
-package drjoliv.jfunc.collection;
+package drjoliv.jfunc.data;
 
 /**
  * A type containing only one value witin it.

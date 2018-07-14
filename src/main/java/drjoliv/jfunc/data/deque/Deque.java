@@ -1,26 +1,27 @@
-package drjoliv.jfunc.collection;
+package drjoliv.jfunc.data.deque;
 
 import java.util.Iterator;
 
 import drjoliv.jfunc.contorl.Maybe;
+import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.hlist.T2;
 
-import static drjoliv.jfunc.collection.FList.*;
 import static drjoliv.jfunc.contorl.Maybe.*;
+import static drjoliv.jfunc.data.list.FList.*;
 import static drjoliv.jfunc.hlist.T2.*;
 
-public class Dequeue<A> implements Iterable<A> {
+public class Deque<A> implements Iterable<A> {
 
   private final FList<A> front;
   private final FList<A> rear;
 
-  Dequeue(FList<A> list) {
+  Deque(FList<A> list) {
     T2<FList<A>,FList<A>> t = list.split();
     this.front = t._1();
     this.rear  = t._2().reverse();
   }
 
-  Dequeue(FList<A> front, FList<A> rear) {
+  Deque(FList<A> front, FList<A> rear) {
     this.front = front;
     this.rear  = rear;
   }
@@ -53,30 +54,30 @@ public class Dequeue<A> implements Iterable<A> {
       : rear.take(i);
   }
 
-  public Dequeue<A> pushBack(A a) {
+  public Deque<A> pushBack(A a) {
     return front.isEmpty()
-      ? new Dequeue<A>(front.cons(a), rear)
-      : new Dequeue<A>(front, rear.cons(a));
+      ? new Deque<A>(front.cons(a), rear)
+      : new Deque<A>(front, rear.cons(a));
   }
 
-  public Dequeue<A> pushFront(A a) {
-    return new Dequeue<A>(front.cons(a), rear);
+  public Deque<A> pushFront(A a) {
+    return new Deque<A>(front.cons(a), rear);
   }
 
-  public Maybe<T2<A, Dequeue<A>>> popFront() {
+  public Maybe<T2<A, Deque<A>>> popFront() {
     return isEmpty()
       ? nothing()
-      : maybe(t2(front.head(),new Dequeue<>(front.tail(),rear)));
+      : maybe(t2(front.head(),new Deque<>(front.tail(),rear)));
   }
 
-  public Maybe<T2<A, Dequeue<A>>> popBack() {
+  public Maybe<T2<A, Deque<A>>> popBack() {
     return isEmpty() 
       ? nothing()
-      : maybe(t2(rear.head(), new Dequeue<>(front,rear.tail())));
+      : maybe(t2(rear.head(), new Deque<>(front,rear.tail())));
   }
 
-  static <A> Dequeue<A> empty() {
-    return new Dequeue<>(FList.empty(), FList.empty());
+  static <A> Deque<A> empty() {
+    return new Deque<>(FList.empty(), FList.empty());
   }
 
   @Override
@@ -112,17 +113,17 @@ public class Dequeue<A> implements Iterable<A> {
    * @param args
    * @return
    */
-  public static <A> Dequeue<A> dequeue(A... args) {
+  public static <A> Deque<A> dequeue(A... args) {
     return dequeue(flist(args));
   }
 
-  public static <A> Dequeue<A> dequeue(FList<A> list) {
-    return new Dequeue<A>(list);
+  public static <A> Deque<A> dequeue(FList<A> list) {
+    return new Deque<A>(list);
   }
 
-  public Dequeue<A> concat(Dequeue<A> dequeue) {
+  public Deque<A> concat(Deque<A> dequeue) {
     FList<A> f = dequeue.takeFront(dequeue.size());
-    Dequeue<A> self = this;
+    Deque<A> self = this;
     for(A a : f) {
       self = self.pushBack(a);
     }
