@@ -1,13 +1,16 @@
-package drjoliv.jfunc.contorl;
+package drjoliv.jfunc.contorl.either;
 
-import static drjoliv.jfunc.contorl.Eval.later;
-import static drjoliv.jfunc.contorl.Eval.now;
+import static drjoliv.jfunc.contorl.eval.Eval.later;
+import static drjoliv.jfunc.contorl.eval.Eval.now;
 import static drjoliv.jfunc.monad.Monad.join;
 
 import java.util.function.Consumer;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
+import drjoliv.jfunc.contorl.Case2;
+import drjoliv.jfunc.contorl.eval.Eval;
+import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.function.C1;
 import drjoliv.jfunc.function.F0;
@@ -15,7 +18,7 @@ import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.hkt.Hkt;
 import drjoliv.jfunc.hkt.Hkt2;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 
 /**
  * Represents two posssible values either {@code Left<L,R>} or {@code Right<L,R>}.
@@ -240,8 +243,8 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
     }
 
     @Override
-    public ApplicativePure<Hkt<μ, L>> pure() {
-      return RightProjection::rightProjection;
+    public ApplicativeFactory<Hkt<μ, L>> pure() {
+      return RightProjectionMonadFactory.instance();
     }
 
     @Override
@@ -257,19 +260,19 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
 
     @Override
     public <B> RightProjection<L, B> bind(
-        F1<? super R, ? extends Monad<Hkt<drjoliv.jfunc.contorl.Either.RightProjection.μ, L>, B>> fn) {
+        F1<? super R, ? extends Monad<Hkt<drjoliv.jfunc.contorl.either.Either.RightProjection.μ, L>, B>> fn) {
       return monad(join(map(fn.then(RightProjection::monad))));
     }
 
     @Override
     public <B> RightProjection<L, B> semi(
-        Monad<Hkt<drjoliv.jfunc.contorl.Either.RightProjection.μ, L>, B> mb) {
+        Monad<Hkt<drjoliv.jfunc.contorl.either.Either.RightProjection.μ, L>, B> mb) {
       return bind(a -> mb);
     }
 
     @Override
-    public MonadUnit<Hkt<drjoliv.jfunc.contorl.Either.RightProjection.μ, L>> yield() {
-      return RightProjection::rightProjection;
+    public MonadFactory<Hkt<drjoliv.jfunc.contorl.either.Either.RightProjection.μ, L>> yield() {
+      return RightProjectionMonadFactory.instance();
     }
 
     /**
@@ -336,31 +339,31 @@ public abstract class Either<L,R> implements Hkt2<Either.μ,L,R>, Case2<Either<L
 
     @Override
     public <B> LeftProjection<B, R> apply(
-        Applicative<Hkt<drjoliv.jfunc.contorl.Either.LeftProjection.μ, R>, ? extends F1<? super L, ? extends B>> f) {
+        Applicative<Hkt<drjoliv.jfunc.contorl.either.Either.LeftProjection.μ, R>, ? extends F1<? super L, ? extends B>> f) {
       LeftProjection<F1<?  super L,  B>, R> mf = (LeftProjection<F1<?  super L,  B>, R>) f;
       return monad(Monad.liftM2(this, mf, (a,fn) -> fn.call(a)));
     }
 
     @Override
-    public ApplicativePure<Hkt<drjoliv.jfunc.contorl.Either.LeftProjection.μ, R>> pure() {
-      return LeftProjection::leftProjection;
+    public ApplicativeFactory<Hkt<drjoliv.jfunc.contorl.either.Either.LeftProjection.μ, R>> pure() {
+      return LeftProjectionMonadFactory.instance();
     }
 
     @Override
     public <B> LeftProjection<B, R> bind(
-        F1<? super L, ? extends Monad<Hkt<drjoliv.jfunc.contorl.Either.LeftProjection.μ, R>, B>> fn) {
+        F1<? super L, ? extends Monad<Hkt<drjoliv.jfunc.contorl.either.Either.LeftProjection.μ, R>, B>> fn) {
       return monad(join(map(fn.then(LeftProjection::monad))));
     }
 
     @Override
     public <B> LeftProjection<B, R> semi(
-        Monad<Hkt<drjoliv.jfunc.contorl.Either.LeftProjection.μ, R>, B> mb) {
+        Monad<Hkt<drjoliv.jfunc.contorl.either.Either.LeftProjection.μ, R>, B> mb) {
       return bind(a -> mb);
     }
 
     @Override
-    public MonadUnit<Hkt<drjoliv.jfunc.contorl.Either.LeftProjection.μ, R>> yield() {
-      return LeftProjection::leftProjection;
+    public MonadFactory<Hkt<drjoliv.jfunc.contorl.either.Either.LeftProjection.μ, R>> yield() {
+      return LeftProjectionMonadFactory.instance();
     }
 
     /**

@@ -1,9 +1,9 @@
 package drjoliv.jfunc.nums;
 
+import static drjoliv.jfunc.contorl.tramp.Trampoline.*;
 import static drjoliv.jfunc.data.list.FList.*;
 
-import drjoliv.jfunc.contorl.Trampoline;
-import static drjoliv.jfunc.contorl.Trampoline.*;
+import drjoliv.jfunc.contorl.tramp.Trampoline;
 import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;

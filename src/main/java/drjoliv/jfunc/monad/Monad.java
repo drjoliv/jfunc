@@ -5,6 +5,7 @@ import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
 import drjoliv.jfunc.function.F4;
+import drjoliv.jfunc.function.F5;
 
 /**
  * A computation that can be chain with other computations.
@@ -37,7 +38,7 @@ public interface Monad<M, A> extends Applicative<M, A> {
    * A strategy for creating a monad of this type.
    * @return a strategy for creating a monad of this type.
    */
-  public MonadUnit<M> yield();
+  public MonadFactory<M> yield();
 
   /**
    * Returns a monad of this type containing the given argument.
@@ -232,6 +233,26 @@ public interface Monad<M, A> extends Applicative<M, A> {
                     ,(a,b)     -> m2
                     ,(a,b,c)   -> m3
                     ,(a,b,c,d) -> m.yield().unit((fn.call(a,b,c,d))));
+  }
+
+  @Override
+  public default <B,C> Monad<M,F1<B,C>> map(F2<? super A, B, C> fn) {
+    return (Monad<M,F1<B,C>>)Applicative.super.map(fn);
+  }
+
+  @Override
+  public default <B,C,D> Monad<M, F1<B, F1<C,D>>>  map(F3<? super A, B, C, D> fn) {
+    return (Monad<M, F1<B, F1<C,D>>>)Applicative.super.map(fn);
+  }
+
+  @Override
+  public default <B,C,D,E> Monad<M,F1<B, F1<C, F1<D,E>>>>  map(F4<? super A, B, C, D, E> fn) {
+    return (Monad<M,F1<B, F1<C, F1<D,E>>>>)Applicative.super.map(fn);
+  }
+
+  @Override
+  public default <B,C,D,E,G> Monad<M,F1<B,F1<C,F1<D,F1<E,G>>>>>  map(F5<? super A, B, C, D, E, G> fn) {
+    return (Monad<M,F1<B,F1<C,F1<D,F1<E,G>>>>>)Applicative.super.map(fn);
   }
 
   /**

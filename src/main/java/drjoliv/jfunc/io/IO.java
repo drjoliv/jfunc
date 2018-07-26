@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 
-import drjoliv.jfunc.contorl.Either;
-import drjoliv.jfunc.contorl.Try;
+import drjoliv.jfunc.contorl.either.Either;
+import drjoliv.jfunc.contorl.trys.Try;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.function.F1;
 

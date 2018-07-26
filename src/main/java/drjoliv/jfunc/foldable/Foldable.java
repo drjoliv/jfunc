@@ -1,11 +1,11 @@
 package drjoliv.jfunc.foldable;
 
-import static drjoliv.jfunc.contorl.Eval.*;
+import static drjoliv.jfunc.contorl.eval.Eval.*;
 
 import java.util.Comparator;
 
-import drjoliv.jfunc.contorl.Eval;
-import drjoliv.jfunc.contorl.Maybe;
+import drjoliv.jfunc.contorl.eval.Eval;
+import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
