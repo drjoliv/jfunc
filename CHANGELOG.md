@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Chnaged
 * **Breaking Change**: Reorganized package structure.
 * **Breaking Change**: Changed `Traversable#traverse` -> `Traversable#mapA`.
+* Using AbstractFactory pattern to represent Applicative and Monad typelcasses
+* **Breaking Change**: Changed `MonadUnit` -> `MonadFactory`.
+* **Breaking Change**: Changed `ApplicativePure` -> `ApplicativeFactory`.
 
 ## 0.1 - 2018-07-05
 
