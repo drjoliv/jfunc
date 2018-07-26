@@ -1,8 +1,8 @@
 package drjoliv.jfunc.hlist;
 
-import static drjoliv.jfunc.contorl.Eval.*;
+import static drjoliv.jfunc.contorl.eval.Eval.*;
 
-import drjoliv.jfunc.contorl.Eval;
+import drjoliv.jfunc.contorl.eval.Eval;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F4;
 

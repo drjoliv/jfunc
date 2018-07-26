@@ -1,8 +1,8 @@
 package drjoliv.jfunc.hlist;
 
-import static drjoliv.jfunc.contorl.Eval.*;
+import static drjoliv.jfunc.contorl.eval.Eval.*;
 
-import drjoliv.jfunc.contorl.Eval;
+import drjoliv.jfunc.contorl.eval.Eval;
 import drjoliv.jfunc.function.F1;
 
 /**
@@ -83,5 +83,18 @@ public class T2<A,B> {
    */
   public B _2() {
     return _2.value();
+  }
+
+  public boolean equals( Object obj ) {
+     if(obj instanceof T2) {
+       T2<A,B> t = (T2<A,B>) obj;
+       return _1().equals(t._1()) && _2().equals(t._2());
+     }
+     else
+       return false;
+  }
+
+  public int hashCode() {
+    return _1().hashCode() + _2().hashCode();
   }
 }
