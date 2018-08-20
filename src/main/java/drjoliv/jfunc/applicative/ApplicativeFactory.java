@@ -5,7 +5,7 @@ package drjoliv.jfunc.applicative;
  * A strategy for lifting values into an applicative context.
  * @author Desonte 'drjoilv' Jolivet : drjoliv@gmail.com
  */
-public interface ApplicativePure<M> {
+public interface ApplicativeFactory<M> {
 
   /**
    * Returns an applicative containing the argument.

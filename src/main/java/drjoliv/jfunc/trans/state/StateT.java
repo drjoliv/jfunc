@@ -1,247 +1,161 @@
 package drjoliv.jfunc.trans.state;
 
-import static drjoliv.jfunc.hlist.T2.t2;
-
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
+import drjoliv.jfunc.function.F3;
+import drjoliv.jfunc.function.F4;
+import drjoliv.jfunc.function.F5;
 import drjoliv.jfunc.hkt.Hkt2;
 import drjoliv.jfunc.hlist.T2;
-import drjoliv.jfunc.monad.Identity;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 
 /**
  * The StateT monad.
  * @author Desonte 'drjoliv' Jolivet : drjoliv@gmail.com
  */
-public abstract class StateT<M,S,A> implements Monad<Hkt2<StateT.μ,M,S>,A> {
+public abstract class StateT<M,S,A> implements Monad<Hkt2<statet,M,S>,A> {
 
-  /**
-   * The Witness type of {@code StateT}.
-   */
-  public static class μ {private μ(){}}
+  private final MonadFactory<M> innerMonadFactory;
+  private final MonadFactory<Hkt2<statet,M,S>> factory;
 
-  private final F1<S, Monad<M, T2<S, A>>> runState;
-
-  private final MonadUnit<M> mUnit;
-
-  private StateT(final F1<S, Monad<M, T2<S, A>>> runState, final MonadUnit<M> mUnit) {
-    this.runState = runState;
-    this.mUnit = mUnit;
+  StateT(final MonadFactory<M> innerMonadFactory, MonadFactory<Hkt2<statet,M,S>> factory) {
+    this.innerMonadFactory = innerMonadFactory;
+    this.factory = factory;
   }
 
   @Override
   public abstract <B> StateT<M, S, B> map(final F1<? super A, ? extends B> fn);
 
   @Override
+  public <B, C> StateT<M, S, F1<B, C>> map(F2<? super A, B, C> fn) {
+    return (StateT<M, S, F1<B, C>>)Monad.super.map(fn);
+  }
+
+  @Override
+  public <B, C, D> StateT<M, S, F1<B, F1<C, D>>> map(F3<? super A, B, C, D> fn) {
+    return (StateT<M, S, F1<B, F1<C, D>>>)Monad.super.map(fn);
+  }
+
+  @Override
+  public <B, C, D, E> StateT<M, S, F1<B, F1<C, F1<D, E>>>> map(F4<? super A, B, C, D, E> fn) {
+    return (StateT<M, S, F1<B, F1<C, F1<D, E>>>>)Monad.super.map(fn);
+  }
+
+  @Override
+  public <B, C, D, E, G> StateT<M, S, F1<B, F1<C, F1<D, F1<E, G>>>>> map(
+      F5<? super A, B, C, D, E, G> fn) {
+    return (StateT<M, S, F1<B, F1<C, F1<D, F1<E, G>>>>>)Monad.super.map(fn);
+  }
+
+  @Override
   public abstract <B> StateT<M, S, B> apply(
-      Applicative<Hkt2<μ, M, S>, ? extends F1<? super A, ? extends B>> applicative);
+      Applicative<Hkt2<statet, M, S>, ? extends F1<? super A, ? extends B>> applicative);
 
   @Override
-  public ApplicativePure<Hkt2<μ, M, S>> pure() {
-    return new ApplicativePure<Hkt2<μ, M, S>>() {
-      @Override
-      public <B> Applicative<Hkt2<μ, M, S>, B> pure(B b) {
-        return new StateTImpl<>(s -> mUnit(t2(s, b)), mUnit());
-      }
-    };
+  public abstract <B> StateT<M,S,B> bind(final F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn);
+
+  @Override
+  public abstract <B> StateT<M,S,B> semi(final Monad<Hkt2<statet, M, S>, B> mb);
+
+  @Override
+  public <B, C> StateT<M, S, C> For(F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<Hkt2<statet, M, S>, C>> fn2) {
+    return (StateT<M, S, C>)Monad.super.For(fn, fn2);
   }
 
   @Override
-  public abstract <B> StateT<M,S,B> bind(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn);
-
-  @Override
-  public abstract <B> StateT<M,S,B> semi(final Monad<Hkt2<μ, M, S>, B> mb);
-
-  @Override
-  public MonadUnit<Hkt2<drjoliv.jfunc.trans.state.StateT.μ, M, S>> yield() {
-    return unit(mUnit());
+  public <B, C, D> StateT<M, S, D> For(F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<Hkt2<statet, M, S>, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<Hkt2<statet, M, S>, D>> fn3) {
+    return (StateT<M, S, D>)Monad.super.For(fn, fn2, fn3);
   }
 
-  /**
-  * @return the mUnit
-  */
-  public MonadUnit<M> mUnit() {
-    return mUnit;
+  @Override
+  public <B, C, D, E> StateT<M, S, E> For(F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<Hkt2<statet, M, S>, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<Hkt2<statet, M, S>, D>> fn3,
+      F4<? super A, ? super B, ? super C, ? super D, ? extends Monad<Hkt2<statet, M, S>, E>> fn4) {
+    return (StateT<M, S, E>)Monad.super.For(fn, fn2, fn3, fn4);
   }
 
-  /**
-   *
-   *
-   * @param s
-   * @return
-   */
-   public Monad<M,T2<S,A>> runState(S s) {
-    return runState.call(s);
-   }
+  @Override
+  public ApplicativeFactory<Hkt2<statet, M, S>> pure() {
+    return factory;
+  }
 
-  /**
-   *@return the runState
-   */
+  @Override
+  public MonadFactory<Hkt2<statet, M, S>> yield() {
+    return factory;
+  }
+
+  public abstract Monad<M,T2<S,A>> call(S s);
+
   public F1<S, Monad<M, T2<S, A>>> runState() {
-    return runState;
+    return this::call;
   }
 
-  <C> Monad<M,C> mUnit(C c) {
-    return mUnit().unit(c);
+  MonadFactory<M> getInnerMonadFactory() {
+    return innerMonadFactory;
   }
 
+  static class StateTImpl<M, S, A> extends StateT<M, S, A> {
 
-  private static class StateTImpl<M, S, A> extends StateT<M, S, A>{
+    private final F1<S,Monad<M,T2<S,A>>> runState;
 
-    private StateTImpl(final F1<S,Monad<M,T2<S,A>>> runState, final MonadUnit<M> mUnit){
-     super(runState, mUnit);
+    StateTImpl(final F1<S,Monad<M,T2<S,A>>> runState, final MonadFactory<M> innerMonadFactory, MonadFactory<Hkt2<statet,M,S>> factory){
+     super(innerMonadFactory, factory);
+     this.runState = runState;
     }
 
     @Override
     public <B> StateT<M,S,B> map(final F1<? super A, ? extends B> fn) {
        return new StateTImpl<M,S,B>(s -> {
-        return runState(s).map(p -> p.map2(fn));
-      },mUnit());
+        return call(s).map(p -> p.map2(fn));
+      }, getInnerMonadFactory(), yield());
     }
 
     @Override
-    public <B> StateT<M,S,B> apply(Applicative<Hkt2<μ, M, S>, ? extends F1<? super A, ? extends B>> applicative) {
+    public <B> StateT<M,S,B> apply(Applicative<Hkt2<statet, M, S>, ? extends F1<? super A, ? extends B>> applicative) {
       return new StateTImpl<>(s -> {
-       Monad<M,T2<S,A>> mv = runState(s);
+       Monad<M,T2<S,A>> mv = call(s);
        return mv.bind(t -> {
-          Monad<M,T2<S,F1<? super A, B>>> mf = ((StateT<M, S, F1<? super A, B>>)applicative).runState(s);
+          Monad<M,T2<S,F1<? super A, B>>> mf = ((StateT<M, S, F1<? super A, B>>)applicative).call(s);
           return mf.map( t2 -> t2.map2( fn -> fn.call(t._2()))); 
        });
-      }, mUnit());
+      }, getInnerMonadFactory(), yield());
     }
 
     @Override
-    public <B> StateT<M,S,B> bind(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn) {
+    public <B> StateT<M,S,B> bind(final F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn) {
       return new StateTImpl<M,S,B>(s -> {
-        return Monad.For(runState(s), t -> go(fn, t._2(), t._1()));
-      }, mUnit());
+        return Monad.For(call(s), t -> go(fn, t._2(), t._1()));
+      }, getInnerMonadFactory(), yield());
     }
 
-    private static <M,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
-      return monad(fn.call(a)).runState(s);
+    private static <M,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<statet, M, S>, B>> fn, A a, S s) {
+      return monad(fn.call(a)).call(s);
     }
 
     @Override
-    public <B> StateT<M,S,B> semi(final Monad<Hkt2<μ, M, S>, B> mb) {
+    public <B> StateT<M,S,B> semi(final Monad<Hkt2<statet, M, S>, B> mb) {
       return bind(a -> mb);
     }
-  }
-
-  public static final class State<S,A> extends StateT<Identity.μ,S,A> {
-    private State(final F1<S,Monad<Identity.μ,T2<S,A>>> runState) {
-      super(runState, Identity::id);
-    }
-
-    public A execute(final S s) {
-      return runState(s).value()._2();
-    }
-
-    public S executeState(final S s) {
-      return runState(s).value()._1();
-    }
 
     @Override
-    public <B> State<S,B> map(F1<? super A, ? extends B> fn) {
-      return new State<S,B>(runState()
-          .then(ma -> ma.map(t -> t.map2(fn)))
-        );
+    public Monad<M, T2<S, A>> call(S s) {
+      return runState.call(s);
     }
-
-    @Override
-    public <B> State<S,B> apply(Applicative<Hkt2<μ, Identity.μ, S>, ? extends F1<? super A, ? extends B>> app) {
-      return new State<>(s -> {
-       Monad<Identity.μ,T2<S,A>> mv = runState(s);
-       return mv.bind(t -> {
-          Monad<Identity.μ,T2<S,F1<A, B>>> mf = applicative(app).runState(s);
-          return mf.map( t2 -> t2.map2( fn -> fn.call(t._2()))); 
-       });
-      });
-    }
-
-    @Override
-    public Identity<T2<S,A>> runState(final S s) {
-      return (Identity<T2<S,A>>)super.runState(s);
-    }
-
-    @Override
-    public <B> State<S,B> bind(
-        F1<? super A, ? extends Monad<Hkt2<μ, drjoliv.jfunc.monad.Identity.μ, S>, B>> fn) {
-          return new State<S,B>(s -> {
-            return Monad.For(runState(s), t -> go(fn, t._2(), t._1()));
-          });
-    }
-
-    @Override
-    public <B> State<S,B> semi(Monad<Hkt2<μ, drjoliv.jfunc.monad.Identity.μ, S>, B> mb) {
-      return bind(s -> mb);
-    }
-
-    private static <M,S,A,B> Monad<M,T2<S,B>> go(final F1<? super A, ? extends Monad<Hkt2<μ, M, S>, B>> fn, A a, S s) {
-      return monad(fn.call(a)).runState(s);
-    }
-  }
-
-
-  /**
-   *
-   *
-   * @param runState
-   * @return
-   */
-  public static <M,S,A> StateT<M,S,A> stateT(final F1<S,T2<S,A>> runState, MonadUnit<M> mUnit) {
-    return new StateTImpl<M,S,A>(runState.then(p -> mUnit.unit(p)), mUnit);
-  }
-
-  public static <S,A> State<S,A> state(final F1<S,T2<S,A>> runState) {
-    return new State<S,A>(runState.then(p -> Identity.id(p)));
   }
 
   @SuppressWarnings("unchecked")
-  public static <M,S,A> StateT<M,S,A> monad(final Monad<Hkt2<μ, M, S>, A> monad) {
+  public static <M,S,A> StateT<M,S,A> monad(final Monad<Hkt2<statet, M, S>, A> monad) {
     return (StateT<M,S,A>) monad;
   }
-
-  @SuppressWarnings("unchecked")
-  public static <M,S,A,B> StateT<M,S,F1<A,B>> applicative(final Applicative<Hkt2<μ, M, S>, ? extends F1<? super A, ? extends B>> app) {
-    return (StateT<M,S,F1<A,B>>) app;
-  }
-
-  public static <S,A> State<S,A> asState(final Monad<Hkt2<μ, Identity.μ, S>, A> monad) {
-    if(monad instanceof StateT)
-      return new State<S,A>(monad(monad).runState);
-    else
-      return (State<S, A>) monad;
-  }
-
-  public static <S> State<S,S> get() {
-    return new State<S, S>(s -> Identity.id(t2(s, s)));
-  }
-
-  public static <S> State<S, S> put(S s) {
-    return new State<S, S>(state -> Identity.id(t2(s, s)));
-  }
-
-  public static <M, S> StateT<M,S,S> get(MonadUnit<M> mUnit) {
-    return new StateTImpl<M, S, S>(s -> mUnit.unit(t2(s, s)), mUnit);
-  }
-
-  public static <M, S> F2<MonadUnit<M>,S,StateT<M,S, S>> put() {
-    return (mUnit, s) -> new StateTImpl<M, S, S>(state -> mUnit.unit((t2(s, s))), mUnit);
-  }
-
-  public static <S, A> State<S, A> ret(A a) {
-    return new State<S, A>(s -> Identity.id(t2(s, a)));
-  }
-
-  public static <M,S> MonadUnit<Hkt2<StateT.μ,M,S>> unit(MonadUnit<M> mUnit) {
-    return new MonadUnit<Hkt2<StateT.μ,M,S>>() {
-      @Override
-      public <A> Monad<Hkt2<μ, M, S>, A> unit(A a) {
-        return new StateTImpl<M, S, A>(s -> mUnit.unit(t2(s, a)), mUnit);
-      }
-    };
+  public static <M, S, A, B> StateT<M, S, F1<A, B>> applicative(
+      final Applicative<Hkt2<statet, M, S>, ? extends F1<? super A, ? extends B>> app) {
+    return (StateT<M, S, F1<A, B>>) app;
   }
 }

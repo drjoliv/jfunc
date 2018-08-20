@@ -1,22 +1,24 @@
 package drjoliv.jfunc.data.list;
+import static drjoliv.jfunc.contorl.eval.Eval.later;
+import static drjoliv.jfunc.contorl.tramp.Trampoline.done;
+import static drjoliv.jfunc.contorl.tramp.Trampoline.more;
+import static drjoliv.jfunc.data.list.FList.flist;
+import static drjoliv.jfunc.data.list.FList.flist$;
+import static drjoliv.jfunc.data.list.FList.lazy;
+import static drjoliv.jfunc.hlist.T2.t2;
+
+import java.util.Iterator;
+
+import drjoliv.jfunc.contorl.CaseOf;
+import drjoliv.jfunc.contorl.maybe.Maybe;
+import drjoliv.jfunc.contorl.tramp.Trampoline;
 import drjoliv.jfunc.data.Unit;
-import drjoliv.jfunc.data.list.*;
+import drjoliv.jfunc.data.list.FList.EmptyListException;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.P1;
 import drjoliv.jfunc.hlist.T2;
-import static drjoliv.jfunc.hlist.T2.*;
-
-import java.util.Iterator;
-
-import static drjoliv.jfunc.data.list.FList.*;
-
-import drjoliv.jfunc.contorl.CaseOf;
-import drjoliv.jfunc.contorl.Maybe;
-import drjoliv.jfunc.contorl.Trampoline;
-import static drjoliv.jfunc.contorl.Eval.*;
-import static drjoliv.jfunc.contorl.Trampoline.*;
 
 public final class Functions {
 
@@ -266,6 +268,10 @@ public final class Functions {
     return bool ? flist(Unit.unit) : FList.empty();
   }
 
+  public static FList<String> words(String s) {
+    return FList.flist(s.split("\\s+"));
+  }
+
     /**
      * Creates a FList from an Iterator.
      *
@@ -277,4 +283,12 @@ public final class Functions {
        return flist(it.next(), () ->  fromIterable(it));
      return FList.empty();
    }
+
+   public static final <A> FList<A> repeat(int i, A a) {
+     if(i == 0)
+       return FList.empty();
+     else
+       return flist(a, () -> repeat(i - 1, a));
+   }
+
 }

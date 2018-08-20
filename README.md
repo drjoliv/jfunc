@@ -29,13 +29,11 @@ This library is an attempt at functional programming in Java. Operations within 
 ```
 
 ## Examples
-Coming Soon
-
 [euler solutions repo](https://github.com/drjoliv/ProjectEulerSolutions) for more examples.
 
 ## Documentation
 - [javadoc](https://drjoliv.github.io/jfunc)
-- [User Guide](https://drjoliv.github.io)
+- [User Guide](https://drjoliv.github.io/desonte-jolivet/project/2018/06/07/jFunc)
 
 
 ## Author

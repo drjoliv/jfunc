@@ -1,14 +1,14 @@
-package drjoliv.jfunc.contorl;
+package drjoliv.jfunc.contorl.tramp;
 
 import static drjoliv.jfunc.unsafe.Usafe.cast;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 
 /**
  * A container for stackless computation.
@@ -66,8 +66,8 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
   abstract <B> Trampoline<B> doBind(F1<? super A, Trampoline<B>> fn);
 
   @Override
-  public MonadUnit<μ> yield() {
-    return Trampoline::UNIT;
+  public MonadFactory<μ> yield() {
+    return TrampolineMonadFactory.instance();
   }
 
   @Override
@@ -86,8 +86,8 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
   }
 
   @Override
-  public ApplicativePure<μ> pure() {
-    return Trampoline::UNIT;
+  public ApplicativeFactory<μ> pure() {
+    return TrampolineMonadFactory.instance();
   }
 
   @Override
@@ -204,16 +204,6 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
       return fn.call(result.call());
     }
   }
-
-  /**
-  * A strategy for lifting a value into the context of a Trampoline.
-  */
-  public static final MonadUnit<Trampoline.μ> MONAD_UNIT = new MonadUnit<Trampoline.μ>(){
-    @Override
-    public <A> Monad<μ, A> unit(A a) {
-      return Trampoline.done(a);
-    }
-  };
 
 
   /**

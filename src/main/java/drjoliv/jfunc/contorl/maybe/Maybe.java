@@ -1,16 +1,18 @@
-package drjoliv.jfunc.contorl;
+package drjoliv.jfunc.contorl.maybe;
 
-import static drjoliv.jfunc.contorl.Eval.later;
+import static drjoliv.jfunc.contorl.eval.Eval.later;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
+import drjoliv.jfunc.contorl.Case2;
+import drjoliv.jfunc.contorl.eval.Eval;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.hkt.Hkt;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 
 /**
  * Represents a value of something(Just) or a value of Nothing.
@@ -34,8 +36,8 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A>, 
   }
 
   @Override
-  public ApplicativePure<μ> pure() {
-    return Maybe::maybe;
+  public ApplicativeFactory<μ> pure() {
+    return MaybeMonadFactory.instance();
   }
 
   @Override
@@ -47,8 +49,8 @@ public abstract class Maybe<A> implements Hkt<Maybe.μ, A>, Monad<Maybe.μ, A>, 
   }
 
   @Override
-  public MonadUnit<μ> yield() {
-    return Maybe::maybe;
+  public MonadFactory<μ> yield() {
+    return MaybeMonadFactory.instance();
   }
 
   /**

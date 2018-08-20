@@ -1,14 +1,14 @@
-package drjoliv.jfunc.contorl;
+package drjoliv.jfunc.contorl.eval;
 
 import java.util.Objects;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 
 /**
  * Delays the evaluation of an expression, caching the value the first time the expression is evaluated.
@@ -31,13 +31,13 @@ public abstract class Eval<A> implements Monad<Eval.μ,A> {
   }
 
   @Override
-  public ApplicativePure<μ> pure() {
-    return Eval::now;
+  public ApplicativeFactory<μ> pure() {
+    return EvalMonadFactory.instance();
   }
 
   @Override
-  public MonadUnit<μ> yield() {
-    return Eval::now;
+  public MonadFactory<μ> yield() {
+    return EvalMonadFactory.instance();
   }
 
   @Override

@@ -2,11 +2,11 @@ package drjoliv.jfunc.data.deque;
 
 import java.util.Iterator;
 
-import drjoliv.jfunc.contorl.Maybe;
+import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.data.list.FList;
 import drjoliv.jfunc.hlist.T2;
 
-import static drjoliv.jfunc.contorl.Maybe.*;
+import static drjoliv.jfunc.contorl.maybe.Maybe.*;
 import static drjoliv.jfunc.data.list.FList.*;
 import static drjoliv.jfunc.hlist.T2.*;
 

@@ -1,8 +1,8 @@
 package drjoliv.jfunc.monad;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
-import drjoliv.jfunc.contorl.Eval;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
+import drjoliv.jfunc.contorl.eval.Eval;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.hkt.Hkt;
@@ -38,7 +38,7 @@ public final class Identity<E> implements Monad<Identity.μ,E>, Hkt<Identity.μ,
   }
 
   @Override
-  public ApplicativePure<μ> pure() {
+  public ApplicativeFactory<μ> pure() {
     return Identity::id;
   }
 
@@ -53,24 +53,14 @@ public final class Identity<E> implements Monad<Identity.μ,E>, Hkt<Identity.μ,
   }
 
   @Override
-  public MonadUnit<μ> yield() {
-    return Identity::id;
+  public MonadFactory<μ> yield() {
+    return IdentityMonadFactory.instance();
   }
 
   /**
   * A strategy used to lift values into an Identity.
   */
-  public static final MonadUnit<Identity.μ> MONAD_UNIT = new MonadUnit<Identity.μ>() {
-    @Override
-    public <A> Monad<μ, A> unit(A a) {
-      return id(a);
-    }
-  };
-
-  /**
-  * A strategy used to lift values into an Identity.
-  */
-  public static final ApplicativePure<Identity.μ> PURE = new ApplicativePure<Identity.μ>() {
+  public static final ApplicativeFactory<Identity.μ> PURE = new ApplicativeFactory<Identity.μ>() {
     @Override
     public <A> Applicative<Identity.μ,A> pure(A a) {
       return id(a);

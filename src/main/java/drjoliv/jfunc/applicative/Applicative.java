@@ -17,7 +17,7 @@ public interface Applicative<M, A> extends Functor<M,A> {
    * Returns a strategy for creating an applicative of this type.
    * @return a strategy for creating an applicative of this type.
    */
-  public ApplicativePure<M> pure();
+  public ApplicativeFactory<M> pure();
 
   /**
    * Apply a function contained within an applicative to the contents of this applicative.

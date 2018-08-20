@@ -1,9 +1,9 @@
 package drjoliv.jfunc.data.list;
 
-import static drjoliv.jfunc.contorl.Eval.later;
-import static drjoliv.jfunc.contorl.Eval.now;
-import static drjoliv.jfunc.contorl.Trampoline.done;
-import static drjoliv.jfunc.contorl.Trampoline.more;
+import static drjoliv.jfunc.contorl.eval.Eval.later;
+import static drjoliv.jfunc.contorl.eval.Eval.now;
+import static drjoliv.jfunc.contorl.tramp.Trampoline.done;
+import static drjoliv.jfunc.contorl.tramp.Trampoline.more;
 import static drjoliv.jfunc.hlist.T2.t2;
 
 import java.util.Arrays;
@@ -13,11 +13,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import drjoliv.jfunc.applicative.Applicative;
-import drjoliv.jfunc.applicative.ApplicativePure;
+import drjoliv.jfunc.applicative.ApplicativeFactory;
 import drjoliv.jfunc.contorl.Case2;
-import drjoliv.jfunc.contorl.Eval;
-import drjoliv.jfunc.contorl.Maybe;
-import drjoliv.jfunc.contorl.Trampoline;
+import drjoliv.jfunc.contorl.eval.Eval;
+import drjoliv.jfunc.contorl.maybe.Maybe;
+import drjoliv.jfunc.contorl.tramp.Trampoline;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
@@ -28,7 +28,7 @@ import drjoliv.jfunc.function.P1;
 import drjoliv.jfunc.hkt.Hkt;
 import drjoliv.jfunc.hlist.T2;
 import drjoliv.jfunc.monad.Monad;
-import drjoliv.jfunc.monad.MonadUnit;
+import drjoliv.jfunc.monad.MonadFactory;
 import drjoliv.jfunc.traversable.Traversable;
 
 /**
@@ -53,7 +53,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
   @Override
   public <N, F, B> Applicative<N, FList<B>> mapA(F1<A, ? extends Applicative<N, B>> fn,
-      ApplicativePure<N> pure) {
+      ApplicativeFactory<N> pure) {
     F2<FList<B>, B, FList<B>> cons = (FList<B> list, B b) -> list.cons(b);
     final Applicative<N, FList<B>> empty = pure.pure(empty());
     final F2<Applicative<N, FList<B>>, Applicative<N, B>, Applicative<N, FList<B>>> go = (l, app) -> {
@@ -66,7 +66,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
 
   @Override
   public <N, B> Monad<N, FList<B>> mapM(F1<A, ? extends Monad<N, B>> fn,
-      MonadUnit<N> ret) {
+      MonadFactory<N> ret) {
     return mapM_prime(map(fn),ret);
   }
 
@@ -74,7 +74,7 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
     return Functions.init(this);
   }
 
-  private static <N, B> Monad<N,FList<B>> mapM_prime(FList<Monad<N,B>> mb, MonadUnit<N> ret) {
+  private static <N, B> Monad<N,FList<B>> mapM_prime(FList<Monad<N,B>> mb, MonadFactory<N> ret) {
     if(mb.isEmpty())
       return ret.unit(empty());
     else {
@@ -114,13 +114,6 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   * The witness type of FList.
   */
   public static class μ {private μ(){}}
-
-    public static MonadUnit<FList.μ> unit = new MonadUnit<FList.μ>() {
-      @Override
-      public <A> Monad<μ, A> unit(A a) {
-        return FList.single(a);
-      }
-    };
 
   @Override
   public <B> FList<B> map(F1<? super A, ? extends B> fn) {
@@ -207,13 +200,13 @@ public abstract class FList<A> implements Hkt<FList.μ,A>,
   }
 
   @Override
-  public ApplicativePure<FList.μ> pure() {
-    return FList::single;
+  public ApplicativeFactory<FList.μ> pure() {
+    return FListMonadFactory.instance();
   }
 
   @Override
-  public MonadUnit<FList.μ> yield() {
-    return FList::single;
+  public MonadFactory<FList.μ> yield() {
+    return FListMonadFactory.instance();
   }
 
   private FList(){}
@@ -602,7 +595,7 @@ import static drjoliv.jfunc.show.Show.*;
   }
 
   @SuppressWarnings("unchecked")
-  public static <B> FList<B> fromCollection(Collection<B> collection) {
+  public static <B> FList<B> collection(Collection<B> collection) {
     Objects.requireNonNull(collection);
     return flist((B[]) collection.toArray());
   }
