@@ -9,7 +9,11 @@ import drjoliv.jfunc.applicative.ApplicativeFactory;
 import drjoliv.jfunc.contorl.either.Either;
 import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.contorl.tramp.Trampoline;
+import drjoliv.jfunc.contorl.trys.Try.μ;
 import drjoliv.jfunc.function.F1;
+import drjoliv.jfunc.function.F2;
+import drjoliv.jfunc.function.F3;
+import drjoliv.jfunc.function.F4;
 import drjoliv.jfunc.function.Try0;
 import drjoliv.jfunc.hkt.Hkt;
 import drjoliv.jfunc.monad.Monad;
@@ -22,6 +26,7 @@ import drjoliv.jfunc.monad.MonadFactory;
  * @author Desonte 'drjoliv' Jolivete : drjoliv@gmail.com
  */
 public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
+
 
   /**
   * The witness type of {@code Try}.
@@ -71,6 +76,28 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
   public <B> Try<B> semi(Monad<μ, B> mb) {
     return bind(a -> mb);
   }
+
+  @Override
+  public <B, C> Try<C> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2) {
+    return monad(Monad.super.For(fn, fn2));
+  }
+
+  @Override
+  public <B, C, D> Try<D> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<μ, D>> fn3) {
+    return monad(Monad.super.For(fn, fn2, fn3));
+  }
+
+  @Override
+  public <B, C, D, E> Try<E> For(F1<? super A, ? extends Monad<μ, B>> fn,
+      F2<? super A, ? super B, ? extends Monad<μ, C>> fn2,
+      F3<? super A, ? super B, ? super C, ? extends Monad<μ, D>> fn3,
+      F4<? super A, ? super B, ? super C, ? super D, ? extends Monad<μ, E>> fn4) {
+    return monad(Monad.super.For(fn, fn2, fn3, fn4));
+  }
+
 
   @Override
   public MonadFactory<μ> yield() {
