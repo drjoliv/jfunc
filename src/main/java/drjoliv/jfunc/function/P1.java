@@ -11,4 +11,7 @@ public interface P1<A> {
     return a -> test(a) || b;
   }
 
+  public static P1<Boolean> TRUE =  bool -> bool == true;
+
+  public static P1<Boolean> FALSE = bool -> bool == false;
 }
