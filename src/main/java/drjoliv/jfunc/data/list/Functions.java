@@ -292,10 +292,21 @@ public final class Functions {
        return flist(a, () -> repeat(i - 1, a));
    }
 
+  /**
+   * Returns a frequency map. 
+   * @param list a list of elements to be counted.
+   * @return a frequency hash map.
+   */
     public static <A> HashMap<A, Integer> frequency ( FList<A> list ) {
       return frequency(new HashMap<>(), list).result();
     }
 
+  /**
+   * Returns a frequency map, mutating the given map by adding values to it.
+   * @param map key-values to be added to.
+   * @param list elements to be counted.
+   * @return a frequency map.
+   */
     public static <A> HashMap<A, Integer> frequencyWithMap ( HashMap<A, Integer> map
         , FList<A> list ) {
 
@@ -303,6 +314,12 @@ public final class Functions {
 
     }
 
+  /**
+   * Returns a frequency map, mutating the given map by adding values to it.
+   * @param map key-values to be added to.
+   * @param list elements to be counted.
+   * @return a trampoline containing a frequency map.
+   */
     public static <A> Trampoline<HashMap<A, Integer>> frequency ( HashMap<A, Integer> map
         , FList<A> list ) {
 
