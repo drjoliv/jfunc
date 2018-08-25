@@ -7,6 +7,7 @@ import static drjoliv.jfunc.data.list.FList.flist$;
 import static drjoliv.jfunc.data.list.FList.lazy;
 import static drjoliv.jfunc.hlist.T2.t2;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import drjoliv.jfunc.contorl.CaseOf;
@@ -291,4 +292,29 @@ public final class Functions {
        return flist(a, () -> repeat(i - 1, a));
    }
 
+    public static <A> HashMap<A, Integer> frequency ( FList<A> list ) {
+      return frequency(new HashMap<>(), list).result();
+    }
+
+    public static <A> HashMap<A, Integer> frequencyWithMap ( HashMap<A, Integer> map
+        , FList<A> list ) {
+
+      return frequency(map, list).result();
+
+    }
+
+    public static <A> Trampoline<HashMap<A, Integer>> frequency ( HashMap<A, Integer> map
+        , FList<A> list ) {
+
+      if(list.isEmpty())
+        return Trampoline.done(map);
+      else
+        return Trampoline.more(() -> {
+          A a = list.head();
+          Integer i = map.getOrDefault(a , 0);
+          map.put(a, i + 1);
+         return frequency(map, list.tail());
+        });
+
+    }
 }
