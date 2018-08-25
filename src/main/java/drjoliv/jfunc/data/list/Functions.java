@@ -273,6 +273,10 @@ public final class Functions {
     return FList.flist(s.split("\\s+"));
   }
 
+  final static F1<String,FList<String>> words() {
+    return Functions::words;
+  }
+
     /**
      * Creates a FList from an Iterator.
      *
