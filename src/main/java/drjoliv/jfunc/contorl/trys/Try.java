@@ -193,7 +193,10 @@ public class Try<A> implements Monad<Try.μ,A>, Hkt<Try.μ,A> {
         try {
           return right(runTry.get());
         } catch(Exception ex) {
-          return left(ex);
+          if(ex instanceof RuntimeException)
+            throw (RuntimeException)ex;
+          else
+            return left(ex);
         }
       });
     return new Try<>(tramp);
