@@ -1,15 +1,11 @@
-package drjoliv.jfunc.adt;
+package drjoliv.jfunc.monad;
 
-import static drjoliv.jfunc.monad.Identity.asIdentity;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
-
-import drjoliv.jfunc.monad.Identity;
-import drjoliv.jfunc.monad.Monad;
 
 @RunWith(JUnitQuickcheck.class)
 public class IdentityTest {
