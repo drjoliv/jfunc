@@ -43,6 +43,10 @@ public class CaseOf<A> {
       this.value = value;
     }
 
+    public Cases<A,B> of(A a, F0<B> f) {
+      return of(CaseOf.eq(a), f);
+    }
+
     public Cases<A,B> of(P1<A> p, F0<B> f) {
       if(value.isSome())
         return this;
