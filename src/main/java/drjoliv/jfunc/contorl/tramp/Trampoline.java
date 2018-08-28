@@ -279,4 +279,11 @@ public abstract class Trampoline<A> implements Monad<Trampoline.μ,A> {
   public static <A> Trampoline<A> more(F0<Trampoline<A>> more) {
     return new More<A>(more);
   }
+
+  public static <A, B, C> Trampoline<C> liftM2(Monad<Trampoline.μ, A> m, Monad<Trampoline.μ,B> m1, F2<? super A,? super B,C> fn) {
+    return monad(Monad.For( m
+                    , a    -> m1
+                    ,(a,b) -> m.yield().unit((fn.apply(a,b)))));
+  }
+
 }
