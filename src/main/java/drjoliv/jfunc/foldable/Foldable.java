@@ -1,6 +1,6 @@
 package drjoliv.jfunc.foldable;
 
-import static drjoliv.jfunc.contorl.eval.Eval.*;
+import static drjoliv.jfunc.contorl.eval.Eval.later;
 
 import java.util.Comparator;
 
