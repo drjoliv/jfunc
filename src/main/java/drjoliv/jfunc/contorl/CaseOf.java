@@ -19,6 +19,10 @@ public class CaseOf<A> {
     return new CaseOf<>(a);
   }
 
+  public <B> Cases<A,B> of(A a, F0<B> f) {
+    return of(eq(a), f);
+  }
+
   public <B> Cases<A,B> of(P1<A> p, F0<B> f) {
     Maybe<B> m = p.test(a) ? maybe(f.call()) : Maybe.nothing();
     return new Cases<>(a, m);
