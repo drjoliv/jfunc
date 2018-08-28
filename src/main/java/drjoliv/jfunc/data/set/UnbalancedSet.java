@@ -10,8 +10,10 @@ import static drjoliv.jfunc.contorl.tramp.Trampoline.*;
 import static drjoliv.jfunc.contorl.eval.Eval.*;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.data.list.FList;
+import drjoliv.jfunc.data.list.Functions;
 import drjoliv.jfunc.eq.Ord;
 import drjoliv.jfunc.eq.Ordering;
+import drjoliv.jfunc.foldable.Foldable;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
 import drjoliv.jfunc.function.F3;
@@ -52,6 +54,18 @@ public abstract class UnbalancedSet<E> implements Set<E> {
 
     return visit$(nil -> FList.empty()
         , (data, left ,right) -> FList.flist$( data, Eval.liftM2(left, right, go) ) );
+  }
+
+  public final FList<E> ascendingList() {
+    return visit(nil -> FList.<E>empty()
+        , (data, left ,right) ->
+        Functions.flatten( left.ascendingList() , FList.flist(data), right.ascendingList()  ) );
+  }
+
+  public final FList<E> descendingList() {
+    return visit(nil -> FList.<E>empty()
+        , (data, left ,right) ->
+        Functions.flatten( right.descendingList() , FList.flist(data), left.descendingList()  ) );
   }
 
   final <B> B visit (F1<Unit, B> nil, F3<E, UnbalancedSet<E>, UnbalancedSet<E>, B> cons) {
@@ -182,8 +196,8 @@ public abstract class UnbalancedSet<E> implements Set<E> {
 
     @Override
     public UnbalancedSet<E> remove(E e) {
-      // TODO Auto-generated method stub
-      return null;
+      // TODO implement remove
+      throw new UnsupportedOperationException();
     }
 
     @Override
@@ -198,8 +212,68 @@ public abstract class UnbalancedSet<E> implements Set<E> {
 
     @Override
     public UnbalancedSet<E> remove(Eval<E> e) {
-      // TODO Auto-generated method stub
-      return null;
+      // TODO implement remove
+      throw new UnsupportedOperationException();
     }
   }
+
+  public static <M,E> UnbalancedSet<E> fromFoldable(Foldable<M,E> foldable, Ord<E> order) {
+    return foldable.foldr((set, e) -> set.insert(e) , empty(order));
+  }
+
+  //private static void shuffleArray(int[] array, java.util.Random ran) {
+  //        for (int i = array.length - 1; i > 0; i--) {
+  //          int index = ran.nextInt(i + 1);
+  //            // Simple swap
+  //           int a = array[index];
+  //           array[index] = array[i];
+  //           array[i] = a;
+  //        }
+  //}
+
+  //public static void main(String[] args) {
+  //  int number_of_ints = 1_000_000;
+  //  long start;
+  //  long time;
+
+  //  int[] nums = new int[number_of_ints];
+  //  java.util.ArrayList<Integer> testNums = new java.util.ArrayList<>();
+
+  //  java.util.Random ran = new java.util.Random();
+
+  //  java.util.HashSet<Integer> hashSet = new java.util.HashSet<>();
+  //  UnbalancedSet<Integer> set = UnbalancedSet.empty(Ord.<Integer>orderable());
+
+  //  UnbalancedSet<Integer> warm = UnbalancedSet.empty(Ord.<Integer>orderable());
+
+  //  for(int i = 0; i < number_of_ints; i++) {
+  //    warm = warm.insert(ran.nextInt()); 
+  //    nums[i] = ran.nextInt();
+  //  }
+
+
+  //  for(int i : nums) {
+  //    hashSet.add(i);
+  //  }
+
+  //  start = System.currentTimeMillis();
+  //  for(int i : nums) {
+  //    set = set.insert(i);
+  //  }
+  //  System.out.println(System.currentTimeMillis() - start);
+
+  //  shuffleArray(nums, ran);
+  //  for(int i = 0; i < 50_000; i++)
+  //    testNums.add(nums[i]);
+
+  //  start = System.currentTimeMillis();
+  //  for(int i : nums)
+  //    assert hashSet.contains(i);
+  //  System.out.println(System.currentTimeMillis() - start);
+
+  //  start = System.currentTimeMillis();
+  //  for(int i : nums)
+  //    assert set.member(i);
+  //  System.out.println(System.currentTimeMillis() - start);
+  //}
 }
