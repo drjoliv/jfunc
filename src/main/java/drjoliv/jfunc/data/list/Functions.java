@@ -15,6 +15,8 @@ import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.contorl.tramp.Trampoline;
 import drjoliv.jfunc.data.Unit;
 import drjoliv.jfunc.data.list.FList.EmptyListException;
+import drjoliv.jfunc.data.set.UnbalancedSet;
+import drjoliv.jfunc.eq.Ord;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.F2;
@@ -80,6 +82,18 @@ public final class Functions {
 
   public static <A> P1<FList<A>> headEq(A a) {
     return l -> l.head() == a;
+  }
+
+  public static <A> FList<A> nub( Ord<A> order, FList<A> list ) {
+    return UnbalancedSet.fromList(list, order).toList();
+  }
+
+  public static <A extends Comparable<A>> FList<A> nub( FList<A> list ) {
+    return UnbalancedSet.fromList(list, Ord.<A>orderable()).toList();
+  }
+
+  public static <A> F2<Ord<A>, FList<A>, FList<A>> nub() {
+    return Functions::nub;
   }
 
   public static <A> P1<FList<A>> headIs(P1<A> p) {
@@ -260,9 +274,9 @@ public final class Functions {
   }
 
     @SafeVarargs
-  public static final <A> FList<A> flatten(FList<A> ... listOfList) {
-    FList<FList<A>> listOfListPrime = flist(listOfList);
-    return flatten(listOfListPrime);
+  public static final <A> FList<A> flatten(FList<A> ... lists) {
+    FList<FList<A>> listOfList = flist(lists);
+    return flatten(listOfList);
   }
 
   public static FList<Unit> guard(boolean bool) {
@@ -318,6 +332,12 @@ public final class Functions {
 
     }
 
+    public static <A> FList<A> random(F0<A> generator, int i) {
+      return CaseOf.caseOf(i)
+        .of(CaseOf.eq(0), () -> FList.<A>empty())
+        .otherwise(()        -> flist(generator.call(), () -> random(generator, i - 1)));
+    }
+
   /**
    * Returns a frequency map, mutating the given map by adding values to it.
    * @param map key-values to be added to.
@@ -336,6 +356,5 @@ public final class Functions {
           map.put(a, i + 1);
          return frequency(map, list.tail());
         });
-
     }
 }
