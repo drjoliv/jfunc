@@ -85,11 +85,11 @@ public final class Functions {
   }
 
   public static <A> FList<A> nub( Ord<A> order, FList<A> list ) {
-    return UnbalancedSet.fromList(list, order).toList();
+    return UnbalancedSet.fromFoldable(list, order).toList();
   }
 
   public static <A extends Comparable<A>> FList<A> nub( FList<A> list ) {
-    return UnbalancedSet.fromList(list, Ord.<A>orderable()).toList();
+    return UnbalancedSet.fromFoldable(list, Ord.<A>orderable()).toList();
   }
 
   public static <A> F2<Ord<A>, FList<A>, FList<A>> nub() {
