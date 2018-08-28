@@ -1,14 +1,11 @@
 package drjoliv.jfunc.contorl;
 
+import static drjoliv.jfunc.contorl.maybe.Maybe.maybe;
+
+import drjoliv.jfunc.contorl.maybe.Maybe;
 import drjoliv.jfunc.function.F0;
 import drjoliv.jfunc.function.F1;
 import drjoliv.jfunc.function.P1;
-import drjoliv.jfunc.hlist.T2;
-
-import static drjoliv.jfunc.contorl.maybe.Maybe.*;
-
-import drjoliv.jfunc.contorl.maybe.Maybe;
-import drjoliv.jfunc.data.list.FList;
 
 public class CaseOf<A> {
 
@@ -66,6 +63,10 @@ public class CaseOf<A> {
 
     public B otherwise(F1<A,B> f) {
      return value.orSome(f.call(a)); 
+    }
+
+    public B otherwise(B b) {
+     return value.orSome(b); 
     }
 
     public B otherwise(F0<B> f) {
