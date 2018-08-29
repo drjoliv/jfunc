@@ -80,13 +80,13 @@ public class UnbalancedSetTest {
   public void insert(@Size(max = 20)FList<Integer> flist) {
     for(Integer i : flist) {
       set = set.insert(i);
-      assertTrue("This value should be a memeber of the set.", set.member(i));
+      assertTrue("This value should be a member of the set.", set.member(i));
     }
   }
 
   @Property
   public void isEmpty(@Size(max = 20)FList<Integer> flist) {
-    assertTrue("Both FList and Set should return the smae value from isEmpty."
+    assertTrue("Both FList and Set should return the same value from isEmpty."
         , fromFoldable(flist, Ord.<Integer>orderable()).isEmpty() == flist.isEmpty() );
   }
 }
