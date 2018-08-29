@@ -29,8 +29,7 @@ public class UnbalancedSetTest {
 
   @Property
   public void fromFoldableTest(@Size(max = 20)FList<Integer> flist) {
-    Set<Integer> set =
-      fromFoldable(flist, Ord.<Integer>orderable());
+    set = fromFoldable(flist, Ord.<Integer>orderable());
 
     for(Integer i : flist)
       assertTrue("Value :" + i + " should be the set.", set.member(i));
